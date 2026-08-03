@@ -80,9 +80,19 @@ prospective_directory_path() {
   lexical_absolute_path "$candidate$suffix"
 }
 
+path_comparison_key() {
+  if ((case_sensitive_paths == 1)); then
+    printf '%s\n' "$1"
+  else
+    printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]'
+  fi
+}
+
 review_conflicts_with_final() {
-  local review=$1
-  local final=$2
+  local review
+  local final
+  review=$(path_comparison_key "$1")
+  final=$(path_comparison_key "$2")
   [[ "$review" == "$final" || "$review" == "$final/"* || "$final" == "$review/"* ]]
 }
 
@@ -187,6 +197,12 @@ png_output="$output_base.png"
 output_dir=$(dirname "$output_base")
 mkdir -p "$output_dir" || fail "cannot create output directory: $output_dir"
 output_dir_abs=$(cd "$output_dir" && pwd -P)
+# Compare prospective paths with the case behavior of the final output filesystem.
+case_sensitive_paths=1
+case_probe=$(mktemp -d "$output_dir/.diagram-case.XXXXXX")
+: >"$case_probe/CaseProbe"
+[[ ! -e "$case_probe/caseprobe" ]] || case_sensitive_paths=0
+rm -r "$case_probe"
 svg_output_abs="$output_dir_abs/$(basename "$svg_output")"
 png_output_abs="$output_dir_abs/$(basename "$png_output")"
 
@@ -205,47 +221,56 @@ tmp_dir=""
 publish_dir=""
 backup_dir=""
 transaction_active=0
-old_svg=0
-old_png=0
-new_svg=0
-new_png=0
+had_svg=0
+had_png=0
+
+path_exists() {
+  [[ -e "$1" || -L "$1" ]]
+}
+
+# Reconcile actual paths instead of post-mv flags so an EXIT trap can recover
+# when a signal lands between an atomic rename and the next shell statement.
+rollback_artifact() {
+  local final=$1
+  local staged=$2
+  local backup=$3
+  local had_original=$4
+  local rollback_ok=1
+
+  if ((had_original == 1)); then
+    if path_exists "$backup"; then
+      if path_exists "$final"; then
+        if path_exists "$staged" || ! mv "$final" "$staged"; then
+          rollback_ok=0
+        fi
+      fi
+      if ! path_exists "$final" && ! mv "$backup" "$final"; then
+        rollback_ok=0
+      fi
+    elif ! path_exists "$final"; then
+      rollback_ok=0
+    fi
+  elif path_exists "$final"; then
+    if path_exists "$staged" || ! mv "$final" "$staged"; then
+      rollback_ok=0
+    fi
+  fi
+
+  if ((had_original == 1)); then
+    path_exists "$final" || rollback_ok=0
+    ! path_exists "$backup" || rollback_ok=0
+  else
+    ! path_exists "$final" || rollback_ok=0
+  fi
+  ((rollback_ok == 1))
+}
 
 rollback_outputs() {
   local rollback_ok=1
   set +e
-  if ((new_png == 1)); then
-    if mv "$png_output" "$publish_dir/render.png"; then
-      new_png=0
-    elif ((old_png == 0)) && rm -f "$png_output" && [[ ! -e "$png_output" && ! -L "$png_output" ]]; then
-      new_png=0
-    else
-      rollback_ok=0
-    fi
-  fi
-  if ((new_svg == 1)); then
-    if mv "$svg_output" "$publish_dir/render.svg"; then
-      new_svg=0
-    elif ((old_svg == 0)) && rm -f "$svg_output" && [[ ! -e "$svg_output" && ! -L "$svg_output" ]]; then
-      new_svg=0
-    else
-      rollback_ok=0
-    fi
-  fi
-  if ((old_png == 1 && new_png == 0)); then
-    if mv "$backup_dir/render.png" "$png_output"; then
-      old_png=0
-    else
-      rollback_ok=0
-    fi
-  fi
-  if ((old_svg == 1 && new_svg == 0)); then
-    if mv "$backup_dir/render.svg" "$svg_output"; then
-      old_svg=0
-    else
-      rollback_ok=0
-    fi
-  fi
-  if ((rollback_ok == 1 && old_svg == 0 && old_png == 0 && new_svg == 0 && new_png == 0)); then
+  rollback_artifact "$png_output" "$publish_dir/render.png" "$backup_dir/render.png" "$had_png" || rollback_ok=0
+  rollback_artifact "$svg_output" "$publish_dir/render.svg" "$backup_dir/render.svg" "$had_svg" || rollback_ok=0
+  if ((rollback_ok == 1)); then
     transaction_active=0
   fi
   set -e
@@ -375,36 +400,22 @@ for output in "$svg_output" "$png_output"; do
   fi
 done
 backup_dir=$(mktemp -d "$output_dir/.diagram-backup.XXXXXX")
+path_exists "$svg_output" && had_svg=1
+path_exists "$png_output" && had_png=1
 transaction_active=1
-if [[ -e "$svg_output" ]]; then
-  if mv "$svg_output" "$backup_dir/render.svg"; then
-    old_svg=1
-  else
-    publication_failed "could not preserve existing SVG"
-  fi
+if ((had_svg == 1)) && ! mv "$svg_output" "$backup_dir/render.svg"; then
+  publication_failed "could not preserve existing SVG"
 fi
-if [[ -e "$png_output" ]]; then
-  if mv "$png_output" "$backup_dir/render.png"; then
-    old_png=1
-  else
-    publication_failed "could not preserve existing PNG"
-  fi
+if ((had_png == 1)) && ! mv "$png_output" "$backup_dir/render.png"; then
+  publication_failed "could not preserve existing PNG"
 fi
-if mv "$publish_dir/render.svg" "$svg_output"; then
-  new_svg=1
-else
+if ! mv "$publish_dir/render.svg" "$svg_output"; then
   publication_failed "could not publish SVG"
 fi
-if mv "$publish_dir/render.png" "$png_output"; then
-  new_png=1
-else
+if ! mv "$publish_dir/render.png" "$png_output"; then
   publication_failed "could not publish PNG"
 fi
 transaction_active=0
-old_svg=0
-old_png=0
-new_svg=0
-new_png=0
 keep_review=1
 
 aspect_ratio=$(awk -v width="$png_width" -v height="$png_height" 'BEGIN { printf "%.2f", width / height }')

@@ -98,6 +98,18 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
     assert.match(poisonedFailure.stderr, /sit beneath a final output path/);
     assert.equal(existsSync(`${poisonedOutput}.png`), false);
 
+    const caseProbe = path.join(tmp, "CaseProbe");
+    writeFileSync(caseProbe, "probe");
+    if (existsSync(path.join(tmp, "caseprobe"))) {
+      const caseOutput = path.join(tmp, "Flow");
+      const caseFailure = render([
+        "--review-dir", path.join(tmp, "flow.svg", "review"), input, caseOutput,
+      ]);
+      assert.notEqual(caseFailure.status, 0);
+      assert.match(caseFailure.stderr, /sit beneath a final output path/);
+      assert.equal(existsSync(`${caseOutput}.svg`), false);
+    }
+
     const directoryOutput = path.join(tmp, "directory-output");
     mkdirSync(`${directoryOutput}.svg`);
     const directoryFailure = render(["--no-review-images", input, directoryOutput]);
@@ -125,6 +137,57 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
     ]);
     assert.notEqual(leadingZero.status, 0);
     assert.match(leadingZero.stderr, /non-negative integer/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("transaction rollback survives interruption after every rename", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-interrupt-test-"));
+  try {
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeMv = path.join(fakeBin, "mv");
+    writeFileSync(fakeMv, `#!/bin/sh
+count=0
+[ ! -f "$MV_COUNT_FILE" ] || count=$(cat "$MV_COUNT_FILE")
+count=$((count + 1))
+printf '%s\n' "$count" >"$MV_COUNT_FILE"
+/bin/mv "$@"
+status=$?
+if [ "$status" -eq 0 ] && [ "$count" = "$INTERRUPT_AT" ] && [ ! -e "$MV_INTERRUPT_MARKER" ]; then
+  : >"$MV_INTERRUPT_MARKER"
+  kill -TERM "$PPID"
+  sleep 0.1
+fi
+exit "$status"
+`);
+    chmodSync(fakeMv, 0o755);
+
+    for (const boundary of [1, 2, 3, 4]) {
+      const scenario = path.join(tmp, `boundary-${boundary}`);
+      mkdirSync(scenario);
+      const input = path.join(scenario, "flow.d2");
+      const output = path.join(scenario, "flow");
+      const review = path.join(scenario, "review");
+      writeFileSync(input, "a -> b\n");
+      writeFileSync(`${output}.svg`, `old svg ${boundary}`);
+      writeFileSync(`${output}.png`, `old png ${boundary}`);
+      const result = render(
+        ["--review-dir", review, input, output],
+        {
+          PATH: `${fakeBin}:${process.env.PATH}`,
+          INTERRUPT_AT: String(boundary),
+          MV_COUNT_FILE: path.join(scenario, "mv-count"),
+          MV_INTERRUPT_MARKER: path.join(scenario, "interrupted"),
+        },
+      );
+      assert.notEqual(result.status, 0, `boundary ${boundary}`);
+      assert.equal(readFileSync(`${output}.svg`, "utf8"), `old svg ${boundary}`);
+      assert.equal(readFileSync(`${output}.png`, "utf8"), `old png ${boundary}`);
+      assert.equal(existsSync(review), false);
+      assert.deepEqual(readdirSync(scenario).filter((file) => file.startsWith(".diagram-")), []);
+    }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
