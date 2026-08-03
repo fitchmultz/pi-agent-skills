@@ -99,7 +99,7 @@
     {
       "id": "edge-stale-head-evidence",
       "prompt": "[Reviewers signed off, then a fix was pushed.]",
-      "expected_output": "Treats the earlier sign-off as stale for the changed scope, reruns the affected reviewers and the cross-family structural pass against the new head, and binds the final claim to the current head SHA."
+      "expected_output": "Treats the earlier sign-off as stale for the changed scope, reruns every required reviewer against the new head, including the cross-family structural pass when its risk trigger applies, and binds the final claim to the current head SHA."
     },
     {
       "id": "edge-false-positive-rebutted",

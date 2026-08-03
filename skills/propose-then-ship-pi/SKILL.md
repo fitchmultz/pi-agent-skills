@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review, CI, and Greptile to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -124,13 +124,13 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI and Greptile run in the background, but do not wait on either until the local panel is clean: they review whatever is pushed at that moment, so blocking early spends a remote cycle on a diff you are about to rewrite.
 
-1. **Panel.** Launch the review panel below in one `subagent` call.
+1. **Panel.** Launch the review panel below in one `subagent` call. Every required reviewer performs a fresh analysis of the current diff; ledger reuse never replaces a reviewer pass.
 2. **Triage.** Fix valid findings. Rebut invalid ones in writing with reasoning. Give out-of-scope findings the Defer verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
 6. **Greptile and threads.** Apply the recorded policy, then follow `references/greptile-loop.md`. `required` needs the normal current-head verdict. `waived-if-unavailable` permits only a confirmed unavailable app/review surface; any current-head Greptile signal makes the normal verdict and findings required. Sweep threads and PR comments from every author under either policy.
-7. **Re-run the panel** whenever the code changed materially since step 1.
+7. **Re-run the required reviewers** after any diff change since their last review. Reuse still-valid deterministic checks, not reviewer judgment; a prior clean verdict never signs off a changed diff.
 
 #### Review panel
 

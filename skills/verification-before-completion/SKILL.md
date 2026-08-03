@@ -79,11 +79,13 @@ Static review does not prove runtime behavior. Green tests do not prove unmet re
 
 ### 5. Run, inspect, or reuse current verification
 
-Keep a shared evidence ledger for expensive checks and evidence produced by reviewers or CI:
+Keep a shared evidence ledger for deterministic machine-produced validation outputs: local commands, instrumented runtime checks, and CI results. Manual observations may be recorded for audit, but they are current-only and must not be reused across steps or agents.
 
 | Check or claim | Command or source | Scope identity | Result |
 | --- | --- | --- | --- |
 | `tests pass` | exact command and cwd | code plus relevant environment | exit code, failures, skips, warnings |
+
+Reviewer analysis is different. Findings, verdicts, and sign-off are review history, not reusable validation evidence. Carry that history into later briefs, but never use it to skip a required fresh reviewer pass. Deterministic checks run by a reviewer may be reused under the normal rules; the reviewer's judgment may not.
 
 For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. Do not reuse an entry produced on a dirty checkout across steps or agents: there is no cheap complete identity covering staged, unstaged, untracked, and relevant ignored inputs. Run the check again after changes settle on a clean tree before carrying it forward.
 
