@@ -20,7 +20,7 @@ Options:
   --no-review-images    Do not create a preview or native crops
   -h, --help            Show this help
 
-The review directory must not already exist or contain the final output directory.
+The review directory must not already exist or overlap either final artifact path.
 Remove it after visual inspection.
 EOF
 }
@@ -36,6 +36,54 @@ positive_integer() {
 
 nonnegative_integer() {
   [[ "$1" == 0 || "$1" =~ ^[1-9][0-9]*$ ]]
+}
+
+lexical_absolute_path() {
+  local candidate=$1
+  local component
+  local count
+  local result=""
+  local -a components
+  local -a stack
+  [[ "$candidate" == /* ]] || candidate="$PWD/$candidate"
+  IFS='/' read -r -a components <<<"$candidate"
+  for component in "${components[@]}"; do
+    case "$component" in
+      ''|.) ;;
+      ..)
+        count=${#stack[@]}
+        ((count == 0)) || unset "stack[$((count - 1))]"
+        ;;
+      *) stack[${#stack[@]}]=$component ;;
+    esac
+  done
+  for component in "${stack[@]}"; do
+    result="$result/$component"
+  done
+  printf '%s\n' "${result:-/}"
+}
+
+prospective_directory_path() {
+  local candidate
+  local suffix=""
+  local parent
+  candidate=$(lexical_absolute_path "$1")
+  while [[ ! -e "$candidate" && ! -L "$candidate" ]]; do
+    [[ "$candidate" != / ]] || break
+    suffix="/$(basename "$candidate")$suffix"
+    parent=$(dirname "$candidate")
+    [[ "$parent" != "$candidate" ]] || break
+    candidate=$parent
+  done
+  [[ -d "$candidate" ]] || return 1
+  candidate=$(cd "$candidate" && pwd -P)
+  lexical_absolute_path "$candidate$suffix"
+}
+
+review_conflicts_with_final() {
+  local review=$1
+  local final=$2
+  [[ "$review" == "$final" || "$review" == "$final/"* || "$final" == "$review/"* ]]
 }
 
 theme=200
@@ -134,11 +182,93 @@ command -v d2 >/dev/null 2>&1 || fail "d2 is required; on macOS run: brew instal
 command -v rsvg-convert >/dev/null 2>&1 || fail "rsvg-convert is required; on macOS run: brew install librsvg"
 command -v file >/dev/null 2>&1 || fail "file is required"
 
+svg_output="$output_base.svg"
+png_output="$output_base.png"
+output_dir=$(dirname "$output_base")
+mkdir -p "$output_dir" || fail "cannot create output directory: $output_dir"
+output_dir_abs=$(cd "$output_dir" && pwd -P)
+svg_output_abs="$output_dir_abs/$(basename "$svg_output")"
+png_output_abs="$output_dir_abs/$(basename "$png_output")"
+
+for output in "$svg_output" "$png_output"; do
+  if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
+    fail "output target must be a regular file or absent: $output"
+  fi
+  if [[ -e "$output" && "$input" -ef "$output" ]]; then
+    fail "refusing to overwrite the input through output path: $output"
+  fi
+done
+
 review_reserved=0
 keep_review=0
 tmp_dir=""
+publish_dir=""
+backup_dir=""
+transaction_active=0
+old_svg=0
+old_png=0
+new_svg=0
+new_png=0
+
+rollback_outputs() {
+  local rollback_ok=1
+  set +e
+  if ((new_png == 1)); then
+    if mv "$png_output" "$publish_dir/render.png"; then
+      new_png=0
+    elif ((old_png == 0)) && rm -f "$png_output" && [[ ! -e "$png_output" && ! -L "$png_output" ]]; then
+      new_png=0
+    else
+      rollback_ok=0
+    fi
+  fi
+  if ((new_svg == 1)); then
+    if mv "$svg_output" "$publish_dir/render.svg"; then
+      new_svg=0
+    elif ((old_svg == 0)) && rm -f "$svg_output" && [[ ! -e "$svg_output" && ! -L "$svg_output" ]]; then
+      new_svg=0
+    else
+      rollback_ok=0
+    fi
+  fi
+  if ((old_png == 1 && new_png == 0)); then
+    if mv "$backup_dir/render.png" "$png_output"; then
+      old_png=0
+    else
+      rollback_ok=0
+    fi
+  fi
+  if ((old_svg == 1 && new_svg == 0)); then
+    if mv "$backup_dir/render.svg" "$svg_output"; then
+      old_svg=0
+    else
+      rollback_ok=0
+    fi
+  fi
+  if ((rollback_ok == 1 && old_svg == 0 && old_png == 0 && new_svg == 0 && new_png == 0)); then
+    transaction_active=0
+  fi
+  set -e
+  ((transaction_active == 0))
+}
+
+publication_failed() {
+  local reason=$1
+  if rollback_outputs; then
+    fail "$reason; previous final outputs restored"
+  fi
+  fail "$reason; rollback incomplete, backup retained at: $backup_dir"
+}
+
 cleanup() {
+  if ((transaction_active == 1)); then
+    rollback_outputs || printf 'render_diagram.sh: output rollback incomplete; retained backup: %s\n' "$backup_dir" >&2
+  fi
   [[ -z "$tmp_dir" ]] || rm -r "$tmp_dir" 2>/dev/null || true
+  if ((transaction_active == 0)); then
+    [[ -z "$publish_dir" ]] || rm -r "$publish_dir" 2>/dev/null || true
+    [[ -z "$backup_dir" ]] || rm -r "$backup_dir" 2>/dev/null || true
+  fi
   if ((review_reserved == 1 && keep_review == 0)); then
     rm -r "$review_dir" 2>/dev/null || true
   fi
@@ -149,30 +279,19 @@ if ((review_images == 1)); then
   if [[ -z "$review_dir" ]]; then
     review_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-review.XXXXXX")
   else
+    review_dir_future=$(prospective_directory_path "$review_dir") || fail "review directory parent is not a directory: $review_dir"
+    if review_conflicts_with_final "$review_dir_future" "$svg_output_abs" || review_conflicts_with_final "$review_dir_future" "$png_output_abs"; then
+      fail "review directory must not equal, contain, or sit beneath a final output path: $review_dir"
+    fi
     mkdir -p "$(dirname "$review_dir")" || fail "cannot create review directory parent: $(dirname "$review_dir")"
     mkdir "$review_dir" || fail "review directory already exists or cannot be created: $review_dir"
   fi
   review_reserved=1
-fi
-
-output_dir=$(dirname "$output_base")
-mkdir -p "$output_dir" || fail "cannot create output directory: $output_dir"
-output_dir_abs=$(cd "$output_dir" && pwd -P)
-if ((review_images == 1)); then
   review_dir_abs=$(cd "$review_dir" && pwd -P)
-  if [[ "$review_dir_abs" == "$output_dir_abs" || "$output_dir_abs" == "$review_dir_abs/"* ]]; then
-    fail "review directory must not equal or contain the final output directory: $review_dir and $output_dir"
+  if review_conflicts_with_final "$review_dir_abs" "$svg_output_abs" || review_conflicts_with_final "$review_dir_abs" "$png_output_abs"; then
+    fail "review directory must not overlap a final output path: $review_dir"
   fi
 fi
-
-for output in "$output_base.svg" "$output_base.png"; do
-  if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
-    fail "output target must be a regular file or absent: $output"
-  fi
-  if [[ -e "$output" && "$input" -ef "$output" ]]; then
-    fail "refusing to overwrite the input through output path: $output"
-  fi
-done
 
 tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-render.XXXXXX")
 
@@ -240,13 +359,52 @@ if ((review_images == 1)); then
   done
 fi
 
+publish_dir=$(mktemp -d "$output_dir/.diagram-publish.XXXXXX")
+install -m 0644 "$tmp_dir/render.svg" "$publish_dir/render.svg"
+install -m 0644 "$tmp_dir/render.png" "$publish_dir/render.png"
+
 if ((review_images == 1)); then
   for review_file in "$review_stage"/*; do
     install -m 0644 "$review_file" "$review_dir/$(basename "$review_file")"
   done
 fi
-install -m 0644 "$tmp_dir/render.svg" "$output_base.svg"
-install -m 0644 "$tmp_dir/render.png" "$output_base.png"
+
+for output in "$svg_output" "$png_output"; do
+  if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
+    fail "output target changed during rendering and is no longer a regular file or absent: $output"
+  fi
+done
+backup_dir=$(mktemp -d "$output_dir/.diagram-backup.XXXXXX")
+transaction_active=1
+if [[ -e "$svg_output" ]]; then
+  if mv "$svg_output" "$backup_dir/render.svg"; then
+    old_svg=1
+  else
+    publication_failed "could not preserve existing SVG"
+  fi
+fi
+if [[ -e "$png_output" ]]; then
+  if mv "$png_output" "$backup_dir/render.png"; then
+    old_png=1
+  else
+    publication_failed "could not preserve existing PNG"
+  fi
+fi
+if mv "$publish_dir/render.svg" "$svg_output"; then
+  new_svg=1
+else
+  publication_failed "could not publish SVG"
+fi
+if mv "$publish_dir/render.png" "$png_output"; then
+  new_png=1
+else
+  publication_failed "could not publish PNG"
+fi
+transaction_active=0
+old_svg=0
+old_png=0
+new_svg=0
+new_png=0
 keep_review=1
 
 aspect_ratio=$(awk -v width="$png_width" -v height="$png_height" 'BEGIN { printf "%.2f", width / height }')

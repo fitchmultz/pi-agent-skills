@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -18,8 +18,8 @@ function pngDimensions(file) {
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
 
-function render(args) {
-  return spawnSync(script, args, { encoding: "utf8" });
+function render(args, env = {}) {
+  return spawnSync(script, args, { encoding: "utf8", env: { ...process.env, ...env } });
 }
 
 test("renderer creates a 980px preview and overlapping native crops", { skip: !toolsAvailable }, () => {
@@ -87,8 +87,16 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
       "--review-dir", collision, input, path.join(collision, "flow"),
     ]);
     assert.notEqual(overlapFailure.status, 0);
-    assert.match(overlapFailure.stderr, /must not equal or contain/);
+    assert.match(overlapFailure.stderr, /must not equal, contain/);
     assert.equal(existsSync(path.join(collision, "flow.svg")), false);
+
+    const poisonedOutput = path.join(tmp, "poisoned");
+    const poisonedFailure = render([
+      "--review-dir", path.join(`${poisonedOutput}.png`, "review"), input, poisonedOutput,
+    ]);
+    assert.notEqual(poisonedFailure.status, 0);
+    assert.match(poisonedFailure.stderr, /sit beneath a final output path/);
+    assert.equal(existsSync(`${poisonedOutput}.png`), false);
 
     const directoryOutput = path.join(tmp, "directory-output");
     mkdirSync(`${directoryOutput}.svg`);
@@ -117,6 +125,44 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
     ]);
     assert.notEqual(leadingZero.status, 0);
     assert.match(leadingZero.stderr, /non-negative integer/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("final publication rolls both outputs back when the second rename fails", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-transaction-test-"));
+  try {
+    const input = path.join(tmp, "flow.d2");
+    const output = path.join(tmp, "flow");
+    const review = path.join(tmp, "review");
+    writeFileSync(input, "a -> b\n");
+    writeFileSync(`${output}.svg`, "old svg");
+    writeFileSync(`${output}.png`, "old png");
+
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeMv = path.join(fakeBin, "mv");
+    writeFileSync(fakeMv, `#!/bin/sh
+case "$1" in
+  */.diagram-publish.*/render.png)
+    [ "$2" != "$FAIL_DEST" ] || exit 73
+    ;;
+esac
+exec /bin/mv "$@"
+`);
+    chmodSync(fakeMv, 0o755);
+
+    const result = render(
+      ["--review-dir", review, input, output],
+      { PATH: `${fakeBin}:${process.env.PATH}`, FAIL_DEST: `${output}.png` },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /previous final outputs restored/);
+    assert.equal(readFileSync(`${output}.svg`, "utf8"), "old svg");
+    assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+    assert.equal(existsSync(review), false);
+    assert.deepEqual(readdirSync(tmp).filter((file) => file.startsWith(".diagram-")), []);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
