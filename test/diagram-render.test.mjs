@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -389,27 +389,93 @@ exit "$status"
   }
 });
 
-test("transaction rollback survives interruption after every rename", { skip: !toolsAvailable }, () => {
+test("atomic publication preserves raced FIFOs and directories", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-foreign-target-test-"));
+  try {
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeNode = path.join(fakeBin, "node");
+    writeFileSync(fakeNode, `#!/bin/sh
+case "$2:$4" in
+  *linkSync*:*flow.svg)
+    if [ ! -e "$FOREIGN_MARKER" ]; then
+      : >"$FOREIGN_MARKER"
+      if [ "$FOREIGN_TYPE" = fifo ]; then
+        /usr/bin/mkfifo "$4" || exit $?
+      else
+        /bin/mkdir "$4" || exit $?
+        printf 'outsider\\n' >"$4/outsider.txt"
+      fi
+    fi
+    ;;
+esac
+exec "$REAL_NODE" "$@"
+`);
+    chmodSync(fakeNode, 0o755);
+
+    for (const foreignType of ["fifo", "directory"]) {
+      const scenario = path.join(tmp, foreignType);
+      mkdirSync(scenario);
+      const input = path.join(scenario, "flow.d2");
+      const output = path.join(scenario, "flow");
+      const review = path.join(scenario, "review");
+      writeFileSync(input, "a -> b\n");
+      writeFileSync(`${output}.svg`, "old svg");
+      writeFileSync(`${output}.png`, "old png");
+      const result = render(
+        ["--review-dir", review, input, output],
+        {
+          PATH: `${fakeBin}:${process.env.PATH}`,
+          BASH_ENV: "/dev/null",
+          REAL_NODE: process.execPath,
+          FOREIGN_TYPE: foreignType,
+          FOREIGN_MARKER: path.join(scenario, "foreign-created"),
+        },
+      );
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /recovery retained/);
+      if (foreignType === "fifo") {
+        assert.equal(lstatSync(`${output}.svg`).isFIFO(), true);
+      } else {
+        assert.equal(readFileSync(path.join(`${output}.svg`, "outsider.txt"), "utf8"), "outsider\n");
+      }
+      const backupName = readdirSync(scenario).find((file) => file.startsWith(".diagram-backup."));
+      assert.ok(backupName);
+      assert.equal(readFileSync(path.join(scenario, backupName, "render.svg"), "utf8"), "old svg");
+      assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+      assert.equal(existsSync(review), false);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("publication interruptions retain every old and new artifact", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-interrupt-test-"));
   try {
     const fakeBin = path.join(tmp, "bin");
     mkdirSync(fakeBin);
-    const fakeMv = path.join(fakeBin, "mv");
-    writeFileSync(fakeMv, `#!/bin/sh
-count=0
-[ ! -f "$MV_COUNT_FILE" ] || count=$(cat "$MV_COUNT_FILE")
-count=$((count + 1))
-printf '%s\n' "$count" >"$MV_COUNT_FILE"
-/bin/mv "$@"
-status=$?
-if [ "$status" -eq 0 ] && [ "$count" = "$INTERRUPT_AT" ] && [ ! -e "$MV_INTERRUPT_MARKER" ]; then
-  : >"$MV_INTERRUPT_MARKER"
-  kill -TERM "$PPID"
-  sleep 0.1
-fi
-exit "$status"
+    const fakeNode = path.join(fakeBin, "node");
+    writeFileSync(fakeNode, `#!/bin/sh
+case "$2" in
+  *renameSync*|*linkSync*)
+    count=0
+    [ ! -f "$OP_COUNT_FILE" ] || count=$(cat "$OP_COUNT_FILE")
+    count=$((count + 1))
+    printf '%s\n' "$count" >"$OP_COUNT_FILE"
+    "$REAL_NODE" "$@"
+    status=$?
+    if [ "$status" -eq 0 ] && [ "$count" = "$INTERRUPT_AT" ] && [ ! -e "$OP_INTERRUPT_MARKER" ]; then
+      : >"$OP_INTERRUPT_MARKER"
+      kill -TERM "$PPID"
+      sleep 0.1
+    fi
+    exit "$status"
+    ;;
+esac
+exec "$REAL_NODE" "$@"
 `);
-    chmodSync(fakeMv, 0o755);
+    chmodSync(fakeNode, 0o755);
 
     for (const boundary of [1, 2, 3, 4]) {
       const scenario = path.join(tmp, `boundary-${boundary}`);
@@ -424,23 +490,40 @@ exit "$status"
         ["--review-dir", review, input, output],
         {
           PATH: `${fakeBin}:${process.env.PATH}`,
+          BASH_ENV: "/dev/null",
+          REAL_NODE: process.execPath,
           INTERRUPT_AT: String(boundary),
-          MV_COUNT_FILE: path.join(scenario, "mv-count"),
-          MV_INTERRUPT_MARKER: path.join(scenario, "interrupted"),
+          OP_COUNT_FILE: path.join(scenario, "operation-count"),
+          OP_INTERRUPT_MARKER: path.join(scenario, "interrupted"),
         },
       );
       assert.notEqual(result.status, 0, `boundary ${boundary}`);
-      assert.equal(readFileSync(`${output}.svg`, "utf8"), `old svg ${boundary}`);
-      assert.equal(readFileSync(`${output}.png`, "utf8"), `old png ${boundary}`);
+      assert.match(result.stderr, /recovery retained/);
       assert.equal(existsSync(review), false);
-      assert.deepEqual(readdirSync(scenario).filter((file) => file.startsWith(".diagram-")), []);
+
+      const backupName = readdirSync(scenario).find((file) => file.startsWith(".diagram-backup."));
+      const publishName = readdirSync(scenario).find((file) => file.startsWith(".diagram-publish."));
+      assert.ok(backupName);
+      assert.ok(publishName);
+      const backup = path.join(scenario, backupName);
+      const publish = path.join(scenario, publishName);
+      for (const [extension, oldContent] of [
+        ["svg", `old svg ${boundary}`],
+        ["png", `old png ${boundary}`],
+      ]) {
+        const contents = [`${output}.${extension}`, path.join(backup, `render.${extension}`)]
+          .filter(existsSync)
+          .map((file) => readFileSync(file, "utf8"));
+        assert.ok(contents.includes(oldContent), `${extension} boundary ${boundary}`);
+        assert.equal(existsSync(path.join(publish, `render.${extension}`)), true);
+      }
     }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
 });
 
-test("final publication rolls both outputs back when the second rename fails", { skip: !toolsAvailable }, () => {
+test("a failed second link retains recovery without deleting either version", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-transaction-test-"));
   try {
     const input = path.join(tmp, "flow.d2");
@@ -452,27 +535,35 @@ test("final publication rolls both outputs back when the second rename fails", {
 
     const fakeBin = path.join(tmp, "bin");
     mkdirSync(fakeBin);
-    const fakeMv = path.join(fakeBin, "mv");
-    writeFileSync(fakeMv, `#!/bin/sh
-case "$1" in
-  */.diagram-publish.*/render.png)
-    [ "$2" != "$FAIL_DEST" ] || exit 73
-    ;;
+    const fakeNode = path.join(fakeBin, "node");
+    writeFileSync(fakeNode, `#!/bin/sh
+case "$2:$3:$4" in
+  *linkSync*:*.diagram-publish.*/render.png:*) exit 73 ;;
 esac
-exec /bin/mv "$@"
+exec "$REAL_NODE" "$@"
 `);
-    chmodSync(fakeMv, 0o755);
+    chmodSync(fakeNode, 0o755);
 
     const result = render(
       ["--review-dir", review, input, output],
-      { PATH: `${fakeBin}:${process.env.PATH}`, FAIL_DEST: `${output}.png` },
+      { PATH: `${fakeBin}:${process.env.PATH}`, BASH_ENV: "/dev/null", REAL_NODE: process.execPath },
     );
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /previous final outputs restored/);
-    assert.equal(readFileSync(`${output}.svg`, "utf8"), "old svg");
-    assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+    assert.match(result.stderr, /recovery retained/);
     assert.equal(existsSync(review), false);
-    assert.deepEqual(readdirSync(tmp).filter((file) => file.startsWith(".diagram-")), []);
+
+    const backupName = readdirSync(tmp).find((file) => file.startsWith(".diagram-backup."));
+    const publishName = readdirSync(tmp).find((file) => file.startsWith(".diagram-publish."));
+    assert.ok(backupName);
+    assert.ok(publishName);
+    const backup = path.join(tmp, backupName);
+    const publish = path.join(tmp, publishName);
+    assert.equal(readFileSync(path.join(backup, "render.svg"), "utf8"), "old svg");
+    assert.equal(readFileSync(path.join(backup, "render.png"), "utf8"), "old png");
+    assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+    assert.notEqual(readFileSync(`${output}.svg`, "utf8"), "old svg");
+    assert.equal(existsSync(path.join(publish, "render.svg")), true);
+    assert.equal(existsSync(path.join(publish, "render.png")), true);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

@@ -1,7 +1,7 @@
 ---
 name: diagram-creation
 description: "Create and render technical diagrams as editable D2 plus PNG/SVG: architecture, sequence, data-flow, dependency, lifecycle, and before/after visuals. Use when a user asks for a diagram or rendered system/process image. Do not use for statistical charts, slide decks, image editing, or product screenshots."
-compatibility: Requires Bash, standard Unix utilities, D2, and librsvg (`rsvg-convert`). Tested on macOS; use WSL or another POSIX shell on Windows.
+compatibility: Requires Bash, Node.js, standard Unix utilities, D2, and librsvg (`rsvg-convert`). Tested on macOS; use WSL or another POSIX shell on Windows.
 metadata:
   version: "1.3.0"
   owner: "local"
@@ -110,7 +110,7 @@ A default style never determines diagram type, panel count, reading order, or co
 
 ## Available scripts
 
-- `scripts/render_diagram.sh [options] INPUT.d2 [OUTPUT_BASE]` validates and renders `.svg` and `.png` without mutating the source. By default it also prints a temporary review directory with `preview-980.png` and overlapping native-resolution crops. Use `--preview-width`, `--crop-size`, `--crop-overlap`, `--review-dir`, or `--no-review-images` as needed.
+- `scripts/render_diagram.sh [options] INPUT.d2 [OUTPUT_BASE]` validates and renders `.svg` and `.png` without mutating the source. By default it also prints a temporary review directory with `preview-980.png` and overlapping native-resolution crops. Use `--preview-width`, `--crop-size`, `--crop-overlap`, `--review-dir`, or `--no-review-images` as needed. Publication uses same-filesystem atomic links; an interrupted or contested publish fails closed and reports retained staging/backup directories for recovery.
 - `references/style-guide.md` contains the default palette, layout guidance, D2 patterns, and visual review checklist.
 
 ## Validation
