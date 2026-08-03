@@ -71,7 +71,7 @@ Factory-safe operations are:
 - `pi.registerShortcut(...)`
 - `pi.registerFlag(...)`
 - `pi.registerMessageRenderer(...)` and `pi.registerEntryRenderer(...)`
-- `pi.registerProvider(...)` queued behavior, including legacy `(id, config)` and Pi 0.82 native complete-provider forms; factory-time `unregisterProvider(name)` only cancels pending same-name registrations and cannot remove an existing or built-in provider before core binding
+- `pi.registerProvider(...)` queued behavior, including legacy `(id, config)` and Pi 0.83 native complete-provider forms; factory-time `unregisterProvider(name)` only cancels pending same-name registrations and cannot remove an existing or built-in provider before core binding
 - `pi.getFlag(...)` for registered defaults only; parsed CLI values are applied after resource loading
 - `pi.exec(...)`; await it from an async factory only when the result must exist before `session_start`, and count it as startup work
 
@@ -109,6 +109,7 @@ Supported dynamic behavior:
 - `pi.setActiveTools()` can switch active built-in/extension/custom tools at runtime. A tool that makes a purely additive active-tool change records the additions on its result so supported Anthropic and OpenAI Responses models, plus Kimi OpenAI-compatible models configured for native deferred loading, can defer definitions at that load point. Register all candidates first, keep the loader active, and omit prompt snippets/guidelines from lazily loaded tools when prefix stability matters because their system-prompt changes can still invalidate the prefix. Removals and replacements use the normal fallback.
 - `registerProvider()` and `unregisterProvider()` take effect immediately after initial binding. Before binding, unregister only removes pending same-name registrations. After binding, it removes a previously dynamic registration and restores any overridden built-in models; it cannot remove an unregistered built-in provider. Re-registration follows the form-switch/legacy-merge rules above, but `/reload` does not automatically prune a conditional provider whose registration disappeared or changed ids.
 - `pi.getCommands()` and `pi.getAllTools()` expose current slash/tool surfaces with provenance.
+- Extension contexts expose the current session's resolved model scope through read-only `ctx.scopedModels`. Use it when an extension model UI or action must match `--models`/`enabledModels`; an empty array means there is no scope, not that no models are available.
 - Commands/events can send steering/follow-up messages or inject custom messages when that is the workflow.
 
 Use `/reload` or `ctx.reload()` for source/resource reload, not for ordinary dynamic state.
@@ -136,6 +137,7 @@ Best practices:
 - Clean up timers, watchers, handles, subprocesses, raw terminal listeners, and UI loops in `session_shutdown` and component `dispose()`.
 - After `ctx.reload()`, treat the command handler as terminal: `await ctx.reload(); return;`.
 - Pi 0.80.9 rejects persisted non-root `ctx.fork()` paths when the session file has not been written yet, which is the usual path before the first assistant response. Treat that clear unsaved-session error as expected validation and do not run replacement cleanup or success behavior after it. A root-level `position: "before"` fork can still create a parented session without opening the old file.
+- When committed session replacement or tree navigation starts during an active response, Pi aborts and persists active work before switching. In a sequential tool batch, however, abort stops the loop after the active call and leaves later unstarted sibling calls without results. Wait for final idle before switching when balanced call/result history is required; if a forced mid-turn switch is acceptable, preserve that known limitation rather than appending synthetic results, then continue only through the fresh replacement context.
 - `session_before_compact` and `session_compact` expose `reason` and `willRetry`; branch custom summaries, UI, and retry cleanup on those fields instead of guessing from prompt text. Return provider `usage` from custom compaction and branch-summary work so it is persisted and billed in full-session stats.
 - Current pi may reuse imported modules for same-directory session switches while preserving fresh extension instances and lifecycle events; top-level module state can outlive a session switch, so reset per-session state in the factory/session hooks.
 - In `withSession`, use only the fresh replacement context. Do not use captured old `ctx`, session-bound `pi` methods, or `SessionManager` objects.
@@ -151,7 +153,7 @@ When embedding pi with `AgentSessionRuntime`:
 - Replacement tears down and disposes the old session before creating the new runtime. If creation fails, the old session is not recoverable; the host must rebuild or exit rather than continue with stale state.
 - If extensions are enabled, ensure replacement sessions call the same extension-binding path as the initial session.
 - If the host uses `DefaultResourceLoader` directly, pass `reload({ resolveProjectTrust })` when trust-gated project inputs should be considered.
-- `SettingsManager.create(cwd, agentDir, { projectTrusted })` requires `cwd` and controls whether project settings participate; global `defaultProjectTrust` controls unresolved fallback behavior.
+- `SettingsManager.create(cwd, agentDir, { projectTrusted })` is positional, requires `cwd`, and controls whether project settings participate; there is no object-form `create({ cwd, ... })` overload. Global `defaultProjectTrust` controls unresolved fallback behavior.
 - Use `SessionManager.list(cwd)` for one project's default session directory and `SessionManager.listAll()` for the normal all-project tree; a string passed to `listAll()` is a custom session directory, not a cwd.
 - Current `loadProjectContextFiles({ cwd, agentDir })` loads `AGENTS.md`/`CLAUDE.md` independently of project trust. Use `noContextFiles` or a custom loader override to suppress context files.
 - For SDK hosts/tests, `DefaultResourceLoader` supports `extensionFactories`, `extensionsOverride`, `skillsOverride`, `promptsOverride`, `themesOverride`, `agentsFilesOverride`, `systemPromptOverride`, and `appendSystemPromptOverride`. Prefer these over temp files/custom loaders for deliberate replacement, and document that overrides bypass normal discovery semantics. When inline factory provenance matters, pass `{ name, factory } satisfies InlineExtension`; bare factories remain valid.
@@ -161,7 +163,7 @@ When embedding pi with `AgentSessionRuntime`:
 
 ## Events and mutation
 
-- Pi 0.82.0 exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
+- Pi 0.83.0 exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
 - `input` runs after extension commands are checked and before skill/template expansion. Transforms chain; `handled` short-circuits.
 - `before_agent_start` can inspect `systemPromptOptions` and chain system-prompt changes.
 - `context` receives a deep copy of messages for provider-call context shaping.
@@ -182,6 +184,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Runtime third-party dependencies belong in `dependencies`, even if they are heavy sandbox/client SDKs required by the feature.
 - Do not rely on devDependencies at runtime.
 - Imported pi core packages belong in `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`.
+- Pi 0.83.0 bundles TypeBox 1.3.7 and removes deprecated `Type.Base`, `Type.Awaited`, `Type.Promise`, `Type.AsyncIterator`, `Type.Iterator`, `Type.Options`, and `Value.Mutate`. Migrate to supported `typebox` APIs and validate against the active package instead of pinning an older peer or adding a compatibility shim.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
 - `npmCommand` may route installs through wrappers/package managers such as `mise`, `asdf`, `bun`, or `pnpm`; do not assume bare `npm`.
 - Project package settings and missing project package installs participate only after project trust. Package commands accept `--approve` / `--no-approve` for one-command trust behavior, and global `defaultProjectTrust` controls unresolved fallback behavior.
@@ -195,7 +198,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - RPC uses LF-delimited JSONL. Parse streaming UTF-8 with `StringDecoder` or an equivalent incremental decoder; split only on `\n`, accept an optional trailing `\r`, and process a final unterminated record at EOF. Do not use Node `readline`, which also splits on Unicode separators valid inside JSON strings.
 - RPC `get_entries` and `get_tree` expose session entries/tree snapshots; prefer them over scraping session JSONL when a live RPC client needs state.
 - RPC `get_commands` returns canonical provenance in `sourceInfo`; do not parse legacy top-level `location` or `path` fields from prose docs.
-- RPC `bash` output enters LLM context on the next prompt, not immediately. Raw `RpcCommand` supports `excludeFromContext: true`; bundled `RpcClient.bash(command)` exposes no option, so use the raw protocol or a custom client for private host-side output. Direct RPC bash streams `bash_execution_update` events (`id?`, `delta`) correlated with the request.
+- RPC `bash` output enters LLM context on the next prompt, not immediately. Raw `RpcCommand` supports `excludeFromContext: true`; bundled `RpcClient.bash(command)` exposes no option, so use the raw protocol or a custom client for private host-side output. Direct RPC bash runs extension `user_bash` handlers before execution, then streams `bash_execution_update` events (`id?`, `delta`) correlated with the request.
 - Built-in and factory bash tools set `PI_SESSION_ID`, optional `PI_SESSION_FILE`, `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` from the current session/model at command start.
 - Bundled `RpcClient.waitForIdle()` subscribes only for a future `agent_settled`; calling it after settlement is not a state query and can wait for another run. Subscribe before prompting or use `promptAndWait()`, which installs collection first.
 - Raw `get_available_thinking_levels` returns `{ data: { levels } }`; bundled `RpcClient.getAvailableThinkingLevels()` returns the unwrapped array. Query again after model changes instead of caching a global set.

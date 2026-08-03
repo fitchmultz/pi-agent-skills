@@ -102,7 +102,7 @@ Custom messages and entries:
 
 - Use `pi.sendMessage({ customType, content, display: true, details })` plus `pi.registerMessageRenderer(customType, renderer)` when the content should participate in model context.
 - Use `pi.appendEntry(customType, data)` plus `pi.registerEntryRenderer(customType, renderer)` for persisted display-only transcript state excluded from model context. Entry renderers are interactive-only and may return `undefined` to hide an entry.
-- Message renderers receive `(message, { expanded }, theme)`; entry renderers receive `(entry, { expanded }, theme)`.
+- Message renderers receive `(message, { expanded, outputPad }, theme)`; use `outputPad` for their root horizontal spacing so custom messages align with built-in output. Entry renderers receive `(entry, { expanded }, theme)` and do not receive `outputPad`.
 - Keep model-visible `content` useful as fallback and richer UI state in `details`. Use both surfaces for durable session UX, not transient controls.
 
 ## Mode behavior

@@ -63,12 +63,12 @@
     },
     {
       "id": "full-native-provider-registration",
-      "prompt": "Convert my Pi 0.82.0 custom provider from the legacy config shape to a complete pi-ai Provider with custom auth, credential filtering, dynamic models, and streaming.",
+      "prompt": "Convert my Pi 0.83.0 custom provider from the legacy config shape to a complete pi-ai Provider with custom auth, credential filtering, dynamic models, and streaming.",
       "expected_output": "First checks whether the legacy config already suffices; if native ownership is required, reads current Provider/createProvider, extension overload, loader, composer, and ModelRuntime code. Imports createProvider/auth helpers from the pi-ai root and concrete API factories from /compat, avoiding /api/* for bundled-loader portability; uses complete model records with model-level request routing, provider-owned auth/filter/refresh/streams, and context-aware cache/network handling. Validates typecheck, real Pi loader registration/listing, configured/unconfigured auth, one stubbed or live stream, reload replacement, and explicit removal without leaking credentials."
     },
     {
       "id": "llama-cpp-live-provider-management",
-      "prompt": "Use Pi 0.82.0's bundled llama.cpp support to manage and select a local model from my extension.",
+      "prompt": "Use Pi 0.83.0's bundled llama.cpp support to manage and select a local model from my extension.",
       "expected_output": "Reads docs/llama-cpp.md plus the hidden built-in extension, provider, and manager source. Recognizes Pi already loads it as a hidden built-in instead of adding a duplicate; treats /login llama.cpp as router-URL plus optional-key auth and /llama as model load/unload control; keeps discovered models live and non-persistent; filters availability to loaded models; avoids shell mutation during ordinary discovery; and validates server-down, unloaded, loaded, abort/timeout, and reload states."
     },
     {
@@ -78,12 +78,12 @@
     },
     {
       "id": "dynamic-provider-model-refresh",
-      "prompt": "Teach my Pi 0.82.0 provider extension to refresh its remote model catalog without fetching synchronously during every startup.",
+      "prompt": "Teach my Pi 0.83.0 provider extension to refresh its remote model catalog without fetching synchronously during every startup.",
       "expected_output": "Verifies both legacy ProviderConfig.refreshModels and native createProvider/fetchModels against active types/source, then chooses the smaller fitting form. Honors allowNetwork, force, signal, credential, and scoped store semantics; keeps a static or stored baseline; preserves the prior catalog on fetch failure but treats a store-write failure as a reported error that can leave fetched models visible; and handles cache-only recovery where credential may be undefined. Validates interactive/RPC background refresh, /model refresh, print/list cache-only behavior, and offline startup. Does not use pi update --models because that command does not load extensions."
     },
     {
       "id": "kimi-deferred-tool-loading",
-      "prompt": "Add progressive tool search to my Pi 0.82.0 extension for Kimi K3 without sending every tool definition up front.",
+      "prompt": "Add progressive tool search to my Pi 0.83.0 extension for Kimi K3 without sending every tool definition up front.",
       "expected_output": "Reads the crossed deferred-tool/Kimi changelog entries and verifies exact provider/model IDs in current generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max, no deferredToolsMode) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, deferredToolsMode kimi, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, sets deferredToolsMode only on a verified compatible model, and validates the immediate next-turn definition path."
     },
     {
@@ -108,7 +108,7 @@
     },
     {
       "id": "session-json-format-parser",
-      "prompt": "Update my Pi 0.82.0 JSON event and session JSONL parser for current compaction, usage, and session metadata.",
+      "prompt": "Update my Pi 0.83.0 JSON event and session JSONL parser for current compaction, usage, and session metadata.",
       "expected_output": "Reads current AgentSessionEvent, session-manager, print-mode, compaction, and usage-totals implementation before docs. Discriminates the leading SessionHeader record with type session from later AgentSessionEvent records; handles agent_settled, entry_appended, session_info_changed, thinking_level_changed, agent_end.willRetry, and summarization_retry_scheduled/attempt_start/finished; parses persisted v3 header/entry timestamps as ISO strings while preserving message-internal millisecond timestamps; accepts top-level usage on tool results, compaction, and branch summaries; uses id/parentId; and rejects copying harness retainedTail into coding-agent CompactionEntry."
     },
     {
@@ -128,7 +128,7 @@
     },
     {
       "id": "custom-editor-current-docs-contract",
-      "prompt": "Validate the Pi 0.82.0 VimEditor custom-editor snippet before I copy it into my extension.",
+      "prompt": "Validate the Pi 0.83.0 VimEditor custom-editor snippet before I copy it into my extension.",
       "expected_output": "Checks installed docs, examples, and emitted types rather than preserving older hazard guidance; confirms the current CustomEditor(tui, theme, keybindings, options?) contract and docs callback shape, then validates typecheck/runtime UI behavior."
     },
     {
@@ -218,38 +218,63 @@
     },
     {
       "id": "rpc-command-provenance-contract",
-      "prompt": "My Pi RPC client reads get_commands using the documented location and path fields, but provenance is always missing on 0.82.0. Fix the client.",
+      "prompt": "My Pi RPC client reads get_commands using the documented location and path fields, but provenance is always missing on 0.83.0. Fix the client.",
       "expected_output": "Treats the RPC prose example as stale, resolves the active package, and verifies RpcSlashCommand plus rpc-mode implementation; reads canonical sourceInfo with path, source, scope, origin, and optional baseDir instead of legacy top-level location/path fields; and validates a real get_commands response for extension, prompt, or skill provenance."
     },
     {
       "id": "sdk-settings-and-session-list-doc-hazards",
-      "prompt": "The Pi 0.82.0 SDK docs call SettingsManager.create() with no arguments and SessionManager.listAll(process.cwd()) to list every project. Make this compile and behave as described.",
-      "expected_output": "Treats the snippets as stale and verifies emitted types plus implementation; passes an explicit cwd to SettingsManager.create, uses SessionManager.listAll() for the normal all-project sessions tree or SessionManager.list(cwd) for one project, does not pass cwd as listAll's custom sessionDir, and validates both paths with isolated session data."
+      "prompt": "The Pi 0.83.0 SDK docs call SettingsManager.create() with no arguments and SessionManager.listAll(process.cwd()) to list every project. Make this compile and behave as described.",
+      "expected_output": "Treats the snippets as stale and verifies emitted types plus implementation; calls SettingsManager.create(cwd, agentDir?, options?) positionally rather than inventing an object overload, uses SessionManager.listAll() for the normal all-project sessions tree or SessionManager.list(cwd) for one project, does not pass cwd as listAll's custom sessionDir, and validates both paths with isolated session data."
     },
     {
       "id": "kimi-coding-0810-compat",
-      "prompt": "Proxy the installed Pi 0.82.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
+      "prompt": "Proxy the installed Pi 0.83.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
       "expected_output": "Reads active generated Kimi Coding model code and Anthropic request serialization before prose docs; preserves model-level forceAdaptiveThinking and endpoint-verified allowEmptySignature, maps only low/high/max as current metadata does, copies active catalog fields including pricing rather than guessing Moonshot values, does not put compat on legacy provider config or confuse Anthropic Kimi Coding metadata with Moonshot OpenAI thinkingFormat/supportsReasoningEffort/deferredToolsMode, and validates replay plus all three thinking levels."
     },
     {
       "id": "qwen-token-plan-model-contract",
-      "prompt": "Use the new Pi 0.82.0 Qwen Token Plan provider and set qwen3.7-max to max thinking because its name says max.",
+      "prompt": "Use the installed Pi 0.83.0 Qwen Token Plan provider and set qwen3.7-max to max thinking because its name says max.",
       "expected_output": "Verifies current built-in provider source/model metadata rather than inferring behavior from names. Uses exact qwen-token-plan or qwen-token-plan-cn ids and the matching QWEN_TOKEN_PLAN_API_KEY or QWEN_TOKEN_PLAN_CN_API_KEY, recognizes qwen3.7-max as both routes' default, rejects max thinking for that model because its mapped subset ends at high, and validates with --list-models plus SDK or RPC thinking-level discovery without making a network request unless authorized."
     },
     {
       "id": "constrained-tool-sampling",
-      "prompt": "Make my Pi 0.82.0 extension tool use strict JSON Schema sampling when the model supports it, without breaking weaker models.",
+      "prompt": "Make my Pi 0.83.0 extension tool use strict JSON Schema sampling when the model supports it, without breaking weaker models.",
       "expected_output": "Reads current Tool/constrainedSampling types and provider capability flags before docs. Sets constrainedSampling to json_schema with strict prefer by default, uses require only when unsupported models must fail, and uses OpenAI grammar variants only when compat.supportsOpenAIGrammarTools is true. Validates one supported and one unsupported model path without leaking credentials."
     },
     {
       "id": "bash-session-env-and-rpc-stream",
-      "prompt": "My Pi 0.82.0 bash wrapper and RPC host need the current model/session identity and streaming bash output.",
-      "expected_output": "Verifies createBashTool/createBashToolDefinition inject PI_SESSION_ID, PI_SESSION_FILE when persisted, PI_PROVIDER, PI_MODEL, and PI_REASONING_LEVEL at command start from the selected Pi model. For RPC, handles bash_execution_update events with optional id and delta, keeps private output on excludeFromContext raw commands when needed, and does not invent env vars for non-bash tools."
+      "prompt": "My Pi 0.83.0 bash wrapper and RPC host need the current model/session identity and streaming bash output.",
+      "expected_output": "Verifies createBashTool/createBashToolDefinition inject PI_SESSION_ID, PI_SESSION_FILE when persisted, PI_PROVIDER, PI_MODEL, and PI_REASONING_LEVEL at command start from the selected Pi model. For RPC, verifies direct bash runs extension user_bash handlers before execution, handles bash_execution_update events with optional id and delta, keeps private output on excludeFromContext raw commands when needed, and does not invent env vars for non-bash tools."
     },
     {
       "id": "openrouter-kimi-oauth-login",
-      "prompt": "Set up OpenRouter and Kimi Coding on Pi 0.82.0 without pasting API keys by hand.",
+      "prompt": "Set up OpenRouter and Kimi Coding on Pi 0.83.0 without pasting API keys by hand.",
       "expected_output": "Reads current provider auth source and providers.md. Uses /login openrouter with Sign in with OpenRouter for the PKCE-minted user-controlled key, and /login kimi-coding with Sign in with Kimi Code for device OAuth plus refresh, while still recognizing OPENROUTER_API_KEY and Kimi API-key env fallbacks. Does not log or commit auth.json contents."
+    },
+    {
+      "id": "typebox-1-3-7-migration",
+      "prompt": "My Pi 0.83 extension stopped compiling because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
+      "expected_output": "Resolves the installed Pi and bundled TypeBox 1.3.7 exports, reads the crossed changelog and emitted types, migrates every removed Type.Base/Type.Awaited/Type.Promise/Type.AsyncIterator/Type.Iterator/Type.Options/Value.Mutate use to supported typebox APIs, adds no compatibility shim or old-version pin, and validates both type-checking and real tool argument parsing."
+    },
+    {
+      "id": "scoped-model-extension-picker",
+      "prompt": "Add a model picker to my Pi extension that honors --models and enabledModels instead of always showing every available model.",
+      "expected_output": "Reads current ExtensionContext types and interactive model selection code; uses the read-only ctx.scopedModels models and optional thinking levels when the array is non-empty, treats an empty array as unscoped rather than no models, falls back to current available models only then, and validates scoped, unscoped, and model-change behavior."
+    },
+    {
+      "id": "message-renderer-output-padding",
+      "prompt": "My Pi custom message renderer is flush against the terminal edge when users change output padding. Make it align with built-in messages.",
+      "expected_output": "Reads MessageRenderOptions and CustomMessageComponent; accepts { expanded, outputPad } in the message renderer, applies outputPad to root horizontal spacing without double-padding nested content, does not assume entry renderers receive it, and visually validates both outputPad 0 and 1 plus live settings changes."
+    },
+    {
+      "id": "rpc-user-bash-policy",
+      "prompt": "My extension audits user_bash, but commands sent through Pi RPC bash bypass the policy. Fix the host without duplicating shell execution.",
+      "expected_output": "Verifies Pi 0.83 rpc-mode and user_bash event behavior; relies on direct RPC bash emitting user_bash before execution, preserves handler-provided results and operations, keeps excludeFromContext semantics and bash_execution_update correlation, and validates direct RPC plus interactive user-bash paths without adding a second executor."
+    },
+    {
+      "id": "active-session-replacement-persistence",
+      "prompt": "Switch Pi sessions while the first of two sequential sibling tool calls is active, and keep the outgoing session history valid.",
+      "expected_output": "Reads current replacement, tree-navigation, and sequential tool-loop implementation; explains that Pi 0.83 aborts and persists the active call but emits no result for later unstarted sequential siblings, so a forced mid-turn switch cannot guarantee balanced history. Waits for AgentSession.waitForIdle() before switching when balanced call/result history is required; otherwise documents the known unmatched sibling, avoids synthetic abort or tool-result writes, uses only the fresh replacement context after the switch, and validates the outgoing JSONL against the chosen policy."
     }
   ]
 }
