@@ -249,6 +249,44 @@ exec /bin/mkdir "$@"
   }
 });
 
+test("a final-output race during backup allocation preserves outsider data", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-final-race-test-"));
+  try {
+    const input = path.join(tmp, "flow.d2");
+    const output = path.join(tmp, "flow");
+    writeFileSync(input, "a -> b\n");
+
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeMktemp = path.join(fakeBin, "mktemp");
+    writeFileSync(fakeMktemp, `#!/bin/sh
+case "$*" in
+  *.diagram-backup*)
+    allocated=$(/usr/bin/mktemp "$@") || exit $?
+    /bin/mkdir "$RACED_OUTPUT" || exit $?
+    printf 'outsider\\n' >"$RACED_OUTPUT/outsider.txt"
+    printf '%s\\n' "$allocated"
+    exit 0
+    ;;
+esac
+exec /usr/bin/mktemp "$@"
+`);
+    chmodSync(fakeMktemp, 0o755);
+
+    const result = render(
+      ["--no-review-images", input, output],
+      { PATH: `${fakeBin}:${process.env.PATH}`, RACED_OUTPUT: `${output}.svg` },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /changed during backup allocation/);
+    assert.equal(readFileSync(path.join(`${output}.svg`, "outsider.txt"), "utf8"), "outsider\n");
+    assert.equal(existsSync(`${output}.png`), false);
+    assert.deepEqual(readdirSync(tmp).filter((file) => file.startsWith(".diagram-")), []);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("allocation signals cannot strand temporary or review directories", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-allocation-test-"));
   try {

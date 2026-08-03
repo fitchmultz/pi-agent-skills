@@ -249,6 +249,7 @@ output_base=${output_base%.png}
 command -v d2 >/dev/null 2>&1 || fail "d2 is required; on macOS run: brew install d2"
 command -v rsvg-convert >/dev/null 2>&1 || fail "rsvg-convert is required; on macOS run: brew install librsvg"
 command -v file >/dev/null 2>&1 || fail "file is required"
+command -v cmp >/dev/null 2>&1 || fail "cmp is required"
 
 svg_output="$output_base.svg"
 png_output="$output_base.png"
@@ -281,6 +282,12 @@ path_exists() {
   [[ -e "$1" || -L "$1" ]]
 }
 
+claim_output_path() {
+  local final=$1
+  local claim_marker=$2
+  (set -o noclobber; cat "$claim_marker" >"$final") 2>/dev/null
+}
+
 # Reconcile actual paths instead of post-mv flags so an EXIT trap can recover
 # when a signal lands between an atomic rename and the next shell statement.
 rollback_artifact() {
@@ -288,12 +295,21 @@ rollback_artifact() {
   local staged=$2
   local backup=$3
   local had_original=$4
+  local claim_marker=$5
+  local expected_output=$6
+  local foreign_final=0
   local rollback_ok=1
 
   if ((had_original == 1)); then
     if path_exists "$backup"; then
       if path_exists "$final"; then
-        if path_exists "$staged" || ! mv "$final" "$staged"; then
+        if path_exists "$staged"; then
+          if ! cmp -s "$final" "$claim_marker" || ! rm -f "$final"; then
+            rollback_ok=0
+          fi
+        elif cmp -s "$final" "$expected_output"; then
+          mv "$final" "$staged" || rollback_ok=0
+        else
           rollback_ok=0
         fi
       fi
@@ -304,8 +320,16 @@ rollback_artifact() {
       rollback_ok=0
     fi
   elif path_exists "$final"; then
-    if path_exists "$staged" || ! mv "$final" "$staged"; then
-      rollback_ok=0
+    if path_exists "$staged"; then
+      if cmp -s "$final" "$claim_marker"; then
+        rm -f "$final" || rollback_ok=0
+      else
+        foreign_final=1
+      fi
+    elif cmp -s "$final" "$expected_output"; then
+      mv "$final" "$staged" || rollback_ok=0
+    else
+      foreign_final=1
     fi
   fi
 
@@ -313,7 +337,7 @@ rollback_artifact() {
     path_exists "$final" || rollback_ok=0
     ! path_exists "$backup" || rollback_ok=0
   else
-    ! path_exists "$final" || rollback_ok=0
+    ! path_exists "$final" || ((foreign_final == 1)) || rollback_ok=0
   fi
   ((rollback_ok == 1))
 }
@@ -321,8 +345,8 @@ rollback_artifact() {
 rollback_outputs() {
   local rollback_ok=1
   set +e
-  rollback_artifact "$png_output" "$publish_dir/render.png" "$backup_dir/render.png" "$had_png" || rollback_ok=0
-  rollback_artifact "$svg_output" "$publish_dir/render.svg" "$backup_dir/render.svg" "$had_svg" || rollback_ok=0
+  rollback_artifact "$png_output" "$publish_dir/render.png" "$backup_dir/render.png" "$had_png" "$publish_dir/.claim.png" "$tmp_dir/render.png" || rollback_ok=0
+  rollback_artifact "$svg_output" "$publish_dir/render.svg" "$backup_dir/render.svg" "$had_svg" "$publish_dir/.claim.svg" "$tmp_dir/render.svg" || rollback_ok=0
   if ((rollback_ok == 1)); then
     transaction_active=0
   fi
@@ -460,6 +484,8 @@ fi
 reserve_temp_directory publish_dir "$output_dir/.diagram-publish.XXXXXX" || fail "cannot reserve an output staging directory"
 install -m 0644 "$tmp_dir/render.svg" "$publish_dir/render.svg"
 install -m 0644 "$tmp_dir/render.png" "$publish_dir/render.png"
+printf 'diagram-render-claim-svg-%s-%s' "$$" "$RANDOM" >"$publish_dir/.claim.svg"
+printf 'diagram-render-claim-png-%s-%s' "$$" "$RANDOM" >"$publish_dir/.claim.png"
 
 if ((review_images == 1)); then
   for review_file in "$review_stage"/*; do
@@ -473,15 +499,30 @@ for output in "$svg_output" "$png_output"; do
   fi
 done
 reserve_temp_directory backup_dir "$output_dir/.diagram-backup.XXXXXX" || fail "cannot reserve an output backup directory"
+for output in "$svg_output" "$png_output"; do
+  if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
+    fail "output target changed during backup allocation and is no longer a regular file or absent: $output"
+  fi
+done
 path_exists "$svg_output" && had_svg=1
 path_exists "$png_output" && had_png=1
 transaction_active=1
-if ((had_svg == 1)) && ! mv "$svg_output" "$backup_dir/render.svg"; then
-  publication_failed "could not preserve existing SVG"
+if ((had_svg == 1)); then
+  mv "$svg_output" "$backup_dir/render.svg" || publication_failed "could not preserve existing SVG"
+  [[ -f "$backup_dir/render.svg" && ! -L "$backup_dir/render.svg" ]] || publication_failed "SVG target changed type during publication"
 fi
-if ((had_png == 1)) && ! mv "$png_output" "$backup_dir/render.png"; then
-  publication_failed "could not preserve existing PNG"
+if ((had_png == 1)); then
+  mv "$png_output" "$backup_dir/render.png" || publication_failed "could not preserve existing PNG"
+  [[ -f "$backup_dir/render.png" && ! -L "$backup_dir/render.png" ]] || publication_failed "PNG target changed type during publication"
 fi
+claim_status=0
+mask_allocation_signals
+claim_output_path "$svg_output" "$publish_dir/.claim.svg" || claim_status=1
+if ((claim_status == 0)); then
+  claim_output_path "$png_output" "$publish_dir/.claim.png" || claim_status=1
+fi
+restore_allocation_signals
+((claim_status == 0)) || publication_failed "a final output path was claimed by another filesystem entry"
 if ! mv "$publish_dir/render.svg" "$svg_output"; then
   publication_failed "could not publish SVG"
 fi
