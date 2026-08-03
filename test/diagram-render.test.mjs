@@ -101,13 +101,21 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
     const caseProbe = path.join(tmp, "CaseProbe");
     writeFileSync(caseProbe, "probe");
     if (existsSync(path.join(tmp, "caseprobe"))) {
-      const caseOutput = path.join(tmp, "Flow");
-      const caseFailure = render([
-        "--review-dir", path.join(tmp, "flow.svg", "review"), input, caseOutput,
-      ]);
-      assert.notEqual(caseFailure.status, 0);
-      assert.match(caseFailure.stderr, /sit beneath a final output path/);
-      assert.equal(existsSync(`${caseOutput}.svg`), false);
+      for (const [outputName, reviewName] of [
+        ["Flow", "flow"],
+        ["É", "é"],
+        ["É", "e\u0301"],
+      ]) {
+        const caseOutput = path.join(tmp, outputName);
+        const caseFailure = render(
+          ["--review-dir", path.join(tmp, `${reviewName}.svg`, "review"), input, caseOutput],
+          { LC_ALL: "C" },
+        );
+        assert.notEqual(caseFailure.status, 0);
+        assert.match(caseFailure.stderr, /overlaps a final output path on this filesystem/);
+        assert.equal(existsSync(`${caseOutput}.svg`), false);
+        assert.equal(existsSync(path.join(tmp, `${reviewName}.svg`)), false);
+      }
     }
 
     const directoryOutput = path.join(tmp, "directory-output");
@@ -137,6 +145,108 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
     ]);
     assert.notEqual(leadingZero.status, 0);
     assert.match(leadingZero.stderr, /non-negative integer/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("allocation signals cannot strand temporary or review directories", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-allocation-test-"));
+  try {
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const findParent = `find_renderer_parent() {
+  pid=$PPID
+  while [ "$pid" -gt 1 ]; do
+    command=$(/bin/ps -o command= -p "$pid")
+    case "$command" in
+      *render_diagram.sh*) printf '%s\\n' "$pid"; return 0 ;;
+    esac
+    pid=$(/bin/ps -o ppid= -p "$pid" | /usr/bin/tr -d ' ')
+  done
+  return 1
+}
+`;
+    const fakeMktemp = path.join(fakeBin, "mktemp");
+    writeFileSync(fakeMktemp, `#!/bin/sh
+${findParent}
+allocated=$(/usr/bin/mktemp "$@") || exit $?
+printf '%s\\n' "$allocated"
+case "$*" in
+  *diagram-review*|*diagram-render*|*.diagram-publish*|*.diagram-backup*)
+    count=0
+    [ ! -f "$ALLOC_COUNT_FILE" ] || count=$(cat "$ALLOC_COUNT_FILE")
+    count=$((count + 1))
+    printf '%s\\n' "$count" >"$ALLOC_COUNT_FILE"
+    if [ "$count" = "$INTERRUPT_AT" ]; then
+      : >"$ALLOC_INTERRUPT_MARKER"
+      target=$(find_renderer_parent) || exit 90
+      /bin/kill -TERM "$target"
+      sleep 0.1
+    fi
+    ;;
+esac
+`);
+    chmodSync(fakeMktemp, 0o755);
+
+    for (const boundary of [1, 2, 3, 4]) {
+      const scenario = path.join(tmp, `temp-boundary-${boundary}`);
+      mkdirSync(scenario);
+      const input = path.join(scenario, "flow.d2");
+      const output = path.join(scenario, "flow");
+      writeFileSync(input, "a -> b\n");
+      const result = render(
+        [input, output],
+        {
+          PATH: `${fakeBin}:${process.env.PATH}`,
+          TMPDIR: scenario,
+          INTERRUPT_AT: String(boundary),
+          ALLOC_COUNT_FILE: path.join(scenario, "allocation-count"),
+          ALLOC_INTERRUPT_MARKER: path.join(scenario, "interrupted"),
+        },
+      );
+      assert.equal(result.status, 0, `boundary ${boundary}: ${result.stdout}\n${result.stderr}`);
+      assert.equal(existsSync(path.join(scenario, "interrupted")), true);
+      const review = result.stdout.match(/^Review directory: (.+)$/m)?.[1];
+      assert.ok(review);
+      rmSync(review, { recursive: true, force: true });
+      assert.deepEqual(
+        readdirSync(scenario).filter((file) => file.startsWith(".diagram-") || file.startsWith("diagram-render.")),
+        [],
+      );
+    }
+
+    const custom = path.join(tmp, "custom-review");
+    mkdirSync(custom);
+    const customInput = path.join(custom, "flow.d2");
+    const customOutput = path.join(custom, "flow");
+    const customReview = path.join(custom, "nested", "review");
+    writeFileSync(customInput, "a -> b\n");
+    const fakeMkdir = path.join(fakeBin, "mkdir");
+    writeFileSync(fakeMkdir, `#!/bin/sh
+${findParent}
+/bin/mkdir "$@"
+status=$?
+if [ "$status" -eq 0 ] && [ "$#" -eq 1 ] && [ "$1" = "$ALLOC_REVIEW_DIR" ]; then
+  : >"$ALLOC_INTERRUPT_MARKER"
+  target=$(find_renderer_parent) || exit 90
+  /bin/kill -TERM "$target"
+  sleep 0.1
+fi
+exit "$status"
+`);
+    chmodSync(fakeMkdir, 0o755);
+    const customResult = render(
+      ["--review-dir", customReview, customInput, customOutput],
+      {
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        ALLOC_REVIEW_DIR: customReview,
+        ALLOC_INTERRUPT_MARKER: path.join(custom, "interrupted"),
+      },
+    );
+    assert.equal(customResult.status, 0, `${customResult.stdout}\n${customResult.stderr}`);
+    assert.equal(existsSync(path.join(custom, "interrupted")), true);
+    assert.equal(existsSync(customReview), true);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

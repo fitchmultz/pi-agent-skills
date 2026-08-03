@@ -80,20 +80,77 @@ prospective_directory_path() {
   lexical_absolute_path "$candidate$suffix"
 }
 
-path_comparison_key() {
-  if ((case_sensitive_paths == 1)); then
-    printf '%s\n' "$1"
-  else
-    printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]'
-  fi
+first_missing_directory() {
+  local candidate
+  local first_missing=""
+  local parent
+  candidate=$(lexical_absolute_path "$1")
+  while [[ ! -e "$candidate" && ! -L "$candidate" ]]; do
+    first_missing=$candidate
+    parent=$(dirname "$candidate")
+    [[ "$parent" != "$candidate" ]] || break
+    candidate=$parent
+  done
+  [[ -n "$first_missing" && -d "$candidate" ]] || return 1
+  printf '%s\n' "$first_missing"
 }
 
 review_conflicts_with_final() {
-  local review
-  local final
-  review=$(path_comparison_key "$1")
-  final=$(path_comparison_key "$2")
+  local review=$1
+  local final=$2
   [[ "$review" == "$final" || "$review" == "$final/"* || "$final" == "$review/"* ]]
+}
+
+directory_contains_native() {
+  local parent
+  local current
+  local next
+  parent=$(cd "$1" && pwd -P) || return 1
+  current=$(cd "$2" && pwd -P) || return 1
+  while :; do
+    [[ "$current" -ef "$parent" ]] && return 0
+    next=$(dirname "$current")
+    [[ "$next" != "$current" ]] || return 1
+    current=$next
+  done
+}
+
+review_ancestor_aliases_final() {
+  local current
+  local final=$2
+  local next
+  [[ -e "$final" || -L "$final" ]] || return 1
+  current=$(cd "$1" && pwd -P) || return 1
+  while :; do
+    [[ "$current" -ef "$final" ]] && return 0
+    next=$(dirname "$current")
+    [[ "$next" != "$current" ]] || return 1
+    current=$next
+  done
+}
+
+mask_allocation_signals() {
+  trap '' HUP INT TERM
+}
+
+restore_allocation_signals() {
+  trap - HUP INT TERM
+}
+
+reserve_temp_directory() {
+  local target_variable=$1
+  local template=$2
+  local allocated
+  local status
+  mask_allocation_signals
+  if allocated=$(mktemp -d "$template"); then
+    printf -v "$target_variable" '%s' "$allocated"
+    restore_allocation_signals
+    return 0
+  fi
+  status=$?
+  restore_allocation_signals
+  return "$status"
 }
 
 theme=200
@@ -197,12 +254,6 @@ png_output="$output_base.png"
 output_dir=$(dirname "$output_base")
 mkdir -p "$output_dir" || fail "cannot create output directory: $output_dir"
 output_dir_abs=$(cd "$output_dir" && pwd -P)
-# Compare prospective paths with the case behavior of the final output filesystem.
-case_sensitive_paths=1
-case_probe=$(mktemp -d "$output_dir/.diagram-case.XXXXXX")
-: >"$case_probe/CaseProbe"
-[[ ! -e "$case_probe/caseprobe" ]] || case_sensitive_paths=0
-rm -r "$case_probe"
 svg_output_abs="$output_dir_abs/$(basename "$svg_output")"
 png_output_abs="$output_dir_abs/$(basename "$png_output")"
 
@@ -216,6 +267,7 @@ for output in "$svg_output" "$png_output"; do
 done
 
 review_reserved=0
+review_cleanup_root=""
 keep_review=0
 tmp_dir=""
 publish_dir=""
@@ -295,30 +347,42 @@ cleanup() {
     [[ -z "$backup_dir" ]] || rm -r "$backup_dir" 2>/dev/null || true
   fi
   if ((review_reserved == 1 && keep_review == 0)); then
-    rm -r "$review_dir" 2>/dev/null || true
+    review_cleanup_target=${review_cleanup_root:-$review_dir}
+    [[ -z "$review_cleanup_target" ]] || rm -r "$review_cleanup_target" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT
 
 if ((review_images == 1)); then
   if [[ -z "$review_dir" ]]; then
-    review_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-review.XXXXXX")
+    review_reserved=1
+    reserve_temp_directory review_dir "${TMPDIR:-/tmp}/diagram-review.XXXXXX" || fail "cannot reserve a temporary review directory"
+    review_cleanup_root=$review_dir
   else
     review_dir_future=$(prospective_directory_path "$review_dir") || fail "review directory parent is not a directory: $review_dir"
     if review_conflicts_with_final "$review_dir_future" "$svg_output_abs" || review_conflicts_with_final "$review_dir_future" "$png_output_abs"; then
       fail "review directory must not equal, contain, or sit beneath a final output path: $review_dir"
     fi
-    mkdir -p "$(dirname "$review_dir")" || fail "cannot create review directory parent: $(dirname "$review_dir")"
-    mkdir "$review_dir" || fail "review directory already exists or cannot be created: $review_dir"
+    [[ ! -e "$review_dir" && ! -L "$review_dir" ]] || fail "review directory already exists: $review_dir"
+    review_cleanup_root=$(first_missing_directory "$review_dir") || fail "cannot identify the review directory allocation root: $review_dir"
+    review_reserved=1
+    mask_allocation_signals
+    if mkdir -p "$(dirname "$review_dir")" && mkdir "$review_dir"; then
+      restore_allocation_signals
+    else
+      allocation_status=$?
+      restore_allocation_signals
+      fail "cannot create review directory: $review_dir (status $allocation_status)"
+    fi
   fi
-  review_reserved=1
-  review_dir_abs=$(cd "$review_dir" && pwd -P)
-  if review_conflicts_with_final "$review_dir_abs" "$svg_output_abs" || review_conflicts_with_final "$review_dir_abs" "$png_output_abs"; then
-    fail "review directory must not overlap a final output path: $review_dir"
+  if directory_contains_native "$review_dir" "$output_dir" \
+    || review_ancestor_aliases_final "$review_dir" "$svg_output" \
+    || review_ancestor_aliases_final "$review_dir" "$png_output"; then
+    fail "review directory overlaps a final output path on this filesystem: $review_dir"
   fi
 fi
 
-tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-render.XXXXXX")
+reserve_temp_directory tmp_dir "${TMPDIR:-/tmp}/diagram-render.XXXXXX" || fail "cannot reserve a render directory"
 
 d2 validate "$input"
 d2 --bundle=false --layout="$layout" --theme="$theme" --pad="$pad" "$input" "$tmp_dir/render.svg"
@@ -384,7 +448,7 @@ if ((review_images == 1)); then
   done
 fi
 
-publish_dir=$(mktemp -d "$output_dir/.diagram-publish.XXXXXX")
+reserve_temp_directory publish_dir "$output_dir/.diagram-publish.XXXXXX" || fail "cannot reserve an output staging directory"
 install -m 0644 "$tmp_dir/render.svg" "$publish_dir/render.svg"
 install -m 0644 "$tmp_dir/render.png" "$publish_dir/render.png"
 
@@ -399,7 +463,7 @@ for output in "$svg_output" "$png_output"; do
     fail "output target changed during rendering and is no longer a regular file or absent: $output"
   fi
 done
-backup_dir=$(mktemp -d "$output_dir/.diagram-backup.XXXXXX")
+reserve_temp_directory backup_dir "$output_dir/.diagram-backup.XXXXXX" || fail "cannot reserve an output backup directory"
 path_exists "$svg_output" && had_svg=1
 path_exists "$png_output" && had_png=1
 transaction_active=1
