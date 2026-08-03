@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review, CI, and Greptile to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -12,7 +12,7 @@ metadata:
 
 ## Goal
 
-Turn one open-ended request into a merged PR across a single human decision point. The agent researches and proposes, the user picks the direction, then the agent implements and drives the PR to merge-ready without further hand-holding.
+Turn one open-ended request into a merged PR across a single human decision point. The agent researches and proposes, the user picks the direction, then the agent implements, reviews, and merges the PR without further hand-holding.
 
 ## Success criteria
 
@@ -39,6 +39,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 ## Core rules
 
 - **The gate is real.** Phase 1 ends by asking the user to choose. Never continue into implementation on your own judgment, even when the answer looks obvious.
+- **Approval resumes the run.** In pi, `ask_question` returns the answer into the same assistant turn. A proceed choice satisfies the direction gate: continue immediately through Phase 2 into Phase 3. Do not return a final response just to restate acceptance, announce that the PR is ready, or report merge-ready. After approval, continue until the Ship report or a named stop rule.
 - **One approved direction per PR.** Never widen a diff with discoveries. From the main run they queue for the Phase 6 chain; from inside a chain item they are filed or reported, never queued.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-service policy changes which remote gates exist; it never excuses a failing gate.
@@ -104,11 +105,11 @@ Zero writes to the repo: no edits, no commits, no pushes, no installs. An accide
 3. Rank candidates by cost of leaving them in place: blast radius, recurrence, reader and maintainer tax, and risk of the fix itself.
 4. Deliver the proposal using the **Proposal contract** below.
 5. Ask for the direction with `ask_question`. Offer, in order: proceed with #1, each named runner-up, narrow the scope, stop.
-6. **Stop.** Do not implement.
+6. `ask_question` is the pause. Do not implement while it is waiting. When it returns, handle the answer immediately: a proceed choice continues to Phase 2, a narrowed scope is re-proposed, and stop ends the run. Never turn a proceed result into a status-only final response.
 
 ### Phase 2 — Direction gate
 
-The user picks. Before touching code, restate in two sentences: the chosen direction and the acceptance criteria you will hold yourself to. If the answer materially changes scope, re-propose instead of silently expanding. Rename the provisional branch with `git branch -m` if the approved direction has a sharper name.
+A proceed result returned by `ask_question` is the user's pick, even though the tool returns it in the same assistant turn. Before touching code, restate in two sentences: the chosen direction and the acceptance criteria you will hold yourself to. Do not end the turn after this restatement: rename the provisional branch with `git branch -m` if the approved direction has a sharper name, then start Phase 3 immediately. If the answer materially changes scope, re-propose instead of silently expanding.
 
 ### Phase 3 — Implement
 
@@ -116,7 +117,7 @@ The user picks. Before touching code, restate in two sentences: the chosen direc
 2. Read the repo's own conventions and follow them.
 3. Implement the approved plan only.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
-5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write with no standing exemption: confirm it first unless the user already asked for a PR.
+5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write. A request for the full arc or a named invocation of this skill, followed by direction approval, already confirms PR creation; otherwise confirm it first.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
 
 ### Phase 4 — Review loop
@@ -165,7 +166,7 @@ Standing instruction from the user, verbatim:
 
 > When the PR is merge ready you may merge. I am repo admin so I am able to squash and merge. Thank you.
 
-Default: **squash-merge without asking again** once the Phase 4 exit conditions are verified. This is standing pre-authorization.
+Default: **squash-merge without asking again** once the Phase 4 exit conditions are verified. This is standing pre-authorization. Passing the exit conditions is an action trigger, not a reporting checkpoint: do not report merge-ready and stop under the default.
 
 Override: if the user says anywhere in the conversation to wait for their approval before merging, that overrides the default for the rest of the run. Report merge-ready and stop.
 
@@ -228,7 +229,7 @@ Exit codes: `0` every check completed successfully on an open PR, `1` a check fa
 3. [Item] — [one line]
 ```
 
-Then ask for the direction choice with `ask_question`.
+Then ask for the direction choice with `ask_question`. The tool itself supplies the pause; when it returns a proceed choice, continue with Phase 2 in the same assistant turn.
 
 ## Ship report
 

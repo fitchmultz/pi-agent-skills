@@ -7,6 +7,11 @@
       "expected_output": "Creates the worktree first, then delivers ranked findings with path/line evidence, leads with one #1 recommendation plus a concrete plan and blast radius, and asks the user to choose a direction with ask_question. Edits no files, commits nothing, and pushes nothing before the gate."
     },
     {
+      "id": "success-ask-question-approval-resumes-same-turn",
+      "prompt": "[The proposal is visible and ask_question returns] Proceed with #1.",
+      "expected_output": "Treats the tool result as the user's completed direction choice, restates the accepted direction and acceptance criteria, and immediately starts implementation with tools in the same assistant turn. It does not end with only a restatement, wait for another user message, stop at PR-ready, or stop at merge-ready unless an explicit stop rule applies."
+    },
+    {
       "id": "success-ranked-not-menu",
       "prompt": "Scan for the worst maintainability problem in this repo.",
       "expected_output": "Presents one clear #1 recommendation with runners-up ranked beneath it and the reason each ranked lower, rather than an unranked menu of equal options."
