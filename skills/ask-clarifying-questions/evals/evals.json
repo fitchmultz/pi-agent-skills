@@ -1,0 +1,29 @@
+{
+  "skill_name": "ask-clarifying-questions",
+  "evals": [
+    {
+      "id": "success-material-ambiguity",
+      "prompt": "Build the admin export feature. It might include user PII and should support either CSV or JSON; ask before implementing if needed.",
+      "expected_output": "Identifies material ambiguity around data scope, PII handling, and export format; asks only the blocking questions with concise options ordered by the safest/default path; does not start implementation until answers or explicit assumptions are accepted.",
+      "files": []
+    },
+    {
+      "id": "success-low-risk-discovery-first",
+      "prompt": "Fix whatever command runs the tests in this repo, but ask me if you're unsure.",
+      "expected_output": "Performs low-risk repo/config discovery before asking; does not ask for information available in package metadata, Makefile, docs, or similar local sources; asks only if discovery leaves a material choice unresolved.",
+      "files": []
+    },
+    {
+      "id": "edge-user-approved-defaults",
+      "prompt": "Update the button copy however you think is best; use reasonable defaults and don't block on preference questions.",
+      "expected_output": "Does not trigger a clarification loop for non-material preference ambiguity; states any needed assumptions briefly and proceeds with the safe default path.",
+      "files": []
+    },
+    {
+      "id": "failure-over-questioning",
+      "prompt": "Implement password reset. The repo already has docs for mail provider and token expiry. Ask clarifying questions first.",
+      "expected_output": "Does not ask broad or repo-answerable questions; reads the relevant docs/config first, then asks only unresolved material questions such as product copy or security-sensitive behavior not defined by the source of truth.",
+      "files": []
+    }
+  ]
+}

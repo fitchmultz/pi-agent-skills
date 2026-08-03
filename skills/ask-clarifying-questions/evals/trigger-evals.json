@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Before you implement this, ask me the few clarifying questions needed because the scope is unclear.",
+    "should_trigger": true,
+    "reason": "Direct request to ask clarifying questions before implementation."
+  },
+  {
+    "query": "The acceptance criteria are ambiguous and the wrong default could change the feature. Clarify first.",
+    "should_trigger": true,
+    "reason": "Material ambiguity around acceptance criteria."
+  },
+  {
+    "query": "We can delete or archive the old workflow, but I'm not sure which is safer. Check with me before changing files.",
+    "should_trigger": true,
+    "reason": "User-owned safety and reversibility tradeoff."
+  },
+  {
+    "query": "Ask q's only if you need them; otherwise pick safe defaults and keep going.",
+    "should_trigger": true,
+    "reason": "Casual phrasing asks for clarifying questions only when materially needed."
+  },
+  {
+    "query": "Run the unit tests and fix the failing assertion in parser.test.ts.",
+    "should_trigger": false,
+    "reason": "Concrete task with a clear first step; no material ambiguity."
+  },
+  {
+    "query": "Inspect the package.json and tell me which test command to run.",
+    "should_trigger": false,
+    "reason": "The repo can answer this through low-risk discovery."
+  },
+  {
+    "query": "Use the default settings unless something is obviously unsafe.",
+    "should_trigger": false,
+    "reason": "User already approved reasonable defaults."
+  },
+  {
+    "query": "What questions should I ask in a product manager interview?",
+    "should_trigger": false,
+    "reason": "Question-writing advice, not resolving ambiguity for agent work."
+  }
+]

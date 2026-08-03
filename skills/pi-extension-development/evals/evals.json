@@ -1,0 +1,255 @@
+{
+  "skill_name": "pi-extension-development",
+  "evals": [
+    {
+      "id": "edge-choose-prompt-template-not-extension",
+      "prompt": "I want a reusable /create-goal prompt with no runtime state or tools.",
+      "expected_output": "Chooses prompt template rather than extension, reads prompt-template docs if implementing, and avoids runtime code."
+    },
+    {
+      "id": "success-package-resource-verification",
+      "prompt": "Make my private pi package load prompts and a tiny extension; verify install behavior.",
+      "expected_output": "Reads packages/extensions/security docs, updates conventional or manifest resource paths, verifies project-local pi install/list/resource discovery with explicit --approve or --no-approve behavior, and reports reload/restart needs."
+    },
+    {
+      "id": "custom-tool-lifecycle",
+      "prompt": "Add a pi custom tool that writes files and may be called in parallel.",
+      "expected_output": "Reads extension/tool docs/types and examples, uses strict schema and prompt metadata, queues the whole file read-modify-write window with withFileMutationQueue, and validates runtime behavior."
+    },
+    {
+      "id": "interactive-tui-ux",
+      "prompt": "Build a pi extension command with an interactive selector and custom tool result display.",
+      "expected_output": "Reads docs/tui.md, types, and matching examples, picks the smallest good UI layer, guards TUI-only behavior, respects width/theme/keybindings/focus rules, and visually verifies rendered UX."
+    },
+    {
+      "id": "stateful-sequential-tool",
+      "prompt": "Create a game-like pi tool where multiple same-turn tool calls mutate one shared cursor.",
+      "expected_output": "Recognizes parallel tool execution risk, explains that one executionMode sequential tool serializes the entire sibling-call batch in source order, chooses that batch-wide behavior only for the shared cursor state machine rather than as a per-tool mutex, stores reconstructable state, and validates same-turn sibling calls."
+    },
+    {
+      "id": "power-user-capability",
+      "prompt": "Build a pi extension that overrides bash/read/edit to run inside my remote devbox and can operate non-interactively in JSON mode when configured.",
+      "expected_output": "Does not reject the powerful workflow; reads extension/tool/package docs and types, uses built-in tool factories or operations, defines explicit non-interactive policy/config, preserves result shapes/rendering, and validates remote/backend behavior in the requested mode."
+    },
+    {
+      "id": "project-trust-extension",
+      "prompt": "Create a global pi extension that decides whether to trust project-local inputs for approved company repos, but does not weaken powerful tool overrides once a project is trusted.",
+      "expected_output": "Reads current resource-loader/trust implementation before docs/examples; implements project_trust only in bootstrap-loaded user/global extensions, CLI paths, or SDK inline factories, not a trust-gated project extension; handles yes/no/undecided, remember, saved parent decisions, and defaultProjectTrust. Distinguishes final-pass AGENTS.md/CLAUDE.md loading from trust-gated project resources, uses ctx.isProjectTrusted for later effective trust, guards UI prompts with ctx.hasUI, and defines non-interactive policy without treating trust as a sandbox or per-tool permission system."
+    },
+    {
+      "id": "sdk-project-trust-loader",
+      "prompt": "Embed pi with the SDK and make project resources load only when the host approves the cwd.",
+      "expected_output": "Reads SDK/resource-loader/settings/trust implementation before docs/examples; uses DefaultResourceLoader reload({ resolveProjectTrust }) or SettingsManager projectTrusted/defaultProjectTrust deliberately; knows SDK inline factories participate in the trust bootstrap while trust-gated project extensions do not, and the final resource pass loads context files independently of trust; rebinds replacement sessions; and validates approve/decline/default behavior."
+    },
+    {
+      "id": "natural-autocomplete-provider",
+      "prompt": "Add #123 issue autocomplete to my pi extension editor without requiring a slash command.",
+      "expected_output": "Reads extension autocomplete docs/types and examples, wraps ctx.ui.addAutocompleteProvider with triggerCharacters such as [\"#\"], delegates to the existing provider when syntax does not match, handles abort signals and TUI/RPC mode behavior, and validates rendered autocomplete UX."
+    },
+    {
+      "id": "pi-update-semantics",
+      "prompt": "Update my pi extension package and verify the update flow.",
+      "expected_output": "Reads current package CLI help and package-manager implementation, distinguishes bare pi update (pi only) from pi update --all (pi plus packages), uses pi update --extension with a validated source for one-package checks, passes --approve or --no-approve when project package settings are trust-gated, and does not claim exact pinned npm versions were updated."
+    },
+    {
+      "id": "extension-tax-and-code-quality",
+      "prompt": "Review my pi extension for startup slowdown, linting, formatting, and TypeScript correctness.",
+      "expected_output": "Reads current pi docs/source for lifecycle/startup behavior, treats a clean TypeScript type-check (repo script or tsc --noEmit) as a required gate, runs the repo lint/format script or an already-installed Biome via npx --no-install @biomejs/biome (not bare biome), measures startup tax with a with/without-extension A/B rather than only estimating, and reports extension tax with concrete validation evidence."
+    },
+    {
+      "id": "provider-auth-env",
+      "prompt": "Build a pi custom provider extension that uses auth.json provider-scoped env and must not leak secrets.",
+      "expected_output": "Reads docs/providers.md, docs/custom-provider.md, docs/models.md, and current provider types; preserves auth.json/env resolution semantics, treats uppercase key/header values as literals unless $ENV_VAR is used, avoids logging resolved credentials or provider-scoped env, and validates provider registration/auth behavior."
+    },
+    {
+      "id": "full-native-provider-registration",
+      "prompt": "Convert my Pi 0.82.0 custom provider from the legacy config shape to a complete pi-ai Provider with custom auth, credential filtering, dynamic models, and streaming.",
+      "expected_output": "First checks whether the legacy config already suffices; if native ownership is required, reads current Provider/createProvider, extension overload, loader, composer, and ModelRuntime code. Imports createProvider/auth helpers from the pi-ai root and concrete API factories from /compat, avoiding /api/* for bundled-loader portability; uses complete model records with model-level request routing, provider-owned auth/filter/refresh/streams, and context-aware cache/network handling. Validates typecheck, real Pi loader registration/listing, configured/unconfigured auth, one stubbed or live stream, reload replacement, and explicit removal without leaking credentials."
+    },
+    {
+      "id": "llama-cpp-live-provider-management",
+      "prompt": "Use Pi 0.82.0's bundled llama.cpp support to manage and select a local model from my extension.",
+      "expected_output": "Reads docs/llama-cpp.md plus the hidden built-in extension, provider, and manager source. Recognizes Pi already loads it as a hidden built-in instead of adding a duplicate; treats /login llama.cpp as router-URL plus optional-key auth and /llama as model load/unload control; keeps discovered models live and non-persistent; filters availability to loaded models; avoids shell mutation during ordinary discovery; and validates server-down, unloaded, loaded, abort/timeout, and reload states."
+    },
+    {
+      "id": "model-runtime-sdk-auth-migration",
+      "prompt": "Upgrade my embedded Pi SDK harness and companion extension to 0.80.8. AuthStorage, modelRegistry session options, and direct request auth no longer compile.",
+      "expected_output": "Reads the 0.80.8 changelog plus current generated types/implementation before docs/examples; creates one async ModelRuntime, injects a pi-ai CredentialStore such as InMemoryCredentialStore for isolated tests, passes modelRuntime to createAgentSession, and uses modelRuntime.getAuth for SDK request auth. Awaits setRuntimeApiKey/removeRuntimeApiKey when used, keeps extension-facing ctx.modelRegistry where appropriate, awaits modelRegistry.refresh before synchronous reads, uses readStoredCredential only for one-off file inspection, scans for removed runtime projections, and validates typecheck plus the real SDK/extension path."
+    },
+    {
+      "id": "dynamic-provider-model-refresh",
+      "prompt": "Teach my Pi 0.82.0 provider extension to refresh its remote model catalog without fetching synchronously during every startup.",
+      "expected_output": "Verifies both legacy ProviderConfig.refreshModels and native createProvider/fetchModels against active types/source, then chooses the smaller fitting form. Honors allowNetwork, force, signal, credential, and scoped store semantics; keeps a static or stored baseline; preserves the prior catalog on fetch failure but treats a store-write failure as a reported error that can leave fetched models visible; and handles cache-only recovery where credential may be undefined. Validates interactive/RPC background refresh, /model refresh, print/list cache-only behavior, and offline startup. Does not use pi update --models because that command does not load extensions."
+    },
+    {
+      "id": "kimi-deferred-tool-loading",
+      "prompt": "Add progressive tool search to my Pi 0.82.0 extension for Kimi K3 without sending every tool definition up front.",
+      "expected_output": "Reads the crossed deferred-tool/Kimi changelog entries and verifies exact provider/model IDs in current generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max, no deferredToolsMode) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, deferredToolsMode kimi, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, sets deferredToolsMode only on a verified compatible model, and validates the immediate next-turn definition path."
+    },
+    {
+      "id": "pi-ai-compat-import-migration",
+      "prompt": "Fix my pi extension TypeScript errors after upgrading to pi 0.80: getModel and stream are no longer exported from @earendil-works/pi-ai.",
+      "expected_output": "Reads the current changelog and @earendil-works/pi-ai package .d.ts files, recognizes the old global API moved to @earendil-works/pi-ai/compat while extension runtime aliases root imports temporarily, updates type-checked source to import /compat or migrate to createModels/provider factories, does not use removed /base entrypoints, and validates type-check/runtime load."
+    },
+    {
+      "id": "agent-core-shell-exec-options-migration",
+      "prompt": "Fix my embedded pi SDK harness TypeScript errors after upgrading: ExecutionEnvExecOptions is missing.",
+      "expected_output": "Reads the current changelog and @earendil-works/pi-agent-core harness .d.ts files, updates type-checked source to use ShellExecOptions for ExecutionEnv.exec options, checks no old ExecutionEnvExecOptions imports remain, and validates TypeScript plus the SDK/runtime path."
+    },
+    {
+      "id": "custom-provider-chat-template-thinking",
+      "prompt": "Register a vLLM OpenAI-compatible provider whose DeepSeek chat template needs Pi thinking levels mapped into chat_template_kwargs.",
+      "expected_output": "Reads docs/custom-provider.md, docs/models.md, and current provider types; uses compat.thinkingFormat \"chat-template\" with chatTemplateKwargs variables such as thinking.enabled or thinking.effort instead of ad hoc payload rewriting; validates --list-models and at least one real or stubbed provider request without leaking credentials."
+    },
+    {
+      "id": "compaction-event-context",
+      "prompt": "Write a pi extension that customizes compaction summaries and handles overflow retry differently from manual /compact.",
+      "expected_output": "Reads changelog and extensions/compaction docs/types; handles session_before_compact and session_compact using reason and willRetry, returns and persists provider usage from custom summary calls, preserves reload/session lifecycle cleanup, and validates manual, threshold, or overflow paths that are in scope."
+    },
+    {
+      "id": "session-json-format-parser",
+      "prompt": "Update my Pi 0.82.0 JSON event and session JSONL parser for current compaction, usage, and session metadata.",
+      "expected_output": "Reads current AgentSessionEvent, session-manager, print-mode, compaction, and usage-totals implementation before docs. Discriminates the leading SessionHeader record with type session from later AgentSessionEvent records; handles agent_settled, entry_appended, session_info_changed, thinking_level_changed, agent_end.willRetry, and summarization_retry_scheduled/attempt_start/finished; parses persisted v3 header/entry timestamps as ISO strings while preserving message-internal millisecond timestamps; accepts top-level usage on tool results, compaction, and branch summaries; uses id/parentId; and rejects copying harness retainedTail into coding-agent CompactionEntry."
+    },
+    {
+      "id": "nested-model-usage-accounting",
+      "prompt": "My Pi tool, custom compaction hook, and branch summarizer each call a model. Make session token and cost totals include all of them.",
+      "expected_output": "Reads current ToolResultMessage, compaction/branch result types, session persistence, and AgentSession.getSessionStats/usage-totals implementation. Returns real pi-ai Usage in each top-level usage field rather than details, preserves it through tool_result handlers and JSONL parsing, and validates full-session totals across assistant messages, tool results, compactions, and branch summaries."
+    },
+    {
+      "id": "sdk-thinking-contract",
+      "prompt": "Follow the Pi SDK and RPC docs to choose the default thinking level and list every option the current model supports.",
+      "expected_output": "Checks current defaults, SDK/RPC types, and model metadata instead of copying comments; reports the runtime default as medium and the global vocabulary as off/minimal/low/medium/high/xhigh/max, but returns only the current model's provider-verified mapped subset from generated catalogs. Uses getSupportedThinkingLevels in SDK code or get_available_thinking_levels/RpcClient.getAvailableThinkingLevels in RPC, and re-queries after model changes."
+    },
+    {
+      "id": "tool-family-routing-contract",
+      "prompt": "Review my pi extension's three overlapping tools. They all sort of handle web/project inspection, and agents keep choosing the wrong one.",
+      "expected_output": "Treats the tools as a routed family, maps natural user intents to the preferred tool and fallbacks to avoid, separates description/promptSnippet/promptGuidelines/parameters/docs/results responsibilities, keeps schemas strict rather than manual-like, and proposes evals for natural tool choice plus first-call validity."
+    },
+    {
+      "id": "custom-editor-current-docs-contract",
+      "prompt": "Validate the Pi 0.82.0 VimEditor custom-editor snippet before I copy it into my extension.",
+      "expected_output": "Checks installed docs, examples, and emitted types rather than preserving older hazard guidance; confirms the current CustomEditor(tui, theme, keybindings, options?) contract and docs callback shape, then validates typecheck/runtime UI behavior."
+    },
+    {
+      "id": "extension-flag-timing",
+      "prompt": "Add a --plan-mode flag to my pi extension and start in plan mode when the CLI flag is passed.",
+      "expected_output": "Registers the flag during factory load, avoids relying on CLI-provided getFlag values during factory load, reads the parsed flag from session_start/command/event timing, and validates both default and CLI-provided paths."
+    },
+    {
+      "id": "factory-safe-direct-apis",
+      "prompt": "My async pi extension factory must run a local discovery command and register a display-only entry renderer before session_start. Are pi.exec and registerEntryRenderer valid there?",
+      "expected_output": "Verifies loader implementation rather than applying a blanket registration-only rule; allows awaited pi.exec and registerEntryRenderer during factory load, allows getFlag only for registered defaults before CLI parsing, keeps session-bound actions after binding, treats the command as startup tax, and validates factory load plus session_start."
+    },
+    {
+      "id": "sdk-overrides-settings-durability",
+      "prompt": "Build an SDK test harness that loads one inline extension, replaces skills/context files, prompts once, then asserts settings were written.",
+      "expected_output": "Uses DefaultResourceLoader extensionFactories and override hooks instead of temp discovery files, uses a named InlineExtension when provenance matters, documents bypassed discovery semantics, uses PromptOptions.preflightResult only for acceptance/preflight, calls SettingsManager.flush before asserting persistence, and drains/reports settings errors."
+    },
+    {
+      "id": "provider-config-shape-split",
+      "prompt": "Register a custom provider extension and set modelOverrides plus provider-level compat like my models.json uses.",
+      "expected_output": "Reads current provider docs/types, distinguishes pi.registerProvider ProviderConfig from models.json shape, avoids unsupported provider-level compat/modelOverrides in extension config, puts compat on registered models or recommends models.json when provider-level overrides are required."
+    },
+    {
+      "id": "session-info-changed-event",
+      "prompt": "My pi extension status widget should update when /name or RPC renames the current session.",
+      "expected_output": "Reads current changelog/extensions docs/types, uses session_info_changed for display-name changes instead of polling or overloading session_start, preserves session_start rehydration for real session switches, and validates /name, pi.setSessionName, or RPC rename paths in scope."
+    },
+    {
+      "id": "rpc-session-tree-access",
+      "prompt": "Build an RPC host around pi that can show live session entries and tree state without scraping JSONL files.",
+      "expected_output": "Reads docs/rpc.md and rpc-types/source, uses get_entries/get_tree or the ./rpc-entry export when it matches the host boundary, keeps LF-delimited JSONL parsing strict, and validates the RPC request/response flow."
+    },
+    {
+      "id": "final-agent-settled-boundary",
+      "prompt": "Notify my host only when a pi run is truly finished, including retries, overflow compaction, and queued follow-up messages.",
+      "expected_output": "Reads current agent-session, low-level agent, extension, and RPC implementation before docs/examples; uses agent_settled, AgentSession.waitForIdle, ExtensionCommandContext.waitForIdle, or a race-safe RPC helper for final settlement rather than agent_end. Explicitly rejects low-level session.agent.waitForIdle, subscribes before RPC prompting or uses promptAndWait, preserves per-run agent_end only if needed, and validates automatic-continuation and summarization-retry paths."
+    },
+    {
+      "id": "provider-outbound-header-hook",
+      "prompt": "Add a trace header to every outbound provider request and remove one optional static header without touching the serialized payload.",
+      "expected_output": "Reads current extension docs/types/source; uses before_provider_headers, mutates event.headers in place with strings or null, accounts for provider-internal retries reusing the headers, avoids logging or deleting required auth headers, and validates the request path."
+    },
+    {
+      "id": "display-only-entry-renderer",
+      "prompt": "Persist extension audit markers in the session and render them in the TUI, but never send them to the model context.",
+      "expected_output": "Reads current extension/session-format docs, entry-renderer example, types, and interactive source; pairs appendEntry with registerEntryRenderer, does not use a model-visible custom message, handles expanded/hidden rendering and collisions, and validates persistence plus TUI rendering."
+    },
+    {
+      "id": "max-thinking-and-pricing-tiers",
+      "prompt": "Register a custom long-context model with opt-in max thinking and a higher request-wide price tier above 272000 input tokens.",
+      "expected_output": "Reads current models/provider docs and pi-ai types/source; verifies the model thinkingLevelMap supports max; defines a complete tier with inputTokensAbove and all four rates; selects the highest strictly exceeded threshold from total input plus cache read/write; accounts for ordinary cache writes using tier cacheWrite and cacheWrite1h using twice tier input; and validates model listing plus cost behavior."
+    },
+    {
+      "id": "linux-docker-version-and-secret-boundary",
+      "prompt": "Add a local Linux Docker smoke gate for this Pi extension using the same Pi build I have installed and one live model key.",
+      "expected_output": "Reads the Linux validation reference and active Pi version, launches a fail-fast host orchestrator through env -i with a temporary HOME and allowlisted variables, rejects credential-bearing project npm config before repository/dependency code, passes the exact PI_VERSION as a Docker build arg, installs Pi with --ignore-scripts, and runs build/test/package/install gates in a credential-free container. It then forwards only the credential explicitly mapped to the verified provider/model into a separate model-only process that runs no package manager or lifecycle scripts, uses a supported thinking level, keeps secrets out of layers/logs/copied files, does not publish the image, and saves separate phase artifacts."
+    },
+    {
+      "id": "prepare-release-without-publishing",
+      "prompt": "Make this pi package release-ready and verify the tarball and install, but do not commit, push, tag, read secrets, or publish anything.",
+      "expected_output": "Stops after authorized local hygiene; reports rather than deletes files for a read-only audit; resolves active Node/npm/Pi binaries; keeps Pi core/typebox peers at range *; runs sequential repository, script-disabled package-inspection, and install gates in one fail-fast isolated shell; installs the freshly packed artifact through a validated npm file source to exercise managed dependencies; and performs no external mutation or credential read."
+    },
+    {
+      "id": "publish-exact-verified-artifact",
+      "prompt": "Publish the authorized npm release of this pi package after the release-ready checks pass.",
+      "expected_output": "Commits and creates the authorized annotated tag locally, then before any push/release/credential read verifies the clean HEAD/tag commit and retains one marked credential-free tarball with git commit/tag, package identity, manifest, and SHA-256 evidence; installs and inspects that exact artifact through Pi; pushes and creates the matching release only after inspection; publishes the same retained tarball after evidence/hash and npm whoami checks; queries the immutable <package>@<version> metadata and dist-tags.latest separately; preserves the artifact and non-secret verification logs until immutable-version checks succeed; and on failure does not unpublish, deprecate, or republish without separate authorization."
+    },
+    {
+      "id": "provider-response-hook",
+      "prompt": "Add a pi extension that records provider HTTP status and selected headers for diagnostics before the response stream is consumed.",
+      "expected_output": "Reads current extension docs/types and provider-payload example, uses after_provider_response for response status/headers rather than before_provider_request or stream parsing, avoids logging secrets, and validates the diagnostic path."
+    },
+    {
+      "id": "extension-collision-and-provider-unregister",
+      "prompt": "My CLI-loaded and inline SDK pi extensions register the same tool, flag, shortcut, and provider. Explain which wins and remove the built-in provider during factory load.",
+      "expected_output": "Reads resource-loader, extension loader/runner, ModelRuntime, and provider-composer implementation; explains CLI-first and inline-last load order, first-wins tools/flags, and last-wins shortcuts; rejects built-in provider removal because factory-time unregister only cancels pending dynamic registrations; distinguishes legacy config composition from native complete-provider replacement; and recommends one provider owner plus a reload/removal test instead of fragile cross-extension fragments."
+    },
+    {
+      "id": "rpc-framing-editor-and-private-bash",
+      "prompt": "Build a Node pi RPC host that pastes into the editor, reads current editor text, parses stdout chunks, and runs a private inspection command whose output must not reach the model.",
+      "expected_output": "Reads RPC types/jsonl and client implementation; uses an incremental UTF-8 decoder, splits only on LF, accepts optional CR and a final EOF record, avoids Node readline, and tracks editor state in the host because paste replaces the full editor and getEditorText cannot read it over RPC. For private bash output, uses a raw RpcCommand or custom client with excludeFromContext true because bundled RpcClient.bash exposes no such option; for live streaming, handles bash_execution_update deltas with optional request ids."
+    },
+    {
+      "id": "sdk-replacement-failure-and-rebind",
+      "prompt": "Harden my AgentSessionRuntime host when session replacement is cancelled or the new runtime fails to create; extensions currently bind twice.",
+      "expected_output": "Reads AgentSessionRuntime implementation/types; uses setRebindSession as the single successful-replacement binder, skips rebind on cancellation, tears down host UI synchronously before invalidation, and treats creation failure as a rebuild-or-exit path because the old session was already disposed."
+    },
+    {
+      "id": "rpc-command-provenance-contract",
+      "prompt": "My Pi RPC client reads get_commands using the documented location and path fields, but provenance is always missing on 0.82.0. Fix the client.",
+      "expected_output": "Treats the RPC prose example as stale, resolves the active package, and verifies RpcSlashCommand plus rpc-mode implementation; reads canonical sourceInfo with path, source, scope, origin, and optional baseDir instead of legacy top-level location/path fields; and validates a real get_commands response for extension, prompt, or skill provenance."
+    },
+    {
+      "id": "sdk-settings-and-session-list-doc-hazards",
+      "prompt": "The Pi 0.82.0 SDK docs call SettingsManager.create() with no arguments and SessionManager.listAll(process.cwd()) to list every project. Make this compile and behave as described.",
+      "expected_output": "Treats the snippets as stale and verifies emitted types plus implementation; passes an explicit cwd to SettingsManager.create, uses SessionManager.listAll() for the normal all-project sessions tree or SessionManager.list(cwd) for one project, does not pass cwd as listAll's custom sessionDir, and validates both paths with isolated session data."
+    },
+    {
+      "id": "kimi-coding-0810-compat",
+      "prompt": "Proxy the installed Pi 0.82.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
+      "expected_output": "Reads active generated Kimi Coding model code and Anthropic request serialization before prose docs; preserves model-level forceAdaptiveThinking and endpoint-verified allowEmptySignature, maps only low/high/max as current metadata does, copies active catalog fields including pricing rather than guessing Moonshot values, does not put compat on legacy provider config or confuse Anthropic Kimi Coding metadata with Moonshot OpenAI thinkingFormat/supportsReasoningEffort/deferredToolsMode, and validates replay plus all three thinking levels."
+    },
+    {
+      "id": "qwen-token-plan-model-contract",
+      "prompt": "Use the new Pi 0.82.0 Qwen Token Plan provider and set qwen3.7-max to max thinking because its name says max.",
+      "expected_output": "Verifies current built-in provider source/model metadata rather than inferring behavior from names. Uses exact qwen-token-plan or qwen-token-plan-cn ids and the matching QWEN_TOKEN_PLAN_API_KEY or QWEN_TOKEN_PLAN_CN_API_KEY, recognizes qwen3.7-max as both routes' default, rejects max thinking for that model because its mapped subset ends at high, and validates with --list-models plus SDK or RPC thinking-level discovery without making a network request unless authorized."
+    },
+    {
+      "id": "constrained-tool-sampling",
+      "prompt": "Make my Pi 0.82.0 extension tool use strict JSON Schema sampling when the model supports it, without breaking weaker models.",
+      "expected_output": "Reads current Tool/constrainedSampling types and provider capability flags before docs. Sets constrainedSampling to json_schema with strict prefer by default, uses require only when unsupported models must fail, and uses OpenAI grammar variants only when compat.supportsOpenAIGrammarTools is true. Validates one supported and one unsupported model path without leaking credentials."
+    },
+    {
+      "id": "bash-session-env-and-rpc-stream",
+      "prompt": "My Pi 0.82.0 bash wrapper and RPC host need the current model/session identity and streaming bash output.",
+      "expected_output": "Verifies createBashTool/createBashToolDefinition inject PI_SESSION_ID, PI_SESSION_FILE when persisted, PI_PROVIDER, PI_MODEL, and PI_REASONING_LEVEL at command start from the selected Pi model. For RPC, handles bash_execution_update events with optional id and delta, keeps private output on excludeFromContext raw commands when needed, and does not invent env vars for non-bash tools."
+    },
+    {
+      "id": "openrouter-kimi-oauth-login",
+      "prompt": "Set up OpenRouter and Kimi Coding on Pi 0.82.0 without pasting API keys by hand.",
+      "expected_output": "Reads current provider auth source and providers.md. Uses /login openrouter with Sign in with OpenRouter for the PKCE-minted user-controlled key, and /login kimi-coding with Sign in with Kimi Code for device OAuth plus refresh, while still recognizing OPENROUTER_API_KEY and Kimi API-key env fallbacks. Does not log or commit auth.json contents."
+    }
+  ]
+}

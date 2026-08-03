@@ -1,0 +1,42 @@
+[
+  {
+    "query": "/handoff continue",
+    "should_trigger": true,
+    "reason": "Direct continuation handoff command."
+  },
+  {
+    "query": "Write a prompt I can paste into a new session so it can pick up this work.",
+    "should_trigger": true,
+    "reason": "Casual phrasing for a continuation handoff."
+  },
+  {
+    "query": "/handoff delegate the API-contract review to another agent",
+    "should_trigger": true,
+    "reason": "Direct delegation handoff command with a bounded task."
+  },
+  {
+    "query": "Give me a self-contained prompt for another agent to investigate this flaky test and report back.",
+    "should_trigger": true,
+    "reason": "Precise request for a paste-ready delegation prompt."
+  },
+  {
+    "query": "Use subagents to run a parallel review of this branch.",
+    "should_trigger": false,
+    "reason": "Actual subagent orchestration belongs to pi-subagents, not a paste-ready handoff."
+  },
+  {
+    "query": "Send these findings to the worker session over intercom.",
+    "should_trigger": false,
+    "reason": "Live local session messaging belongs to pi-intercom."
+  },
+  {
+    "query": "Summarize what we did today in this repo.",
+    "should_trigger": false,
+    "reason": "A recap is not necessarily a continuation or delegation prompt."
+  },
+  {
+    "query": "Ask me the blocking question before you continue implementing.",
+    "should_trigger": false,
+    "reason": "Clarification workflow, not a handoff to another agent/session."
+  }
+]

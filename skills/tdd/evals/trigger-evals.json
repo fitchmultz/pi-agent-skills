@@ -1,0 +1,52 @@
+[
+  {
+    "query": "Build the new import parser with TDD.",
+    "should_trigger": true,
+    "reason": "Direct TDD request for feature work."
+  },
+  {
+    "query": "Let's do red-green-refactor for this bug fix.",
+    "should_trigger": true,
+    "reason": "Explicit red-green-refactor phrasing."
+  },
+  {
+    "query": "Add integration tests first, then implement the checkout behavior.",
+    "should_trigger": true,
+    "reason": "Test-first integration workflow before implementation."
+  },
+  {
+    "query": "tdd the CSV edge cases one at a time",
+    "should_trigger": true,
+    "reason": "Casual lowercase TDD phrasing."
+  },
+  {
+    "query": "Write the regression test first for the known timezone bug, then fix it.",
+    "should_trigger": true,
+    "reason": "Known bug with explicit regression-test-first repair."
+  },
+  {
+    "query": "Run the test suite and tell me if it passes.",
+    "should_trigger": false,
+    "reason": "Final verification/test execution only, not test-first development."
+  },
+  {
+    "query": "Fix this crash; I don't know why it happens.",
+    "should_trigger": false,
+    "reason": "Unknown-cause debugging belongs to root-cause triage unless test-first is requested."
+  },
+  {
+    "query": "Add coverage to every file so the report hits 90%.",
+    "should_trigger": false,
+    "reason": "Post-hoc coverage padding, not behavior-first TDD."
+  },
+  {
+    "query": "Dogfood the app and find UI bugs.",
+    "should_trigger": false,
+    "reason": "Exploratory QA belongs to dogfood, not TDD."
+  },
+  {
+    "query": "The implementation is done; add some unit tests after the fact.",
+    "should_trigger": false,
+    "reason": "Post-implementation test addition is not a red-green workflow unless behavior-first regression work is requested."
+  }
+]
