@@ -1,0 +1,52 @@
+[
+  {
+    "query": "Can you draw and render the current architecture and proposed request sequence as images?",
+    "should_trigger": true,
+    "reason": "Direct request for rendered architecture and sequence diagrams."
+  },
+  {
+    "query": "Make me a picture of how these services talk to each other.",
+    "should_trigger": true,
+    "reason": "Casual request to turn a system interaction into a visual diagram."
+  },
+  {
+    "query": "Create an editable D2 sequence diagram and export PNG and SVG files.",
+    "should_trigger": true,
+    "reason": "Precise request matching the authoring and rendering workflow."
+  },
+  {
+    "query": "Show the before and after architecture for this migration.",
+    "should_trigger": true,
+    "reason": "Implicit request for a rendered technical comparison."
+  },
+  {
+    "query": "Turn this workflow specification into a rendered state-transition diagram.",
+    "should_trigger": true,
+    "reason": "Request for a technical lifecycle visual without architecture or sequence assumptions."
+  },
+  {
+    "query": "Plot CPU and memory utilization over the last 24 hours.",
+    "should_trigger": false,
+    "reason": "Statistical time-series charting is outside this skill."
+  },
+  {
+    "query": "Build a PowerPoint deck with an architecture slide.",
+    "should_trigger": false,
+    "reason": "The slides skill owns deck creation, including diagrams embedded in slides."
+  },
+  {
+    "query": "Take screenshots while dogfooding the local web app.",
+    "should_trigger": false,
+    "reason": "Browser screenshots and exploratory QA are not diagram authoring."
+  },
+  {
+    "query": "Explain the architecture in prose without creating files.",
+    "should_trigger": false,
+    "reason": "The user explicitly does not want a visual artifact."
+  },
+  {
+    "query": "Clean up this logo and export a transparent PNG.",
+    "should_trigger": false,
+    "reason": "Image editing and graphic design are outside this skill."
+  }
+]

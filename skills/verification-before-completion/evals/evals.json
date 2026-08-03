@@ -1,0 +1,25 @@
+{
+  "skill_name": "verification-before-completion",
+  "evals": [
+    {
+      "id": "success-docs-only-final-status",
+      "prompt": "A docs-only skill edit is complete. git status shows only the intended SKILL.md and eval file changes, JSON parsing passes, and the skill validator exits 0. Produce the final status.",
+      "expected_output": "States the exact docs/skill claim, cites git status/diff sweep, marks alignment as docs/evals checked or N/A, cites the JSON parse and validator command results, lists no unverified gaps, and marks final status complete."
+    },
+    {
+      "id": "failure-final-claim-with-failing-tests",
+      "prompt": "The implementation is done, but the relevant test command fails. Produce the final status.",
+      "expected_output": "Does not claim completion. Reports the exact failing command/output as blocker, states what was verified, lists what remains unverified, and marks final status incomplete or blocked."
+    },
+    {
+      "id": "edge-generated-contract-drift",
+      "prompt": "A schema/API contract changed and tests pass, but generated client types and docs were not checked. Verify before opening the PR.",
+      "expected_output": "Identifies authority/mirror alignment as required, checks or reports generated clients/docs as unverified, and refuses a broad PR-ready claim until alignment is proven."
+    },
+    {
+      "id": "edge-goal-hard-acceptance-no-tech-debt",
+      "prompt": "Before marking the goal complete, confirm no shortcuts or tech debt remain. The diff includes a TODO and a temporary compatibility shim.",
+      "expected_output": "Treats the TODO/shim as blocking unless explicitly approved, requires resolving or documenting the blocker, and does not use 'for this scope' or 'good enough' as completion evidence."
+    }
+  ]
+}

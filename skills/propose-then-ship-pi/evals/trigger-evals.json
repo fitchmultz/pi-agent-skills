@@ -1,0 +1,52 @@
+[
+  {
+    "query": "/skill:propose-then-ship-pi Research AI coding agent slop, then scan this repo for the single biggest instance and tell me what you'd do about it.",
+    "should_trigger": true,
+    "reason": "Direct named invocation of the full pipeline."
+  },
+  {
+    "query": "Research the current state of prompt-injection defenses, find the worst gap in this repo, recommend one fix, and once I approve it, ship it end to end.",
+    "should_trigger": true,
+    "reason": "Full arc: research, ranked recommendation, approval gate, then implementation to merge-ready."
+  },
+  {
+    "query": "Find the number one thing wrong with this codebase and give me a plan. Don't write any code yet.",
+    "should_trigger": true,
+    "reason": "Phase 1 of the pipeline with the read-only gate stated explicitly."
+  },
+  {
+    "query": "Scan for our worst test-flakiness pattern, propose the top fix, then implement it in a worktree and take the PR to merge-ready with adversarial review.",
+    "should_trigger": true,
+    "reason": "Names the proposal gate, worktree implementation, and the review loop."
+  },
+  {
+    "query": "What is AI slop in coding agents?",
+    "should_trigger": false,
+    "reason": "Pure research question with no repo scan, recommendation, or implementation path."
+  },
+  {
+    "query": "This PR is failing CI and has unresolved bot comments. Get it green.",
+    "should_trigger": false,
+    "reason": "A PR already exists and only needs shepherding; that is PR babysitting, not the proposal gate."
+  },
+  {
+    "query": "Rename getCwd to getCurrentWorkingDirectory across the repo.",
+    "should_trigger": false,
+    "reason": "The direction is already decided, so the proposal gate adds nothing."
+  },
+  {
+    "query": "Review my branch for maintainability problems and tell me what you'd change.",
+    "should_trigger": false,
+    "reason": "Read-only code review of existing work belongs to a review skill, not this pipeline."
+  },
+  {
+    "query": "Fix the null-pointer crash in the checkout flow.",
+    "should_trigger": false,
+    "reason": "Concrete known bug with a known cause; this is root-cause triage."
+  },
+  {
+    "query": "Audit this whole codebase and give me a ranked list of everything worth deleting.",
+    "should_trigger": false,
+    "reason": "Whole-repo audit with no single approved direction or implementation arc."
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Before you say this is done, verify the diff and tests.",
+    "should_trigger": true,
+    "reason": "Explicit pre-completion verification request."
+  },
+  {
+    "query": "Open the PR once you're sure lint, typecheck, and tests pass.",
+    "should_trigger": true,
+    "reason": "PR readiness depends on fresh validation evidence."
+  },
+  {
+    "query": "Mark the goal complete after confirming every acceptance criterion has evidence.",
+    "should_trigger": true,
+    "reason": "Goal completion requires an evidence-backed completion audit."
+  },
+  {
+    "query": "Do one last cleanup pass for debug logs, stale docs, and generated files before committing.",
+    "should_trigger": true,
+    "reason": "Final delta sweep and contract/mirror alignment before commit."
+  },
+  {
+    "query": "Why is this test failing? Reproduce it and find the root cause.",
+    "should_trigger": false,
+    "reason": "This is initial debugging/root-cause triage before a candidate fix exists."
+  },
+  {
+    "query": "Plan how to implement the new auth flow.",
+    "should_trigger": false,
+    "reason": "Initial planning, not final verification."
+  },
+  {
+    "query": "Review this PR for architectural maintainability issues.",
+    "should_trigger": false,
+    "reason": "Review workflow, not a final completion claim by the current agent."
+  },
+  {
+    "query": "Run the app and explore the checkout flow for bugs.",
+    "should_trigger": false,
+    "reason": "Exploratory QA should use a QA/dogfood workflow; final verification may happen later."
+  }
+]

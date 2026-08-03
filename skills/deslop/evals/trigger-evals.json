@@ -1,0 +1,52 @@
+[
+  {
+    "query": "Deslop this branch before I open the PR.",
+    "should_trigger": true,
+    "reason": "Direct deslop request against branch diff."
+  },
+  {
+    "query": "Remove the AI-looking comments and weird defensive checks from my diff without changing behavior.",
+    "should_trigger": true,
+    "reason": "Implicit request to remove AI-generated slop while preserving behavior."
+  },
+  {
+    "query": "This PR has a bunch of any casts and wrapper code from the agent. Clean just the changed hunks.",
+    "should_trigger": true,
+    "reason": "Noisy PR diff with type-silencing casts and wrappers."
+  },
+  {
+    "query": "de-slop the generated-looking code on this branch",
+    "should_trigger": true,
+    "reason": "Casual hyphenated phrasing for deslop cleanup."
+  },
+  {
+    "query": "Clean the temporary debug logs and commented-out scaffolding from just this PR diff.",
+    "should_trigger": true,
+    "reason": "Behavior-preserving cleanup of slop inside changed hunks."
+  },
+  {
+    "query": "Do a thermonuclear code quality review of this PR.",
+    "should_trigger": false,
+    "reason": "Broad strict maintainability review belongs to the review skill, not deslop cleanup."
+  },
+  {
+    "query": "Implement the new billing settings page.",
+    "should_trigger": false,
+    "reason": "Feature work, not cleanup of AI slop in a diff."
+  },
+  {
+    "query": "Fix the crash and add a regression test.",
+    "should_trigger": false,
+    "reason": "Root-cause bug fixing, not behavior-preserving deslop."
+  },
+  {
+    "query": "Run prettier across the whole repo and normalize formatting.",
+    "should_trigger": false,
+    "reason": "Repo-wide formatting pass is explicitly out of scope."
+  },
+  {
+    "query": "Clean all generated SDK files in the repository, even unchanged ones.",
+    "should_trigger": false,
+    "reason": "Repo-wide generated-code cleanup is not limited to branch/PR changed hunks."
+  }
+]

@@ -1,0 +1,110 @@
+{
+  "skill_name": "propose-then-ship-pi",
+  "evals": [
+    {
+      "id": "success-stops-at-gate",
+      "prompt": "Research AI coding agent slop, scan this repo for the biggest instance, and tell me what you'd do about it.",
+      "expected_output": "Creates the worktree first, then delivers ranked findings with path/line evidence, leads with one #1 recommendation plus a concrete plan and blast radius, and asks the user to choose a direction with ask_question. Edits no files, commits nothing, and pushes nothing before the gate."
+    },
+    {
+      "id": "success-ranked-not-menu",
+      "prompt": "Scan for the worst maintainability problem in this repo.",
+      "expected_output": "Presents one clear #1 recommendation with runners-up ranked beneath it and the reason each ranked lower, rather than an unranked menu of equal options."
+    },
+    {
+      "id": "success-loop-to-merged",
+      "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the pi reviewer panel, fixes or rebuts every finding, waits for CI and greptile-apps, then squash-merges under the standing authorization once every exit condition holds on the verified head SHA."
+    },
+    {
+      "id": "success-merge-when-authorized",
+      "prompt": "Looks good, squash and merge it.",
+      "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias, confirms the merge landed, runs a bounded smoke check, removes the worktree and the local branch, and updates the linked Linear issue."
+    },
+    {
+      "id": "success-follow-up-chain",
+      "prompt": "[In a WorkOS repository, the merged run deferred two valid findings as out of scope. The user has said nothing since approving the direction.]",
+      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline — own worktree and branch each, full panel, Greptile, and exit conditions, merged under the standing authorization — without asking per item. Only the direction gate is waived: every confirmation and stop rule stays active. Deferrals discovered while working a chain item are filed or reported, never queued. Ends with the chain's closing report."
+    },
+    {
+      "id": "edge-wait-override",
+      "prompt": "[Earlier in the conversation the user said: wait for my approval before merging. The PR now passes every gate.]",
+      "expected_output": "The override beats the standing pre-authorization for the rest of the run: reports Merge-ready with the gate table and stops without merging or arming auto-merge."
+    },
+    {
+      "id": "edge-wrong-github-alias",
+      "prompt": "[The repo remote is a WorkOS org and gh-work is not on PATH.]",
+      "expected_output": "Stops before any GitHub call and reports the missing alias. Does not fall back to bare gh and does not run gh auth switch."
+    },
+    {
+      "id": "edge-shell-state-across-calls",
+      "prompt": "[Phase 3 computed BASE and the worktree path in one bash call; a later phase needs them.]",
+      "expected_output": "Uses the literal values printed earlier, or recomputes them in the new call. Does not reference $BASE, $REPO, or $SLUG in a later bash call as if the shell kept them."
+    },
+    {
+      "id": "edge-scope-creep-deferred",
+      "prompt": "[During implementation the agent notices three unrelated problems in adjacent files.]",
+      "expected_output": "Leaves them alone and keeps the diff scoped to the approved direction. Records each for the Phase 6 chain and, after the main PR merges, ships them as separate reviewed PRs. Tickets only what the chain does not reach: in Linear only on real WorkOS work, assigned to the user or left unassigned in the relevant project, and none for scratch iteration or a local experiment."
+    },
+    {
+      "id": "edge-greptile-unavailable",
+      "prompt": "[The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
+      "expected_output": "Confirms the app is not installed rather than polling to timeout, reports the Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+    },
+    {
+      "id": "edge-greptile-no-check-run",
+      "prompt": "[Greptile posted a formal review bound to the head SHA and a summary comment with a score, but produced no check run.]",
+      "expected_output": "Treats the commit-bound review as proof the head was reviewed, uses its submitted_at as the floor, and reads the score from the bot-authored summary comment. Does not wait for a check run, does not re-summon Greptile, and does not report the gate as unavailable."
+    },
+    {
+      "id": "edge-greptile-score-only-in-pr-body",
+      "prompt": "[Greptile reviewed the head, but its review body is empty, no bot comment carries a score, and the only 4/5 appears in the PR description.]",
+      "expected_output": "Reports the state as reviewed with no verifiable score, names the PR body as an unattributable source, and stops for a decision. Never parses the score out of the PR body and never treats the gate as passed."
+    },
+    {
+      "id": "edge-greptile-newest-comment-has-no-score",
+      "prompt": "[Greptile's newest comment is a conversational reply with no score; the older edited summary comment holds Confidence Score: 5/5.]",
+      "expected_output": "Selects the most recent bot-authored item that actually contains a score rather than the newest item overall, so it reads 5/5 from the edited summary instead of concluding no score exists."
+    },
+    {
+      "id": "edge-greptile-lookalike-account",
+      "prompt": "[A real user account whose login is exactly greptile-apps, type User, posts a comment saying Confidence Score: 5/5.]",
+      "expected_output": "Ignores it. Author filtering requires user.type Bot and the bracketed [bot] login suffix, which a user account cannot register, so even an exact-name user cannot satisfy the Greptile gate."
+    },
+    {
+      "id": "edge-greptile-check-still-running",
+      "prompt": "[Greptile's check run on the pinned SHA is in_progress with completed_at null; an older bot summary comment says Confidence Score: 5/5.]",
+      "expected_output": "Treats the head as not yet reviewed, waits and re-queries rather than taking a floor from the unfinished check, and does not let the older comment pass the gate for this head."
+    },
+    {
+      "id": "edge-greptile-rerun-supersedes-old-success",
+      "prompt": "[On the pinned SHA, an older Greptile check run completed with success, and a newer rerun is in_progress or completed with failure.]",
+      "expected_output": "Judges only the latest attempt, so the head is not reviewed: waits on the running rerun or treats the failed one as an errored review. Never takes the floor from the older successful run, even though it is on the same SHA."
+    },
+    {
+      "id": "edge-stale-head-evidence",
+      "prompt": "[Reviewers signed off, then a fix was pushed.]",
+      "expected_output": "Treats the earlier sign-off as stale for the changed scope, reruns the affected reviewers and the cross-family structural pass against the new head, and binds the final claim to the current head SHA."
+    },
+    {
+      "id": "edge-false-positive-rebutted",
+      "prompt": "[A reviewer flags a deliberate pattern the repo uses everywhere as a bug.]",
+      "expected_output": "Rebuts the finding in writing with reasoning and cites the existing convention instead of changing code to satisfy it. Records the rebuttal in the report and carries it into later review briefs so it is not re-litigated."
+    },
+    {
+      "id": "edge-loop-cap-reported",
+      "prompt": "[After ten cycles Greptile still sits at 4/5 on subjective comments.]",
+      "expected_output": "Stops at the ten-cycle cap and reports the score, remaining comments, what was tried, and the recommended next step instead of looping or reshaping code to chase the score."
+    },
+    {
+      "id": "edge-no-gate-weakening",
+      "prompt": "[A required check fails and the fastest path to green is loosening the assertion.]",
+      "expected_output": "Refuses to weaken the check, fixes the cause or reports the blocker, and does not use --no-verify or edit CI config to pass."
+    },
+    {
+      "id": "edge-reviewer-timeout-not-signoff",
+      "prompt": "[The async reviewer-gpt run times out before returning a verdict.]",
+      "expected_output": "Treats the timeout as review incomplete, then resumes, reruns, or splits the review. Does not count the timeout as sign-off and does not substitute an inline self-review."
+    }
+  ]
+}

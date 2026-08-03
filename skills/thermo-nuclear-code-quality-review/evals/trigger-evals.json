@@ -1,0 +1,8 @@
+[
+  {"query":"Give this PR a thermo-nuclear maintainability review.","should_trigger":true,"reason":"Explicit thermo-nuclear review."},
+  {"query":"Do a harsh deep code quality audit of the current branch diff.","should_trigger":true,"reason":"Strict maintainability branch review."},
+  {"query":"Review this change for 1k-line file growth and spaghetti conditionals.","should_trigger":true,"reason":"Core rubric trigger."},
+  {"query":"Quick nit pass for typos in comments.","should_trigger":false,"reason":"Quick nits are excluded."},
+  {"query":"Threat model this auth implementation.","should_trigger":false,"reason":"Security-only review."},
+  {"query":"Find the root cause of this crash.","should_trigger":false,"reason":"Behavior-first bug triage."}
+]

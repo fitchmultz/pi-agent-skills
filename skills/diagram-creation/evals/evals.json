@@ -1,0 +1,47 @@
+{
+  "skill_name": "diagram-creation",
+  "evals": [
+    {
+      "id": "request-defined-multiple-views",
+      "prompt": "Inspect this repository and render one image of the current event architecture and one image of the proposed sequence. I did not specify a visual style.",
+      "expected_output": "Uses verified repository behavior, creates the two requested views with separate D2 sources, does not force unrelated panels into either view, defaults only the unspecified visual styling, exports PNG and SVG, inspects the complete and native-resolution PNGs, removes discarded candidates, and reports all final artifact paths.",
+      "files": []
+    },
+    {
+      "id": "request-defined-state-diagram",
+      "prompt": "Render an editable state-transition diagram from these design facts: admission creates queued; queued starts running; running ends succeeded or failed; cancellation may move queued or running to cancelled; only failed may retry to queued. I have no visual style preference.",
+      "expected_output": "Chooses a state-transition structure from the request without adding architecture or sequence panels, verifies each state and transition against the document, labels conditions and terminal outcomes, uses the default visual styling only where unspecified, exports D2, SVG, and PNG, and visually inspects the render.",
+      "files": []
+    },
+    {
+      "id": "user-style-override",
+      "prompt": "Create a light monochrome dependency diagram with a hand-drawn feel. Give me editable source and a PNG.",
+      "expected_output": "Honors the explicit light monochrome sketch direction instead of the default dark style, keeps labels legible, emits editable D2 and rendered PNG/SVG, and visually inspects the result.",
+      "files": []
+    },
+    {
+      "id": "destination-width-traceability",
+      "prompt": "Create a source-backed runtime topology for a README that displays images at 900px. It must show two entry paths converging on one worker, identity and storage boundaries, and durable publication.",
+      "expected_output": "Builds a traceability checklist from inspected source, keeps every entry-to-publication and boundary relationship connected, uses local lanes or labeled boundary ports instead of connectors through component, group, or boundary text, renders and inspects an exact 900px preview of every requested output as well as native output, reflows rather than merely shrinking text, and exports aligned D2, SVG, and PNG artifacts.",
+      "files": []
+    },
+    {
+      "id": "independent-effects-and-branch-order",
+      "prompt": "Diagram these source-backed facts: a checkpoint gate is followed by independently retried text and file effects; text retries use deterministic request IDs; file retries persist and reconcile externally allocated file IDs; on success delivery precedes terminal state; on failure terminal state precedes notification.",
+      "expected_output": "Verifies the ordering against source material, draws text and file effects as separate paths from the shared gate with no accidental branch-to-branch sequence, draws distinct success and failure orders, labels retry identity accurately per effect, and confirms the rendered layout does not visually imply blocking that the source does not have.",
+      "files": []
+    },
+    {
+      "id": "shared-resource-owner-boundaries",
+      "prompt": "Render a 900px topology and lifecycle from these facts: an ingress runtime owns a STATE binding; a sandbox runtime owns a SESSION binding; both bindings address one shared external bucket; task traffic uses a separate service binding; success delivery happens before completion while failure state happens before notification.",
+      "expected_output": "Keeps each binding inside its owning runtime and the shared bucket outside both, gives task and state traffic separate lanes, preserves every required relationship, draws success and failure as independent order-sensitive branches, positions or shortens group titles so no connector crosses component, group, or boundary text, and inspects exact 900px previews of both outputs before exporting aligned D2, SVG, and PNG artifacts.",
+      "files": []
+    },
+    {
+      "id": "render-tool-failure",
+      "prompt": "Render this D2 file to PNG and SVG on a machine where rsvg-convert is missing and package installation is prohibited.",
+      "expected_output": "Validates what it can, does not alter project manifests or bypass package policy, reports the exact missing command and recovery step, and does not claim PNG success.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "skill_name": "thermo-nuclear-code-quality-review",
+  "evals": [
+    {"id":"success-structural-blocker","prompt":"Review a PR that adds a 1200-line mixed-concern file with passing tests.","expected_output":"Withholds approval despite passing tests, flags file growth/mixed concerns as structural blocker, and proposes decomposition."},
+    {"id":"success-few-high-conviction-findings","prompt":"Deep review a branch with one major abstraction leak and many cosmetic nits.","expected_output":"Prioritizes the abstraction leak and avoids flooding with low-value cosmetic notes."},
+    {"id":"success-blast-radius-scope","prompt":"Review a small PR that changes the signature of a shared helper used across the repo.","expected_output":"Expands beyond the diff to the helper's call sites and cites specific caller evidence, but does not enumerate or read unrelated parts of the repo."},
+    {"id":"edge-read-only-review","prompt":"Thermo-nuclear review this branch and improve the structure if you see a better way.","expected_output":"Produces review findings and proposed restructures without editing files through this skill."},
+    {"id":"edge-not-security-only","prompt":"User asks only for security threat modeling.","expected_output":"Does not use this skill as the main workflow and redirects to a security review approach."}
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "skill_name": "deslop",
+  "evals": [
+    {
+      "id": "success-base-and-hunks-first",
+      "prompt": "Deslop this branch.",
+      "expected_output": "Inspects git status and the branch/PR diff against the stated or inferred base before editing, then limits changes to changed hunks."
+    },
+    {
+      "id": "behavior-preserving-cleanup",
+      "prompt": "Remove AI-looking comments, any casts, and unnecessary wrappers from this diff.",
+      "expected_output": "Deletes or simplifies slop with minimal behavior-preserving edits, preserving comments that document invariants or external contracts."
+    },
+    {
+      "id": "edge-dirty-worktree",
+      "prompt": "Deslop this branch, but I have local scratch edits too.",
+      "expected_output": "Runs git status first, treats pre-existing dirty files as user-owned, and avoids overwriting or broad-formatting unrelated scratch edits."
+    },
+    {
+      "id": "edge-scope-stop",
+      "prompt": "While desloping, also refactor the module architecture and fix unrelated lint failures.",
+      "expected_output": "Declines or separates broad refactor and unrelated lint cleanup from the deslop pass, and reports any skipped cleanup with reasons."
+    },
+    {
+      "id": "validation-report",
+      "prompt": "Clean the PR diff so it looks less AI-generated.",
+      "expected_output": "Reports the base inspected, files changed, validation run, and whether tests were skipped because edits were comment-only or diff-only."
+    }
+  ]
+}

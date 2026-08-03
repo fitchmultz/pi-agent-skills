@@ -1,0 +1,29 @@
+{
+  "name": "@fitch/pi-agent-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Source-managed Pi skills for delivery, verification, review, and technical diagrams.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fitchmultz/pi-agent-skills.git"
+  },
+  "keywords": [
+    "pi-package",
+    "agent-skills"
+  ],
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  },
+  "scripts": {
+    "test": "node --test",
+    "smoke": "PI_OFFLINE=1 pi --approve --no-context-files --no-prompt-templates --no-themes --no-extensions -e . --list-models __no_such_model__",
+    "pack:check": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}
