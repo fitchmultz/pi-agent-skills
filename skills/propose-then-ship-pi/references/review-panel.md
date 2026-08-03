@@ -12,7 +12,7 @@ Up to three reviewers run as fresh-context subagents; two passes run in the pare
 | `deslop` | parent, edits | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
 
-Confirm the registry once per run with `subagent({ action: "list" })` and use the effective agent names it returns.
+Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the three panel agents above. A Review grouping that also lists regular `reviewer` does not add it to this panel.
 
 ## Launch shape
 
