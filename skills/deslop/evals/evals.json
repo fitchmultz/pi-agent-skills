@@ -22,6 +22,11 @@
       "expected_output": "Declines or separates broad refactor and unrelated lint cleanup from the deslop pass, and reports any skipped cleanup with reasons."
     },
     {
+      "id": "test-parameterization-boundaries",
+      "prompt": "Deslop these tests. The agent nested one test under describe.each([false, 'false']) for a boolean feature flag, and used it.each([false, 'true', undefined]) for an email_verified value read from an external OAuth payload.",
+      "expected_output": "Collapses the single-test describe.each and removes the impossible string feature-flag case, while preserving malformed email_verified boundary cases because external JSON is untyped. Checks for an existing repository helper before retaining or writing table scaffolding."
+    },
+    {
       "id": "validation-report",
       "prompt": "Clean the PR diff so it looks less AI-generated.",
       "expected_output": "Reports the base inspected, files changed, validation run, and whether tests were skipped because edits were comment-only or diff-only."
