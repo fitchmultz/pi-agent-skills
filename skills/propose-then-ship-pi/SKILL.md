@@ -116,7 +116,7 @@ Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI 
 1. **Panel.** Launch the review panel below in one `subagent` call.
 2. **Triage.** Fix valid findings. Rebut invalid ones in writing with reasoning. Give out-of-scope findings the Defer verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
-4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need fresh output, not memory.
+4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
 6. **Greptile and threads.** Confirm Greptile reviewed the current head, then address and resolve per `references/greptile-loop.md`. Its output shape varies by installation, so follow that reference rather than assuming a check run exists. Sweep threads from every author, not only Greptile.
 7. **Re-run the panel** whenever the code changed materially since step 1.
@@ -141,7 +141,7 @@ Leave the loop only when all of these hold against the current head SHA:
 
 - `reviewer-gpt` reports no blocking findings.
 - `reviewer-security` and `reviewer-claude` each either signed off on the diff you are shipping, after their last requested change, or were skipped under the risk rule with the reason recorded in the report.
-- The diff is free of AI narration and debug leftovers, and the verification pass reproduced the green claim with fresh output.
+- The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
 - CI is green on a head that contains the current base tip, and the PR is mergeable with no conflicts.
 - Greptile is at 5/5 confidence on this head, read from a bot-authored source. Two alternatives are legitimate, and both are reported as unavailable rather than passed: the app is not installed on this repo, or it reviewed the head but published no score any bot-authored source carries. Never infer a score from the PR body.
 - Zero unresolved review threads from any author, and every PR-level comment addressed. Threads and issue comments are separate surfaces; check both.
