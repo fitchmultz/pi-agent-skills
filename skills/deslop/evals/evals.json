@@ -23,8 +23,8 @@
     },
     {
       "id": "test-parameterization-boundaries",
-      "prompt": "Deslop these tests. The agent nested one test under describe.each([false, 'false']) for a boolean feature flag, and used it.each([false, 'true', undefined]) for an email_verified value read from an external OAuth payload.",
-      "expected_output": "Collapses the single-test describe.each and removes the impossible string feature-flag case, while preserving malformed email_verified boundary cases because external JSON is untyped. Checks for an existing repository helper before retaining or writing table scaffolding."
+      "prompt": "Deslop these changed tests. The agent nested one test under describe.each([false, 'false']) by mocking FeatureFlags.isEnabled(): Promise<boolean>; no runtime parser or config path can supply the string. A separate it.each([false, 'true', undefined]) passes rawAttributes.email_verified directly from an unvalidated external OAuth JSON payload.",
+      "expected_output": "Collapses the single-test describe.each and removes the string value that only the typed internal mock can inject, while preserving malformed raw OAuth claim cases at the established unvalidated JSON boundary. Checks for an existing repository helper before retaining or writing table scaffolding."
     },
     {
       "id": "validation-report",
