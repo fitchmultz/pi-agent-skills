@@ -4,6 +4,12 @@ Read when waiting on Greptile, reading its verdict, or sweeping unresolved threa
 
 Replace `<gh>` with the alias you resolved from the remote owner, `gh-work` or `gh-personal`. Never run bare `gh`.
 
+## Apply the recorded gate policy
+
+Greptile defaults to `required`. Under an explicitly sourced `waived-if-unavailable` policy, first confirm that the app/review surface is unavailable. Record the waiver source and stop Greptile polling; the waiver does not waive the thread and comment sweep from other authors.
+
+Any current-head Greptile signal establishes availability, so complete the normal verdict, score, finding, and resolution flow below. A failed review, a score below 5/5, or a reviewed head with no verifiable score is not an unavailable service and cannot use the absent-service waiver. Never infer policy from missing output alone.
+
 ## Greptile's output shape varies by deployment
 
 Verified against two live installations. Do not assume one shape:
@@ -157,6 +163,6 @@ Stop when the score is 5/5 on the confirmed head and the unresolved-thread query
 ## Gotchas
 
 - **No comment does not mean no review.** Greptile stopped posting a "found nothing" confirmation. Confirm through step 1.
-- **A repo can have Greptile uninstalled.** If neither signal ever appears, confirm the app is installed before spending the polling budget. Then report the gate as unavailable and treat the PR as not merge-ready, rather than silently skipping it.
+- **A repo can have Greptile uninstalled.** If neither signal ever appears, confirm availability before spending the polling budget. With the default `required` policy, report the gate as unavailable and treat the PR as not merge-ready. With a cited `waived-if-unavailable` policy, record the waiver and continue only after the other gates and the full thread/comment sweep pass.
 - **Subjective comments do not always reach 5/5.** Rebut with reasoning and report at the cap instead of reshaping code to chase a score.
 - **Force-pushing mid-review** orphans threads and restarts the cycle. Push forward commits during the loop.
