@@ -7,9 +7,15 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const skillsDir = path.join(root, "skills");
 const expectedSkills = [
+  "ask-clarifying-questions",
+  "bro",
   "deslop",
   "diagram-creation",
+  "dogfood",
+  "handoff",
+  "pi-extension-development",
   "propose-then-ship-pi",
+  "tdd",
   "thermo-nuclear-code-quality-review",
   "verification-before-completion",
 ];
@@ -38,8 +44,8 @@ test("bundled skills have valid source surfaces", () => {
     for (const file of filesUnder(dir)) {
       assert.notEqual(path.basename(file), ".DS_Store");
       if (file.endsWith(".json")) JSON.parse(readFileSync(file, "utf8"));
-      if (file.endsWith(".sh")) assert.notEqual(statSync(file).mode & 0o111, 0, `${file} must be executable`);
-      if (/\.(?:md|mjs|sh)$/.test(file)) {
+      if (/\.(?:py|sh)$/.test(file)) assert.notEqual(statSync(file).mode & 0o111, 0, `${file} must be executable`);
+      if (/\.(?:js|json|md|mjs|py|sh|ya?ml)$/.test(file)) {
         const text = readFileSync(file, "utf8");
         assert.doesNotMatch(text, /\/Users\/mitchfultz/);
         assert.doesNotMatch(text, /~\/\.agents\/skills\//);

@@ -1,0 +1,11 @@
+[
+  {"query":"Dogfood http://localhost:3000 and report any bugs with screenshots.","should_trigger":true,"reason":"Explicit dogfood web app QA."},
+  {"query":"Do an exploratory QA pass on the checkout flow in the local app.","should_trigger":true,"reason":"Manual QA through real user flow."},
+  {"query":"Hunt for flicker and loading jank while navigating the dashboard.","should_trigger":true,"reason":"Transient visual QA should use VFR mode."},
+  {"query":"Use a visual flight recorder to verify whether the streaming answer flickers while text appends.","should_trigger":true,"reason":"Explicit VFR and streaming transient visual behavior."},
+  {"query":"Dogfood the Pi TUI output while Cursor streams; I need confidence that a human would see stable redraws.","should_trigger":true,"reason":"Terminal/TUI motion QA should use dogfood VFR terminal mode."},
+  {"query":"Run the backend unit tests for the auth service.","should_trigger":false,"reason":"Backend/unit-test-only validation."},
+  {"query":"Fix the bug you found in the payment form.","should_trigger":false,"reason":"Remediation request, not dogfood pass, unless paired with QA."},
+  {"query":"Change this button margin by 2px.","should_trigger":false,"reason":"Trivial CSS tweak, not meaningful QA."},
+  {"query":"Review this TypeScript streaming parser for correctness.","should_trigger":false,"reason":"Code review without browser/TUI user-flow observation."}
+]

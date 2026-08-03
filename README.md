@@ -1,14 +1,20 @@
 # pi-agent-skills
 
-Source-managed Pi package for Mitch's delivery, verification, review, and technical-diagram skills.
+Source-managed Pi package for Mitch's reusable agent workflows.
 
 ## Skills
 
-- `propose-then-ship-pi`
-- `verification-before-completion`
+- `ask-clarifying-questions`
+- `bro`
 - `deslop`
-- `thermo-nuclear-code-quality-review`
 - `diagram-creation`
+- `dogfood`
+- `handoff`
+- `pi-extension-development`
+- `propose-then-ship-pi`
+- `tdd`
+- `thermo-nuclear-code-quality-review`
+- `verification-before-completion`
 
 ## Install
 

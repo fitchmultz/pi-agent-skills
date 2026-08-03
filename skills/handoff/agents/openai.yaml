@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Write paste-ready continue and delegate handoffs"
+  default_prompt: "Use $handoff to write a paste-ready handoff for another agent session."

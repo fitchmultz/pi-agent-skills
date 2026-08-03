@@ -2,7 +2,7 @@
   "name": "@fitch/pi-agent-skills",
   "version": "0.1.0",
   "private": true,
-  "description": "Source-managed Pi skills for delivery, verification, review, and technical diagrams.",
+  "description": "Source-managed Pi skills for reusable agent workflows.",
   "type": "module",
   "license": "MIT",
   "repository": {

@@ -1,0 +1,24 @@
+{
+  "evals": [
+    {
+      "id": "success-continue-session-transfer",
+      "prompt": "/handoff continue after debugging the failing auth test",
+      "expected_output": "Outputs only a paste-ready continuation handoff that starts exactly with 'Continue the conversation from the previous session.', summarizes relevant current state, decisions, constraints, inspected files, validation status, and open questions, then ends with a plain '---' separator and no trailing commentary."
+    },
+    {
+      "id": "success-delegate-bounded-task",
+      "prompt": "/handoff delegate task 2 from the plan to another agent",
+      "expected_output": "Outputs only a self-contained delegation prompt addressed to the receiving agent. It states the exact delegated task first, includes scope boundaries, context, acceptance criteria, verification requirements, non-goals, and a concise structured reply contract."
+    },
+    {
+      "id": "edge-ambiguous-mode",
+      "prompt": "Make a handoff for this work.",
+      "expected_output": "Infers continue or delegate from context when safe; asks one short clarifying question only if the wrong mode would materially change the result. It does not invent missing repo state or add wrapper commentary."
+    },
+    {
+      "id": "failure-not-runtime-delegation",
+      "prompt": "Launch three reviewers now and synthesize their findings.",
+      "expected_output": "Does not use the handoff skill as the primary workflow. Actual subagent execution belongs to a subagent orchestration workflow; handoff is only for paste-ready prompts to another session."
+    }
+  ]
+}

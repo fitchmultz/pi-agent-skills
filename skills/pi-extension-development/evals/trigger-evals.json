@@ -1,0 +1,162 @@
+[
+  {
+    "query": "Create a pi extension that registers a custom tool for reading local traces.",
+    "should_trigger": true,
+    "reason": "Custom pi tool extension work."
+  },
+  {
+    "query": "My pi ext command vanished after reload; can you fix it?",
+    "should_trigger": true,
+    "reason": "Casual abbreviation for a Pi extension lifecycle bug."
+  },
+  {
+    "query": "Review this pi package manifest and verify install behavior.",
+    "should_trigger": true,
+    "reason": "Pi package resource/install verification."
+  },
+  {
+    "query": "Verify Pi installs this package and discovers its bundled Agent Skill; do not edit the SKILL.md content.",
+    "should_trigger": true,
+    "reason": "Pi package install and bundled-resource discovery remain runtime/package work."
+  },
+  {
+    "query": "Prepare and publish a new release of this Pi extension package, then verify the exact npm version.",
+    "should_trigger": true,
+    "reason": "Pi package release/publish and post-release verification."
+  },
+  {
+    "query": "Debug why my pi extension command does not appear after /reload.",
+    "should_trigger": true,
+    "reason": "Extension lifecycle/debugging."
+  },
+  {
+    "query": "Improve the interactive TUI overlay UX for my pi extension.",
+    "should_trigger": true,
+    "reason": "Pi extension UI/TUI work."
+  },
+  {
+    "query": "Make a pi package that overrides built-in tools and runs commands through my devbox.",
+    "should_trigger": true,
+    "reason": "Power-user pi extension/package with built-in tool overrides and remote backend."
+  },
+  {
+    "query": "Add a reusable slash prompt that expands into a review checklist, no runtime code.",
+    "should_trigger": false,
+    "reason": "Pure prompt template authoring, not extension runtime work."
+  },
+  {
+    "query": "Improve this SKILL.md trigger description.",
+    "should_trigger": false,
+    "reason": "Pure skill authoring should use skill engineering."
+  },
+  {
+    "query": "Validate and package this Agent Skill folder for distribution; do not test Pi install or resource discovery.",
+    "should_trigger": false,
+    "reason": "Pure Agent Skill packaging belongs to agent-skill-engineering."
+  },
+  {
+    "query": "Publish this ordinary npm package to npm, unrelated to pi.",
+    "should_trigger": false,
+    "reason": "Generic publishing, not pi package behavior."
+  },
+  {
+    "query": "Validate my web app across macOS, Linux, and Windows browsers and report a matrix.",
+    "should_trigger": false,
+    "reason": "Generic cross-OS/browser platform matrix with no pi extension/package runtime; route to platform-validation."
+  },
+  {
+    "query": "Set up Crabbox/cbx to smoke-test this pi extension on macOS, Ubuntu, and Parallels Windows.",
+    "should_trigger": false,
+    "reason": "Crabbox-specific setup and matrix ownership belongs to crabbox-platform-testing."
+  },
+  {
+    "query": "Prove this pi extension works across macOS, Linux, and Windows and return a platform evidence matrix.",
+    "should_trigger": false,
+    "reason": "Multi-environment runtime proof is primarily platform-validation, even though the product is a Pi extension."
+  },
+  {
+    "query": "Research the current Cursor SDK session API and write the external integration contract before we touch our pi extension.",
+    "should_trigger": false,
+    "reason": "Deriving an external dependency contract is primarily external-repo-integration."
+  },
+  {
+    "query": "Build a pi project_trust extension that remembers trusted repos for automation.",
+    "should_trigger": true,
+    "reason": "Pi extension project-trust runtime behavior."
+  },
+  {
+    "query": "Verify my pi package install works in a project that needs --approve to load .pi/settings.json.",
+    "should_trigger": true,
+    "reason": "Pi package install and project trust verification."
+  },
+  {
+    "query": "Add natural #issue autocomplete to my pi extension.",
+    "should_trigger": true,
+    "reason": "Pi extension autocomplete provider behavior."
+  },
+  {
+    "query": "Review my pi extension for startup slowdown and runtime overhead.",
+    "should_trigger": true,
+    "reason": "Pi extension performance/startup overhead review."
+  },
+  {
+    "query": "Why did pi update stop updating my installed pi package?",
+    "should_trigger": true,
+    "reason": "Pi package update/install behavior."
+  },
+  {
+    "query": "Create a pi custom provider extension that stores provider-specific env in auth.json.",
+    "should_trigger": true,
+    "reason": "Pi extension provider/auth behavior."
+  },
+  {
+    "query": "Make my Pi extension progressively load tools through Kimi K3's deferred-tool protocol.",
+    "should_trigger": true,
+    "reason": "Pi extension dynamic-tool and model compatibility behavior."
+  },
+  {
+    "query": "Fix TypeScript errors in my pi extension after pi 0.80 moved getModel out of @earendil-works/pi-ai.",
+    "should_trigger": true,
+    "reason": "Pi extension import/API migration behavior."
+  },
+  {
+    "query": "Migrate my embedded Pi SDK harness to 0.80.8 now that authStorage and modelRegistry session options are gone.",
+    "should_trigger": true,
+    "reason": "Pi SDK ModelRuntime and credential migration behavior."
+  },
+  {
+    "query": "Fix my embedded pi SDK harness code after ExecutionEnvExecOptions disappeared.",
+    "should_trigger": true,
+    "reason": "Pi SDK/harness type migration behavior."
+  },
+  {
+    "query": "Customize pi compaction summaries differently for manual /compact versus overflow retry.",
+    "should_trigger": true,
+    "reason": "Pi extension compaction lifecycle behavior."
+  },
+  {
+    "query": "Make my pi RPC client read live session entries and tree state.",
+    "should_trigger": true,
+    "reason": "Pi RPC/session runtime behavior."
+  },
+  {
+    "query": "Update my pi extension widget when the session is renamed.",
+    "should_trigger": true,
+    "reason": "Pi extension session_info_changed lifecycle behavior."
+  },
+  {
+    "query": "Explain JSON-RPC framing in a generic Node service.",
+    "should_trigger": false,
+    "reason": "Generic RPC/Node work with no pi extension, SDK, or package runtime."
+  },
+  {
+    "query": "Record provider response status and rate-limit headers from my pi custom provider extension.",
+    "should_trigger": true,
+    "reason": "Pi extension provider response diagnostics hook."
+  },
+  {
+    "query": "Fix the package manager implementation in Pi core itself and submit the upstream patch.",
+    "should_trigger": false,
+    "reason": "Pi core source development is outside extension/package runtime work."
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "skill_name": "dogfood",
+  "evals": [
+    {
+      "id": "success-standard-web-qa",
+      "prompt": "Dogfood the local app and focus on signup and settings.",
+      "expected_output": "Discovers or starts the app URL, ensures project .gitignore ignores .dogfood/, writes generated artifacts under .dogfood/, prunes stale irrelevant dogfood artifacts when safe, exercises signup/settings and adjacent user flows through the browser, captures evidence for each issue, reports coverage and blockers, and does not fix or inspect source unless asked."
+    },
+    {
+      "id": "edge-irreversible-boundary",
+      "prompt": "Dogfood the checkout page but do not place an order.",
+      "expected_output": "Tests checkout up to the explicit stop boundary, avoids final order submission, keeps evidence under .dogfood/, and reports post-submit behavior as intentionally untested."
+    },
+    {
+      "id": "success-vfr-jank",
+      "prompt": "Find flicker during dashboard navigation.",
+      "expected_output": "Uses VFR/video/telemetry mode or reports dependency blockers, stores the run under .dogfood/runs/, records action markers, analyzes artifacts when dependencies exist, and cites contact sheets/anomaly evidence."
+    }
+  ]
+}

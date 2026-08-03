@@ -1,0 +1,35 @@
+{
+  "skill_name": "tdd",
+  "evals": [
+    {
+      "id": "success-feature-red-green",
+      "prompt": "Build the new invoice export with TDD.",
+      "expected_output": "Identifies the public interface and test command, writes one behavior test first, records RED failing for the expected reason, makes the smallest implementation change, records GREEN passing, then repeats per behavior."
+    },
+    {
+      "id": "success-integration-first",
+      "prompt": "Add integration tests first for login lockout, then implement it.",
+      "expected_output": "Uses an integration-style test through the public login path, avoids mocking internal modules or adding test-only production seams, confirms the first test fails before implementation, and keeps the implementation minimal for that behavior."
+    },
+    {
+      "id": "edge-ambiguous-interface",
+      "prompt": "TDD a new API for billing settings; I have not decided what callers should pass yet.",
+      "expected_output": "Stops to ask only for the missing public interface or expected behavior details instead of inventing a contract, while keeping any question focused on the blocker."
+    },
+    {
+      "id": "edge-known-regression",
+      "prompt": "Write a regression test first for the known DST crash, then fix it.",
+      "expected_output": "Pins the public behavior that reproduces the DST crash with a failing regression test, records RED for the expected failure, applies the smallest fix, records GREEN, and runs affected validation."
+    },
+    {
+      "id": "edge-unknown-crash",
+      "prompt": "Fix this random crash with no repro, maybe use tests too.",
+      "expected_output": "Uses root-cause triage or gathers reproduction evidence before editing; does not write speculative tests or implementation until the observable failure or expected behavior is known."
+    },
+    {
+      "id": "success-final-report",
+      "prompt": "Finish the TDD change and report back.",
+      "expected_output": "Reports Behavior, Red, Green, Refactor, Validation, and Skipped with fresh command evidence and no completion claim beyond what validation proves."
+    }
+  ]
+}
