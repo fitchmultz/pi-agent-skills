@@ -252,7 +252,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 - **A fresh worktree is not a working checkout.** Ignored files and dependencies are missing until you restore them.
 - **Draft PRs do not run all checks** in some repos, and a draft never becomes mergeable. Mark ready early.
 - **Automated reviewers produce false positives.** Validate before acting; an unjustified "fix" is worse than a rebuttal.
-- **`--delete-branch` does not remove the worktree or the local branch.** Remove both explicitly, from the main checkout.
+- **Merge and cleanup are separate operations.** Do not pass `--delete-branch` to `gh pr merge`; confirm the merge and smoke check first, then lease-delete the remote branch, remove the worktree, and atomically delete the unchanged local ref.
 
 ## Stop rules
 

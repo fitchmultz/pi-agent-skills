@@ -19,7 +19,7 @@
     {
       "id": "success-merge-when-authorized",
       "prompt": "Looks good, squash and merge it.",
-      "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias, confirms the merge landed, runs a bounded smoke check, removes the worktree and the local branch, and updates the linked Linear issue."
+      "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias without combining branch deletion, confirms the merge landed, runs a bounded smoke check, then lease-deletes the unchanged remote branch, removes the worktree, and atomically deletes the unchanged local ref before updating the linked Linear issue."
     },
     {
       "id": "success-follow-up-chain",

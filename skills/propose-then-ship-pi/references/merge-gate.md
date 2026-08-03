@@ -39,18 +39,32 @@ Run one full review of the exact head immediately before merging. Authorization 
 Bind the merge to the SHA you verified, so a push that lands between the check and the merge aborts instead of shipping unreviewed:
 
 ```bash
-<gh> pr merge <PR> --squash --delete-branch --match-head-commit <verified-SHA>
+<gh> pr merge <PR> --squash --match-head-commit <verified-SHA>
 ```
 
 ## After the merge
 
 1. Confirm the merge actually landed: `<gh> pr view <PR> --json state,mergedAt,mergeCommit`.
 2. Run a bounded smoke check relevant to the change before claiming the end state is good.
-3. Clean up. Check for uncommitted work first with `git -C <worktree> status --short`, and never remove a worktree that still holds changes. Leave the worktree before removing it, or you delete your own working directory and every later command fails. `--delete-branch` removes the remote branch and `git worktree remove` removes the checkout; neither deletes the local branch.
+3. Clean up only after the confirmed merge and smoke check. Check for uncommitted work first with `git -C <worktree> status --short`, and never remove a worktree that still holds changes. Capture the current branch from the worktree because its directory can retain an older provisional slug after a branch rename. Bind both branch deletions to the verified SHA so work pushed or committed during the smoke window is preserved instead of force-deleted.
 
 ```bash
+set -e
+BRANCH=$(git -C <worktree> branch --show-current)
+[[ -n "$BRANCH" ]]
+[[ "$(git -C <worktree> rev-parse HEAD)" == "<verified-SHA>" ]]
 MAIN=$(cd <worktree> && dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
-cd "$MAIN" && git worktree remove <worktree> && git branch -D <slug>
+cd "$MAIN"
+if git ls-remote --exit-code --heads origin "refs/heads/$BRANCH" >/dev/null; then
+  git push origin --force-with-lease="refs/heads/$BRANCH:<verified-SHA>" ":refs/heads/$BRANCH"
+else
+  remote_status=$?
+  [[ "$remote_status" -eq 2 ]] || exit "$remote_status"
+fi
+git worktree remove <worktree>
+git update-ref -d "refs/heads/$BRANCH" "<verified-SHA>"
 ```
+
+Exit 2 from `git ls-remote --exit-code` means repository automation already removed the remote branch. Any other remote lookup or lease failure is a blocker, not proof that cleanup succeeded. Leave the local worktree or branch in place when a guard fails and report the advanced ref.
 
 4. Close the linked Linear issue when the real end state and team convention support closure.
