@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review, CI, and Greptile to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
 metadata:
-  version: "1.1.1"
+  version: "1.1.2"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -53,7 +53,7 @@ This skill assumes pi, not Cursor. Four rules carry most of the difference.
 
 1. **Shell state does not persist.** Each `bash` call is a new process. Values such as the base branch, worktree path, and PR number die at the end of the call that computed them. Compute a value, read it, then write the literal into every later command.
 2. **There is no root-switch tool.** Scope work with an absolute path: `cd /Users/<you>/Projects/worktrees/<repo>/<slug> && <command>`. Pass the same absolute path as `cwd` to every subagent.
-3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
+3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns for the panel members below. A Review grouping that also lists regular `reviewer` does not expand the panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
 4. **Pick the GitHub alias from the remote owner.** Never run bare `gh` and never run `gh auth switch`.
 
 ```bash
@@ -134,7 +134,7 @@ Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI 
 
 #### Review panel
 
-`reviewer-gpt` (always), `reviewer-security` (on any trust boundary), and `reviewer-claude` (on real blast radius) run as fresh-context subagents, plus `deslop` and `verification-before-completion` in the parent. `references/review-panel.md` carries the exact invocation forms, brief contents, and the sign-off bar; read it before the first launch.
+`reviewer-gpt` (always), `reviewer-security` (on any trust boundary), and `reviewer-claude` (on real blast radius) run as fresh-context subagents, plus `deslop` and `verification-before-completion` in the parent. Regular `reviewer` is never a panel member and never a deslop proxy; deslop runs only in the parent. `references/review-panel.md` carries the exact invocation forms, brief contents, and the sign-off bar; read it before the first launch.
 
 #### Triage verdicts
 
@@ -277,5 +277,6 @@ Stop before Phase 0 when the target repository is the home dotfiles checkout, wh
 - Implementing during Phase 1 because the fix seemed obvious.
 - Presenting five equal options instead of one ranked recommendation.
 - Substituting an inline self-review for the fresh-context reviewer gate.
+- Adding regular `reviewer` to the panel because the registry groups it under Review, or launching it with the deslop skill as a stand-in for the parent deslop pass.
 - Expanding the diff with unrelated cleanup discovered mid-implementation.
 - Looping on Greptile forever chasing 5/5 on subjective comments instead of reporting at the cap.
