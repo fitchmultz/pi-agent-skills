@@ -22,7 +22,7 @@
     {
       "id": "destination-width-traceability",
       "prompt": "Create a source-backed runtime topology for a README that displays images at 900px. It must show two entry paths converging on one worker, identity and storage boundaries, and durable publication.",
-      "expected_output": "Builds a traceability checklist from inspected source, keeps every entry-to-publication and boundary relationship connected, uses local lanes or labeled boundary ports instead of connectors through component, group, or boundary text, renders and inspects an exact 900px preview of every requested output as well as native output, reflows rather than merely shrinking text, and exports aligned D2, SVG, and PNG artifacts.",
+      "expected_output": "Builds a traceability checklist from inspected source, keeps every entry-to-publication and boundary relationship connected, uses local lanes or labeled boundary ports instead of connectors through component, group, or boundary text, uses the renderer's built-in review output to inspect an exact 900px preview and every overlapping native-resolution crop, removes the review directory, reflows rather than merely shrinking text, and exports aligned D2, SVG, and PNG artifacts.",
       "files": []
     },
     {
@@ -34,7 +34,13 @@
     {
       "id": "shared-resource-owner-boundaries",
       "prompt": "Render a 900px topology and lifecycle from these facts: an ingress runtime owns a STATE binding; a sandbox runtime owns a SESSION binding; both bindings address one shared external bucket; task traffic uses a separate service binding; success delivery happens before completion while failure state happens before notification.",
-      "expected_output": "Keeps each binding inside its owning runtime and the shared bucket outside both, gives task and state traffic separate lanes, preserves every required relationship, draws success and failure as independent order-sensitive branches, positions or shortens group titles so no connector crosses component, group, or boundary text, and inspects exact 900px previews of both outputs before exporting aligned D2, SVG, and PNG artifacts.",
+      "expected_output": "Keeps each binding inside its owning runtime and the shared bucket outside both, gives task and state traffic separate lanes, preserves every required relationship, draws success and failure as independent order-sensitive branches, positions or shortens group titles so no connector crosses component, group, or boundary text, inspects the built-in 900px previews and native crop sets for both outputs, removes temporary review directories, and exports aligned D2, SVG, and PNG artifacts.",
+      "files": []
+    },
+    {
+      "id": "success-built-in-review-images",
+      "prompt": "Render this architecture diagram and visually verify it. I did not specify an embed width.",
+      "expected_output": "Uses the renderer's built-in 980px preview and overlapping native-resolution crops, inspects the complete image and every review image, removes the temporary review directory afterward, and reports only the final D2, SVG, and PNG artifacts.",
       "files": []
     },
     {
