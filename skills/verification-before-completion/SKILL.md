@@ -1,19 +1,19 @@
 ---
 name: verification-before-completion
-description: "Use this skill when the agent is about to claim work is complete, commit, open a PR, or say tests/lint/build pass. Verify the exact success claim with fresh evidence from diff cleanup, requirement checks, validation commands, runtime/manual checks, and contract/generated-surface alignment. Do not use for initial planning, speculative review, or root-cause debugging before a fix exists."
+description: "Use this skill when the agent is about to claim work is complete, commit, open a PR, or say tests/lint/build pass. Verify the exact success claim with current evidence from diff cleanup, requirement checks, validation commands, runtime/manual checks, and contract/generated-surface alignment. Do not use for initial planning, speculative review, or root-cause debugging before a fix exists."
 ---
 
 # Verification Before Completion
 
 ## Purpose
 
-Make the final status claim match fresh evidence. This skill is the last gate before saying work is done.
+Make the final status claim match current evidence. This skill is the last gate before saying work is done.
 
 ## Core rule
 
-No completion claim without current-cycle verification evidence.
+No completion claim without current verification evidence.
 
-If you did not run or inspect the check in this work cycle, do not claim it passes. If evidence proves only a narrower claim, report the narrower claim without pretending the original request is complete.
+Evidence freshness follows the code and environment it covers, not the turn boundary or wall clock. If you did not run or inspect the check in this work cycle, or cannot prove its recorded context still matches, do not claim it passes. If evidence proves only a narrower claim, report the narrower claim without pretending the original request is complete.
 
 ## Use when
 
@@ -68,8 +68,8 @@ Use the repo's canonical generator or narrow obvious edits. Do not invent produc
 
 Pick the closest meaningful proof:
 
-- tests pass → fresh test command with zero relevant failures
-- lint/type/build pass → fresh command output and exit code 0
+- tests pass → current test evidence with zero relevant failures
+- lint/type/build pass → current command output and exit code 0
 - bug fixed → original failing behavior no longer reproduces
 - UI works → rendered/interactive inspection when relevant
 - requirements met → requirement-by-requirement evidence map
@@ -77,19 +77,27 @@ Pick the closest meaningful proof:
 
 Static review does not prove runtime behavior. Green tests do not prove unmet requirements.
 
-### 5. Run or inspect fresh verification
+### 5. Run, inspect, or reuse current verification
 
-Run the relevant commands/checks now, or explain why they cannot run.
+Keep a shared evidence ledger for expensive checks and evidence produced by reviewers or CI:
 
-Inspect:
+| Check or claim | Command or source | Scope identity | Result |
+| --- | --- | --- | --- |
+| `tests pass` | exact command and cwd | code plus relevant environment | exit code, failures, skips, warnings |
 
-- exit code
-- failures/errors
-- skipped checks
-- warnings that affect the claim
-- whether the output actually proves the claim
+For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. Do not reuse an entry produced on a dirty checkout across steps or agents: there is no cheap complete identity covering staged, unstaged, untracked, and relevant ignored inputs. Run the check again after changes settle on a clean tree before carrying it forward.
 
-If validation fails, own the triage. Fix high-confidence issues and rerun unless a real blocker prevents progress.
+Reuse an entry only when all are true:
+
+- the checkout was clean when its code identity was recorded
+- its command or source directly proves the current claim
+- its output is inspectable and records the result, failures, skips, and material warnings
+- the code state, cwd, dependencies, toolchain, configuration, generated artifacts, relevant services, and environment inputs it relied on are unchanged
+- no later failure, flaky signal, base integration, or policy has invalidated it
+
+Do not rerun a still-valid full suite solely because a reviewer finished, a turn ended, or a commit preserved the same tree. Re-run only missing or invalidated checks, choosing the narrowest command that restores evidence. Always refresh the lightweight status/diff sweep before the final claim.
+
+When no valid ledger entry exists, run the relevant command now or explain why it cannot run. Inspect its exit code, failures, skips, warnings, and whether the output actually proves the claim. If validation fails, own the triage. Fix high-confidence issues and rerun unless a real blocker prevents progress.
 
 ### 6. Report only what evidence supports
 
@@ -112,7 +120,7 @@ Use this compact shape:
 Claim: [exact claim]
 Delta sweep: [git status/diff clean / fixed items / remaining issue]
 Alignment: [N/A or contract/generated/docs checked]
-Verification: [commands/checks + result]
+Verification: [commands/checks + result; reused entries include scope identity]
 Unverified: [none or specific gaps]
 Final status: [complete / incomplete / blocked, matching evidence]
 ```
@@ -126,7 +134,7 @@ Verification is complete only when:
 - the exact claim is explicit
 - local changes were swept for accidental debt
 - authority/mirror surfaces are aligned, ruled out, or reported as blocked
-- relevant fresh checks were run or accurately blocked
+- relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
 - final status does not exceed evidence
 
