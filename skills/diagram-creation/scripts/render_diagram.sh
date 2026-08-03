@@ -147,8 +147,9 @@ reserve_temp_directory() {
     printf -v "$target_variable" '%s' "$allocated"
     restore_allocation_signals
     return 0
+  else
+    status=$?
   fi
-  status=$?
   restore_allocation_signals
   return "$status"
 }
@@ -359,21 +360,29 @@ if ((review_images == 1)); then
     reserve_temp_directory review_dir "${TMPDIR:-/tmp}/diagram-review.XXXXXX" || fail "cannot reserve a temporary review directory"
     review_cleanup_root=$review_dir
   else
+    review_dir=$(lexical_absolute_path "$review_dir")
     review_dir_future=$(prospective_directory_path "$review_dir") || fail "review directory parent is not a directory: $review_dir"
     if review_conflicts_with_final "$review_dir_future" "$svg_output_abs" || review_conflicts_with_final "$review_dir_future" "$png_output_abs"; then
       fail "review directory must not equal, contain, or sit beneath a final output path: $review_dir"
     fi
     [[ ! -e "$review_dir" && ! -L "$review_dir" ]] || fail "review directory already exists: $review_dir"
     review_cleanup_root=$(first_missing_directory "$review_dir") || fail "cannot identify the review directory allocation root: $review_dir"
-    review_reserved=1
+    allocation_status=0
     mask_allocation_signals
-    if mkdir -p "$(dirname "$review_dir")" && mkdir "$review_dir"; then
-      restore_allocation_signals
+    if mkdir -m 0700 "$review_cleanup_root"; then
+      review_reserved=1
+      if [[ "$review_cleanup_root" != "$review_dir" ]]; then
+        if mkdir -p "$(dirname "$review_dir")"; then
+          mkdir "$review_dir" || allocation_status=$?
+        else
+          allocation_status=$?
+        fi
+      fi
     else
       allocation_status=$?
-      restore_allocation_signals
-      fail "cannot create review directory: $review_dir (status $allocation_status)"
     fi
+    restore_allocation_signals
+    ((allocation_status == 0)) || fail "cannot create review directory: $review_dir (status $allocation_status)"
   fi
   if directory_contains_native "$review_dir" "$output_dir" \
     || review_ancestor_aliases_final "$review_dir" "$svg_output" \

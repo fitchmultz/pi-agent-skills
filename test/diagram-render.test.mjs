@@ -150,6 +150,105 @@ test("renderer rejects unsafe destinations before replacing outputs", { skip: !t
   }
 });
 
+test("temporary allocation failures stop cleanly at every site", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-allocation-failure-test-"));
+  try {
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeMktemp = path.join(fakeBin, "mktemp");
+    writeFileSync(fakeMktemp, `#!/bin/sh
+case "$*" in
+  *diagram-review*|*diagram-render*|*.diagram-publish*|*.diagram-backup*)
+    count=0
+    [ ! -f "$ALLOC_COUNT_FILE" ] || count=$(cat "$ALLOC_COUNT_FILE")
+    count=$((count + 1))
+    printf '%s\\n' "$count" >"$ALLOC_COUNT_FILE"
+    [ "$count" != "$FAIL_AT" ] || exit 73
+    ;;
+esac
+exec /usr/bin/mktemp "$@"
+`);
+    chmodSync(fakeMktemp, 0o755);
+    const expectedErrors = [
+      /temporary review directory/,
+      /render directory/,
+      /output staging directory/,
+      /output backup directory/,
+    ];
+
+    for (const boundary of [1, 2, 3, 4]) {
+      const scenario = path.join(tmp, `failure-${boundary}`);
+      mkdirSync(scenario);
+      const input = path.join(scenario, "flow.d2");
+      const output = path.join(scenario, "flow");
+      writeFileSync(input, "a -> b\n");
+      writeFileSync(`${output}.svg`, `old svg ${boundary}`);
+      writeFileSync(`${output}.png`, `old png ${boundary}`);
+      const result = render(
+        [input, output],
+        {
+          PATH: `${fakeBin}:${process.env.PATH}`,
+          TMPDIR: scenario,
+          FAIL_AT: String(boundary),
+          ALLOC_COUNT_FILE: path.join(scenario, "allocation-count"),
+        },
+      );
+      assert.notEqual(result.status, 0, `boundary ${boundary}`);
+      assert.match(result.stderr, expectedErrors[boundary - 1]);
+      assert.equal(readFileSync(`${output}.svg`, "utf8"), `old svg ${boundary}`);
+      assert.equal(readFileSync(`${output}.png`, "utf8"), `old png ${boundary}`);
+      assert.deepEqual(
+        readdirSync(scenario).filter((file) =>
+          file.startsWith(".diagram-") || file.startsWith("diagram-review.") || file.startsWith("diagram-render.")),
+        [],
+      );
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("custom review allocation never claims a raced root", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-allocation-race-test-"));
+  try {
+    const input = path.join(tmp, "flow.d2");
+    const output = path.join(tmp, "flow");
+    const racedRoot = path.join(tmp, "raced-root");
+    const review = path.join(racedRoot, "nested", "review");
+    writeFileSync(input, "a -> b\n");
+
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeMkdir = path.join(fakeBin, "mkdir");
+    writeFileSync(fakeMkdir, `#!/bin/sh
+last=''
+for argument in "$@"; do last=$argument; done
+if [ "$last" = "$RACED_ROOT" ] && [ ! -e "$RACE_MARKER" ]; then
+  /bin/mkdir -m 0700 "$RACED_ROOT" || exit $?
+  printf 'outsider\\n' >"$RACED_ROOT/outsider.txt"
+  : >"$RACE_MARKER"
+fi
+exec /bin/mkdir "$@"
+`);
+    chmodSync(fakeMkdir, 0o755);
+
+    const result = render(
+      ["--review-dir", review, input, output],
+      {
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        RACED_ROOT: racedRoot,
+        RACE_MARKER: path.join(tmp, "race-triggered"),
+      },
+    );
+    assert.notEqual(result.status, 0);
+    assert.equal(readFileSync(path.join(racedRoot, "outsider.txt"), "utf8"), "outsider\n");
+    assert.equal(existsSync(`${output}.svg`), false);
+    assert.equal(existsSync(`${output}.png`), false);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("allocation signals cannot strand temporary or review directories", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-allocation-test-"));
   try {
