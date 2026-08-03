@@ -20,7 +20,8 @@ Options:
   --no-review-images    Do not create a preview or native crops
   -h, --help            Show this help
 
-The review directory must not already exist. Remove it after visual inspection.
+The review directory must not already exist or contain the final output directory.
+Remove it after visual inspection.
 EOF
 }
 
@@ -34,7 +35,7 @@ positive_integer() {
 }
 
 nonnegative_integer() {
-  [[ "$1" =~ ^[0-9]+$ ]]
+  [[ "$1" == 0 || "$1" =~ ^[1-9][0-9]*$ ]]
 }
 
 theme=200
@@ -129,31 +130,51 @@ output_base=${output_base%.png}
 [[ -f "$input" ]] || fail "input file not found: $input"
 [[ "$input" == *.d2 ]] || fail "input must have a .d2 suffix: $input"
 [[ -n "$output_base" ]] || fail "output base must not be empty"
-for output in "$output_base.svg" "$output_base.png"; do
-  if [[ -e "$output" && "$input" -ef "$output" ]]; then
-    fail "refusing to overwrite the input through output path: $output"
-  fi
-done
 command -v d2 >/dev/null 2>&1 || fail "d2 is required; on macOS run: brew install d2"
 command -v rsvg-convert >/dev/null 2>&1 || fail "rsvg-convert is required; on macOS run: brew install librsvg"
 command -v file >/dev/null 2>&1 || fail "file is required"
 
+review_reserved=0
+keep_review=0
+tmp_dir=""
+cleanup() {
+  [[ -z "$tmp_dir" ]] || rm -r "$tmp_dir" 2>/dev/null || true
+  if ((review_reserved == 1 && keep_review == 0)); then
+    rm -r "$review_dir" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT
+
 if ((review_images == 1)); then
   if [[ -z "$review_dir" ]]; then
     review_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-review.XXXXXX")
-    rmdir "$review_dir"
   else
-    [[ ! -e "$review_dir" && ! -L "$review_dir" ]] || fail "review directory already exists: $review_dir"
+    mkdir -p "$(dirname "$review_dir")" || fail "cannot create review directory parent: $(dirname "$review_dir")"
+    mkdir "$review_dir" || fail "review directory already exists or cannot be created: $review_dir"
   fi
+  review_reserved=1
 fi
 
 output_dir=$(dirname "$output_base")
-mkdir -p "$output_dir"
+mkdir -p "$output_dir" || fail "cannot create output directory: $output_dir"
+output_dir_abs=$(cd "$output_dir" && pwd -P)
+if ((review_images == 1)); then
+  review_dir_abs=$(cd "$review_dir" && pwd -P)
+  if [[ "$review_dir_abs" == "$output_dir_abs" || "$output_dir_abs" == "$review_dir_abs/"* ]]; then
+    fail "review directory must not equal or contain the final output directory: $review_dir and $output_dir"
+  fi
+fi
+
+for output in "$output_base.svg" "$output_base.png"; do
+  if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
+    fail "output target must be a regular file or absent: $output"
+  fi
+  if [[ -e "$output" && "$input" -ef "$output" ]]; then
+    fail "refusing to overwrite the input through output path: $output"
+  fi
+done
+
 tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/diagram-render.XXXXXX")
-cleanup() {
-  rm -r "$tmp_dir" 2>/dev/null || true
-}
-trap cleanup EXIT
 
 d2 validate "$input"
 d2 --bundle=false --layout="$layout" --theme="$theme" --pad="$pad" "$input" "$tmp_dir/render.svg"
@@ -219,12 +240,14 @@ if ((review_images == 1)); then
   done
 fi
 
+if ((review_images == 1)); then
+  for review_file in "$review_stage"/*; do
+    install -m 0644 "$review_file" "$review_dir/$(basename "$review_file")"
+  done
+fi
 install -m 0644 "$tmp_dir/render.svg" "$output_base.svg"
 install -m 0644 "$tmp_dir/render.png" "$output_base.png"
-if ((review_images == 1)); then
-  mkdir -p "$(dirname "$review_dir")"
-  mv "$review_stage" "$review_dir"
-fi
+keep_review=1
 
 aspect_ratio=$(awk -v width="$png_width" -v height="$png_height" 'BEGIN { printf "%.2f", width / height }')
 printf 'Render: D2 %s; theme=%s; layout=%s; pad=%s; zoom=%s\n' "$(d2 --version)" "$theme" "$layout" "$pad" "$zoom"

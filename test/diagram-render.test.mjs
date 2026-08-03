@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -18,6 +18,10 @@ function pngDimensions(file) {
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
 
+function render(args) {
+  return spawnSync(script, args, { encoding: "utf8" });
+}
+
 test("renderer creates a 980px preview and overlapping native crops", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-review-test-"));
   try {
@@ -26,11 +30,10 @@ test("renderer creates a 980px preview and overlapping native crops", { skip: !t
     const review = path.join(tmp, "review");
     writeFileSync(input, "a -> b\n");
 
-    const result = spawnSync(
-      script,
-      ["--crop-size", "100", "--crop-overlap", "20", "--review-dir", review, input, output],
-      { encoding: "utf8" },
-    );
+    const result = render([
+      "--zoom", "1.5", "--crop-size", "100", "--crop-overlap", "20",
+      "--review-dir", review, input, output,
+    ]);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 
     assert.equal(pngDimensions(path.join(review, "preview-980.png")).width, 980);
@@ -55,6 +58,65 @@ test("renderer creates a 980px preview and overlapping native crops", { skip: !t
     assert.ok(ys.slice(1).every((y, index) => y - ys[index] < 100));
     assert.match(result.stdout, /Preview \(980px\):/);
     assert.match(result.stdout, /Native crops:/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("renderer rejects unsafe destinations before replacing outputs", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-path-test-"));
+  try {
+    const input = path.join(tmp, "flow.d2");
+    writeFileSync(input, "a -> b\n");
+
+    const output = path.join(tmp, "stable", "flow");
+    mkdirSync(path.dirname(output));
+    writeFileSync(`${output}.svg`, "old svg");
+    writeFileSync(`${output}.png`, "old png");
+    const blockedParent = path.join(tmp, "blocked-parent");
+    writeFileSync(blockedParent, "not a directory");
+    const publicationFailure = render([
+      "--review-dir", path.join(blockedParent, "review"), input, output,
+    ]);
+    assert.notEqual(publicationFailure.status, 0);
+    assert.equal(readFileSync(`${output}.svg`, "utf8"), "old svg");
+    assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+
+    const collision = path.join(tmp, "collision");
+    const overlapFailure = render([
+      "--review-dir", collision, input, path.join(collision, "flow"),
+    ]);
+    assert.notEqual(overlapFailure.status, 0);
+    assert.match(overlapFailure.stderr, /must not equal or contain/);
+    assert.equal(existsSync(path.join(collision, "flow.svg")), false);
+
+    const directoryOutput = path.join(tmp, "directory-output");
+    mkdirSync(`${directoryOutput}.svg`);
+    const directoryFailure = render(["--no-review-images", input, directoryOutput]);
+    assert.notEqual(directoryFailure.status, 0);
+    assert.match(directoryFailure.stderr, /regular file or absent/);
+    assert.equal(existsSync(path.join(`${directoryOutput}.svg`, "render.svg")), false);
+
+    const symlinkTarget = path.join(tmp, "symlink-target");
+    const symlinkOutput = path.join(tmp, "symlink-output");
+    mkdirSync(symlinkTarget);
+    symlinkSync(symlinkTarget, `${symlinkOutput}.svg`, "dir");
+    const symlinkFailure = render(["--no-review-images", input, symlinkOutput]);
+    assert.notEqual(symlinkFailure.status, 0);
+    assert.match(symlinkFailure.stderr, /regular file or absent/);
+
+    const noReviewOutput = path.join(tmp, "no-review");
+    const noReview = render(["--no-review-images", input, noReviewOutput]);
+    assert.equal(noReview.status, 0, `${noReview.stdout}\n${noReview.stderr}`);
+    assert.equal(existsSync(`${noReviewOutput}.svg`), true);
+    assert.equal(existsSync(`${noReviewOutput}.png`), true);
+    assert.doesNotMatch(noReview.stdout, /Review directory:/);
+
+    const leadingZero = render([
+      "--crop-overlap", "08", "--no-review-images", input, path.join(tmp, "zero"),
+    ]);
+    assert.notEqual(leadingZero.status, 0);
+    assert.match(leadingZero.stderr, /non-negative integer/);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
