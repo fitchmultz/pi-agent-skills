@@ -48,8 +48,18 @@
     },
     {
       "id": "edge-greptile-unavailable",
-      "prompt": "[The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
-      "expected_output": "Confirms the app is not installed rather than polling to timeout, reports the Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+      "prompt": "[No gate waiver is configured. The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
+      "expected_output": "Confirms the app is not installed rather than polling to timeout, reports the required Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+    },
+    {
+      "id": "edge-explicit-repository-gate-waivers",
+      "prompt": "[Repository AGENTS.md explicitly says CI is waived-if-absent and Greptile is waived-if-unavailable. The open PR has zero checks, the app/review surface is confirmed unavailable, and all other gates pass.]",
+      "expected_output": "Cites AGENTS.md as the policy source, runs the repository's canonical local validation on the exact head, records CI and Greptile as waived rather than passed, still sweeps every thread and PR comment, and proceeds without asking the user to repeat the permanent policy."
+    },
+    {
+      "id": "edge-waiver-does-not-hide-failure",
+      "prompt": "[The repo uses absent-service waivers, but a CI check exists and fails, while Greptile reviewed the current head and left an unresolved finding.]",
+      "expected_output": "Treats both services as available, fixes or reports the failing check and addresses the Greptile finding. It does not apply absence-only waivers to failures or unresolved feedback."
     },
     {
       "id": "edge-greptile-no-check-run",

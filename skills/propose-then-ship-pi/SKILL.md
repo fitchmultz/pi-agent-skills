@@ -1,7 +1,7 @@
 ---
 name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review, CI, and Greptile to merge. Do not use for plain research, an already-decided change, or an existing PR."
-compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. The Greptile phase needs the greptile-apps GitHub App on the repo. Bundled scripts need bash and jq."
+compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
 metadata:
   version: "1.0.0"
   owner: "local"
@@ -41,7 +41,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **The gate is real.** Phase 1 ends by asking the user to choose. Never continue into implementation on your own judgment, even when the answer looks obvious.
 - **One approved direction per PR.** Never widen a diff with discoveries. From the main run they queue for the Phase 6 chain; from inside a chain item they are filed or reported, never queued.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
-- **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI.
+- **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-service policy changes which remote gates exist; it never excuses a failing gate.
 - **Scale rigor with risk.** `reviewer-gpt`, deslop, and the evidence gate always run. `reviewer-security` is required whenever the change touches a trust boundary: authentication, authorization, untrusted input, secrets, dependencies, outbound calls, or data exposure. `reviewer-claude` is required when the change carries real blast radius. Skip a conditional pass only for genuinely low-risk work, and name the skip and its reason in the report. Never drop a pass silently.
 - **Every finding gets a verdict, not silence.** Fix it, rebut it with reasoning, or record it as a follow-up.
 - **Report instead of spinning.** Every loop in Phase 4 has a cap. On cap, hand back state and the blocker.
@@ -85,6 +85,16 @@ There is no root-switch in pi: record the printed worktree path and base, and wr
 
 The slug is provisional, since the direction is not chosen yet. Nothing is pushed until Phase 3, so rename the branch with `git branch -m` once the approved direction has a sharper name.
 
+#### Remote gate policy
+
+Before Phase 1, read the current user/project instructions and repository guidance, then record this run's policy and its source:
+
+- CI: `required` or `waived-if-absent`
+- Greptile: `required` or `waived-if-unavailable`
+- Source: the user instruction or repository guidance path that grants any waiver
+
+Both gates default to `required`. A standing user or project instruction can cover an owner or repository; a permanent repository policy belongs in checked-in guidance such as `AGENTS.md`. Never infer a waiver from missing workflows, a missing app, repository ownership, or what another repository did. If explicit sources conflict and normal instruction precedence does not resolve them, ask once. Carry the recorded policy through reviewer briefs and the Ship report so an absent service is reported as **waived**, never as passed.
+
 ### Phase 1 — Recon and proposal (read-only)
 
 Zero writes to the repo: no edits, no commits, no pushes, no installs. An accidental invocation must cost a proposal and a local worktree, nothing else.
@@ -105,7 +115,7 @@ The user picks. Before touching code, restate in two sentences: the chosen direc
 1. Restore what worktrees do not copy: ignored files the build needs, such as `.env*` and installed dependencies. A fresh worktree has no `node_modules`.
 2. Read the repo's own conventions and follow them.
 3. Implement the approved plan only.
-4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not run the repo's full CI suite locally — every PR check must pass remotely anyway, and the full matrix runs there in parallel with your next steps.
+4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
 5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write with no standing exemption: confirm it first unless the user already asked for a PR.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
 
@@ -117,8 +127,8 @@ Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI 
 2. **Triage.** Fix valid findings. Rebut invalid ones in writing with reasoning. Give out-of-scope findings the Defer verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
-5. **Push and watch CI.** Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
-6. **Greptile and threads.** Confirm Greptile reviewed the current head, then address and resolve per `references/greptile-loop.md`. Its output shape varies by installation, so follow that reference rather than assuming a check run exists. Sweep threads from every author, not only Greptile.
+5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
+6. **Greptile and threads.** Apply the recorded policy, then follow `references/greptile-loop.md`. `required` needs the normal current-head verdict. `waived-if-unavailable` permits only a confirmed unavailable app/review surface; any current-head Greptile signal makes the normal verdict and findings required. Sweep threads and PR comments from every author under either policy.
 7. **Re-run the panel** whenever the code changed materially since step 1.
 
 #### Review panel
@@ -142,8 +152,8 @@ Leave the loop only when all of these hold against the current head SHA:
 - `reviewer-gpt` reports no blocking findings.
 - `reviewer-security` and `reviewer-claude` each either signed off on the diff you are shipping, after their last requested change, or were skipped under the risk rule with the reason recorded in the report.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
-- CI is green on a head that contains the current base tip, and the PR is mergeable with no conflicts.
-- Greptile is at 5/5 confidence on this head, read from a bot-authored source. Two alternatives are legitimate, and both are reported as unavailable rather than passed: the app is not installed on this repo, or it reviewed the head but published no score any bot-authored source carries. Never infer a score from the PR body.
+- The head contains the current base tip and the PR is mergeable with no conflicts. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
+- Greptile is at 5/5 confidence on this head from a bot-authored source, or the app/review surface is confirmed unavailable under a cited `waived-if-unavailable` policy. A current-head signal establishes availability and restores the normal verdict and finding requirements. A reviewed head with no verifiable score remains blocking. Never infer a score from the PR body.
 - Zero unresolved review threads from any author, and every PR-level comment addressed. Threads and issue comments are separate surfaces; check both.
 - Any linked Linear issue is current.
 
@@ -184,7 +194,7 @@ GH_BIN=gh-work <skill-dir>/scripts/pr_signals.sh <PR>
 GH_BIN=gh-work MAX_WAIT_SECONDS=1800 <skill-dir>/scripts/pr_signals.sh <PR>
 ```
 
-Exit codes: `0` every check completed successfully on an open PR, `1` a check failed, `2` timed out with checks running, `3` setup problem, `4` settled but signals are missing or unknown, meaning zero checks reported, an unknown conclusion, or a PR that is not open. The script prints the head SHA; bind every claim to it.
+Exit codes: `0` every check completed successfully on an open PR, `1` a check failed, `2` timed out with checks running, `3` setup problem, `4` settled but signals are missing or unknown, meaning zero checks reported, an unknown conclusion, or a PR that is not open. Exit 4 for zero checks is eligible for `waived-if-absent` only after canonical local validation passes on that printed head; it never hides an unknown check or closed PR. The script prints the head SHA; bind every claim to it.
 
 **test_pr_signals.sh**: mocked check of every exit path. Run it after editing `pr_signals.sh`.
 
@@ -234,8 +244,8 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 | Gate | Result |
 | --- | --- |
 | Panel | [cycles run, findings fixed, findings rebutted] |
-| CI | [green, and what ran] |
-| Greptile | [confidence, threads resolved] |
+| CI | [green and what ran / waived-if-absent, policy source, and exact-head local validation] |
+| Greptile | [confidence and threads resolved / waived-if-unavailable and policy source] |
 | Threads | [unresolved count across all authors] |
 | Linear | [issue and state, or "none"] |
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
@@ -248,6 +258,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 ## Gotchas
 
 - **A settled check is not a passing check.** A completed run with an empty conclusion is unknown, not green, and a `SKIPPED` or `NEUTRAL` Greptile run produced no review.
+- **A missing service is not an implicit waiver.** Cite the recorded instruction or repository guidance, apply only the matching absence policy, and report the gate as waived rather than passed.
 - **A clean merge is not a working merge.** Git reports a conflict only when both sides touch the same lines. A renamed function, a new required field, a tightened lint rule, or a new test all merge cleanly and fail afterward. Prove compatibility by testing the merged result.
 - **A fresh worktree is not a working checkout.** Ignored files and dependencies are missing until you restore them.
 - **Draft PRs do not run all checks** in some repos, and a draft never becomes mergeable. Mark ready early.

@@ -35,7 +35,7 @@ subagent({
 
 ## Brief contents
 
-Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the PR number and link once one exists, the approved direction and its non-goals, the validation already run, and the running record of declined findings and accepted tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse entries whose scope is still valid instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Tell reviewers not to modify project or source files. Record each run ID and inspect its result.
+Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the PR number and link once one exists, the approved direction and its non-goals, the recorded remote gate policy and source, the validation already run, and the running record of declined findings and accepted tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse entries whose scope is still valid instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Tell reviewers not to modify project or source files. Record each run ID and inspect its result.
 
 Never ask a child for evidence only the parent can obtain. Children do not receive the `subagent` tool, so registry listings, agent configs, and run status must be captured in the parent and pasted into the brief. A child asked to "verify the registry" will stall or guess.
 
