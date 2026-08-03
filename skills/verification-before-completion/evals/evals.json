@@ -37,6 +37,11 @@
       "expected_output": "Refuses to carry the dirty-checkout result across steps or agents because path status cannot identify staged, unstaged, untracked, and relevant ignored contents. Runs verification again after the changes settle on a clean tree."
     },
     {
+      "id": "edge-review-verdict-is-not-reusable",
+      "prompt": "A reviewer found a blocker, the implementation changed, and current deterministic checks now pass on the new clean head. The next review brief includes the evidence ledger and the earlier reviewer verdict. Verify before completion.",
+      "expected_output": "Reuses only still-valid deterministic validation outputs. Treats the earlier findings as review history, reruns every required reviewer against the updated diff in fresh context, and does not let the earlier verdict or sign-off satisfy the current-head review gate."
+    },
+    {
       "id": "edge-environment-invalidates-reused-evidence",
       "prompt": "The exact Git tree is unchanged since the suite passed, but the toolchain version and test-service configuration changed. Verify before completion.",
       "expected_output": "Invalidates the ledger entry because its relevant toolchain and environment inputs changed, then reruns the affected checks instead of claiming the unchanged tree alone is sufficient."
