@@ -25,6 +25,11 @@
     "reason": "Behavior-preserving cleanup of slop inside changed hunks."
   },
   {
+    "query": "Deslop the nested describe.each and it.each ceremony in this PR without dropping real boundary cases.",
+    "should_trigger": true,
+    "reason": "Explicit behavior-preserving cleanup of over-parameterized tests in changed hunks."
+  },
+  {
     "query": "Do a thermonuclear code quality review of this PR.",
     "should_trigger": false,
     "reason": "Broad strict maintainability review belongs to the review skill, not deslop cleanup."
@@ -48,5 +53,10 @@
     "query": "Clean all generated SDK files in the repository, even unchanged ones.",
     "should_trigger": false,
     "reason": "Repo-wide generated-code cleanup is not limited to branch/PR changed hunks."
+  },
+  {
+    "query": "Design a parameterized test matrix for the new OAuth verifier.",
+    "should_trigger": false,
+    "reason": "New test design is implementation work, not cleanup of an existing branch or PR diff."
   }
 ]

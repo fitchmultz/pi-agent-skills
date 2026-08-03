@@ -1,6 +1,6 @@
 ---
 name: deslop
-description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, casts, needless wrappers/nesting, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
+description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, casts, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
 ---
 
 # Deslop
@@ -40,10 +40,16 @@ Remove AI-generated noise from a branch or PR diff without changing intended beh
    - defensive checks abnormal for trusted internal paths
    - `any`/type assertions used only to silence errors instead of matching local types
    - needless adapters, wrappers, conditionals, or nesting that neighbors avoid
+   - nested or table-driven test ceremony where a plain test or an existing repo helper is clearer
    - names, structure, or error handling inconsistent with the surrounding file
-4. Apply the smallest behavior-preserving edit. Check nearby code first; prefer deletion and local-style simplification over rewrites.
-5. Re-check the diff for unrelated churn, accidental behavior changes, and remaining slop.
-6. Run relevant tests/type checks when code behavior or types were touched; for comment-only cleanup, diff inspection is enough.
+4. Before simplifying parameterized tests, trace each value to its real boundary and type:
+   - keep malformed-value cases for external, untyped, or deserialized input when they prove a real boundary
+   - remove values the real typed internal producer cannot emit and that reach the code only through an impossible mock
+   - use `it.each`/`describe.each` only when multiple meaningful cases share behavior; collapse wrappers that only rerun one test
+   - prefer an existing local test helper over a hand-rolled nested table
+5. Apply the smallest behavior-preserving edit. Check nearby code first; prefer deletion and local-style simplification over rewrites.
+6. Re-check the diff for unrelated churn, accidental behavior changes, and remaining slop.
+7. Run relevant tests/type checks when code behavior or types were touched; for comment-only cleanup, diff inspection is enough.
 
 ## Stop rules
 
@@ -58,4 +64,6 @@ Report the base inspected, files changed, validation run, and any skipped cleanu
 - Behavior changes disguised as cleanup.
 - Broad rewrites instead of focused deslop.
 - Removing comments that document non-obvious invariants, security reasoning, or external contracts.
+- Deleting malformed-input coverage from a real trust boundary because downstream types look narrower.
+- Parameterizing typed internal seams with values they cannot produce just to appear defensive.
 - Touching unrelated user changes just because they are nearby.
