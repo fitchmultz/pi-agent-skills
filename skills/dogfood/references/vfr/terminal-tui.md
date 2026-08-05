@@ -1,73 +1,59 @@
 # Terminal and TUI VFR
 
-Use this reference when dogfooding terminal programs, TUIs, CLIs with animated output, or editor/agent terminal panes.
+Use this reference for cursor jumps, redraw flicker, streaming output, focus/input loss, broken colors, unreadable layouts, spinners, and full-screen TUI transitions.
 
-## Goal
+## Contract
 
-Make terminal behavior inspectable like a browser UI:
+The terminal path wraps the target command in localhost-only ttyd, then uses the same browser lifecycle as ordinary VFR:
 
 ```text
-vfr.py terminal-start -> ttyd/xterm.js terminal -> agent_browser video/screenshots -> xterm.js buffer snapshots -> VFR analysis
+terminal-start -> render-check -> record -> interact -> record stop -> terminal-stop -> contact sheets -> agent image review
 ```
 
-This works well for cursor jumps, redraw flicker, loading spinners, streaming output, focus/input loss, broken colors, unreadable layouts, and TUI state transitions.
+Read `workflow.md` first. Its ffmpeg preflight, absolute paths, artifact verification, self-inspection, session ownership, and stop-before-close rules all apply here.
 
-## Preferred method
+## 1. Start the terminal helper
 
-Use the helpers. Do not hand-build long `ttyd` commands unless debugging the helper.
-
-1. Create the VFR run:
+Resolve helper paths against the dogfood skill directory, then run:
 
 ```bash
-VFR_ROOT="${VFR_ROOT:?set VFR_ROOT to the dogfood skill directory}"
-RUN=".dogfood/runs/$(date -u +%Y%m%dT%H%M%SZ)"
-python3 "$VFR_ROOT/scripts/vfr.py" doctor
-python3 "$VFR_ROOT/scripts/vfr.py" init "$RUN" --session terminal-vfr --viewport "1600x1000"
+python3 <dogfood-skill-dir>/scripts/vfr.py doctor
+python3 <dogfood-skill-dir>/scripts/vfr.py init \
+  .dogfood/runs/<timestamp>-terminal \
+  --viewport 1600x1000
+python3 <dogfood-skill-dir>/scripts/vfr.py terminal-start \
+  <absolute-run> --cwd <project> -- <command-under-test>
 ```
 
-2. Start the terminal/TUI:
+`terminal-start` prints a localhost URL and PID. It binds ttyd to `127.0.0.1`, enables input, sets stable terminal colors/font/scrollback, and records cleanup metadata. Use the printed literal URL and absolute run path; shell variables do not persist across Pi tool calls.
 
-```bash
-python3 "$VFR_ROOT/scripts/vfr.py" terminal-start "$RUN" --cwd "$PROJECT" -- \
-  pi --model cursor/grok-4.5 "/create-goal execute the daily refresh tasks thoroughly"
-```
+Do not hand-build ttyd commands unless debugging the helper. Do not expose ttyd beyond localhost.
 
-Alternative model id: `xai/grok-4.5`.
-
-`terminal-start` prints JSON with the local `url`, `pid`, command, cwd, and log path. It launches localhost-only `ttyd` with the known-good defaults for Pi and rich TUIs: direct mode, `TERM=xterm-256color`, `COLORTERM=truecolor`, stable font size, cursor blink disabled, scrollback enabled, and `--max-clients 3` so browser automation retries do not strand the active page on a reconnect screen.
-
-3. Open the printed URL with `agent_browser`, set the viewport, start recording, and take an early render-check screenshot at `RUN/frames/render-check.png`. Strict validation expects that exact file for terminal/TUI runs.
-
-4. Capture at least one terminal buffer snapshot after the TUI has rendered with `terminal-capture-js` and save it as `RUN/logs/terminal-state.<label>.json`. Strict validation expects at least one such snapshot so visual screenshots can be correlated with text/cursor state.
-
-5. If the render-check screenshot shows duplicated panes, crushed spacing, missing colors, or unreadable layout, stop immediately:
-
-```bash
-python3 "$VFR_ROOT/scripts/vfr.py" terminal-stop "$RUN"
-```
-
-If the target project changed during the bad run, discard those target-project changes before restarting.
-
-## Browser capture flow
-
-Use `agent_browser`, not shell browser commands. For slow TUI startup, set a larger top-level `timeoutMs` instead of falling back to shell browser automation:
+## 2. Verify rendering before the real flow
 
 ```json
-{ "args": ["open", "<url printed by terminal-start>"], "sessionMode": "fresh", "timeoutMs": 60000 }
+{ "args": ["open", "<printed-url>"], "sessionMode": "fresh", "timeoutMs": 60000 }
 { "args": ["set", "viewport", "1600", "1000"] }
-{ "args": ["record", "start", ".dogfood/runs/RUN_ID/video.webm"] }
-{ "args": ["screenshot", ".dogfood/runs/RUN_ID/frames/render-check.png"] }
+{ "args": ["screenshot", "<absolute-run>/frames/render-check.png"] }
 ```
 
-`record start`/`record restart` reports an open recording as a pending artifact (`status: "pending"`, `recordingState: "openRecording"`, `willExistOnStop: true`). That is expected; verify the video file after `record stop`.
-
-Immediately add a sync marker after recording starts:
+Open `render-check.png` with `read` immediately. Stop the run if it shows duplicated panes, crushed spacing, missing colors, a reconnect screen, an empty terminal after unexpected command exit, or unreadable layout:
 
 ```bash
-python3 "$VFR_ROOT/scripts/vfr.py" sync "$RUN" --target recording-start --video-t 0 --url "$TERMINAL_URL" --viewport "1600x1000"
+python3 <dogfood-skill-dir>/scripts/vfr.py terminal-stop <absolute-run>
 ```
 
-If input is needed, `snapshot -i` should expose one textbox named `Terminal input`. Prefer human-paced `job` `type` steps with `delayMs` and a final `press` when testing typing, streaming, cursor, or redraw behavior:
+Fix setup before attempting a long capture.
+
+## 3. Record and interact
+
+```json
+{ "args": ["record", "start", "<absolute-run>/video.webm"] }
+```
+
+Verify the pending recording contract and absence of `recordingDependencyWarning` exactly as described in `workflow.md`.
+
+`snapshot -i` should expose a textbox named `Terminal input` when input is available. Prefer human-paced typing for streaming and redraw checks:
 
 ```json
 {
@@ -77,7 +63,7 @@ If input is needed, `snapshot -i` should expose one textbox named `Terminal inpu
       {
         "action": "type",
         "selector": "@e1",
-        "text": "Write six short lines about terminal streaming QA.",
+        "text": "<test input>",
         "delayMs": 20,
         "press": "Enter"
       }
@@ -86,82 +72,65 @@ If input is needed, `snapshot -i` should expose one textbox named `Terminal inpu
 }
 ```
 
-For direct targets, `semanticAction.selector` can now fill/click/check visible `@refs` without locator guessing:
+Add action markers before important input, interrupts, resizes, or mode changes. Avoid huge instant paste when the point is typing, cursor, or redraw behavior.
 
-```json
-{ "semanticAction": { "action": "fill", "selector": "@e1", "text": "prompt text" } }
-```
+## 4. Capture terminal state
 
-Avoid huge instant paste when the point is to evaluate typing, streaming, cursor, or redraw behavior.
+Screenshots are the source of truth for appearance. The xterm.js text buffer is optional correlated evidence and can contain secrets, prompts, paths, or account data.
 
-## Terminal buffer snapshots
-
-Screenshots are the source of truth for visual layout, but xterm.js exposes a useful text buffer. Use this helper through `agent_browser eval --stdin` after important states and save the successful payload directly with top-level `outputPath`:
+Print the capture script:
 
 ```bash
-python3 "$VFR_ROOT/scripts/vfr.py" terminal-capture-js
+python3 <dogfood-skill-dir>/scripts/vfr.py terminal-capture-js
 ```
+
+Pass that output through native `agent_browser` `eval --stdin` and save it:
 
 ```json
 {
   "args": ["eval", "--stdin"],
   "stdin": "<terminal-capture-js output>",
-  "outputPath": ".dogfood/runs/RUN_ID/logs/terminal-state.final.json"
+  "outputPath": "<absolute-run>/logs/terminal-state.final.json"
 }
 ```
 
-The result includes `rows`, `cols`, cursor position, non-empty row count, and visible terminal text. Treat it as sensitive: it can include secrets, prompts, local paths, command output, and account data.
+## 5. Stop, analyze, and inspect
 
-Use descriptive labels such as `terminal-state.rendered.json`, `terminal-state.streaming.json`, and `terminal-state.final.json`; this makes validation and later review easier.
-
-## Stop and analyze
-
-At the end of the run, capture a completion screenshot while the terminal is still visible when possible, then stop browser recording, then stop the terminal if it is still running:
+Capture the final state while still visible, then stop recording before stopping ttyd:
 
 ```json
-{ "args": ["screenshot", ".dogfood/runs/RUN_ID/frames/final.png"] }
+{ "args": ["screenshot", "<absolute-run>/frames/final.png"] }
 { "args": ["record", "stop"] }
 ```
 
-```bash
-python3 "$VFR_ROOT/scripts/vfr.py" terminal-stop "$RUN" || true
-uv run "$VFR_ROOT/scripts/analyze-video.py" --video "$RUN/video.webm" --out-dir "$RUN"
-python3 "$VFR_ROOT/scripts/vfr.py" validate "$RUN" --strict
+Require fully verified video metadata. Close the run-owned browser now, before post-processing; leave a caller-owned authenticated session open:
+
+```json
+{ "args": ["close"] }
 ```
 
-For terminal/TUI runs, `validate --strict` fails on missing render-check screenshot, missing terminal-state snapshot, missing analyzer output/contact sheet, or missing action markers. That is intentional: without those artifacts, confidence should be reported as steady-state only or medium/low motion confidence.
+Then:
 
-Read in this order with an image-capable tool for image artifacts:
+```bash
+python3 <dogfood-skill-dir>/scripts/vfr.py terminal-stop <absolute-run>
+python3 <dogfood-skill-dir>/scripts/vfr.py contact-sheet <absolute-run>
+python3 <dogfood-skill-dir>/scripts/vfr.py validate <absolute-run>
+```
+
+Open, in order, with `read`:
 
 1. `frames/render-check.png`
-2. `frames/final.png` or the best completion screenshot when present
-3. `reports/validation.md`
-4. `reports/review.md`
-5. `reports/contact_*.jpg`
-6. Focused anomaly triptychs in `keyframes/` and `diffs/`
-7. `logs/terminal-state.*.json`
+2. `frames/final.png`
+3. every `reports/contact_ffmpeg_*.jpg`
+4. focused anomaly frames when deep analysis was needed
 
-After viewing actual screenshots/contact sheets, record what you inspected:
-
-```bash
-python3 "$VFR_ROOT/scripts/vfr.py" \
-  review-note "$RUN" "$RUN/reports/contact_001.jpg" \
-  --verdict ok \
-  --note "Inspected contact sheets and final screenshot; terminal output stayed readable during streaming."
-```
+Check cursor stability, duplicate/redrawn regions, intermediate readability, wrapping, colors, spinner behavior, focus/input retention, and whether the final state was visible long enough for a human.
 
 ## Gotchas
 
-- Helper-first rule: use `terminal-start`, `terminal-stop`, and `terminal-capture-js`; avoid copying raw `ttyd` patterns.
-- Do not wrap Pi or rich TUIs in `script(1)`; it caused duplicated/broken-looking Pi TUI sections during a real capture.
-- Terminal dimensions depend on browser viewport and font size; keep the run metadata and render-check screenshot.
-- If the command exits before the final screenshot, ttyd may show a blank terminal page. Do not treat that alone as a broken capture; verify the video/contact sheet contains the actual run.
-- Normal cursor blink, progress spinners, and intentional full-screen redraws can look like visual anomalies.
-- Do not expose `ttyd` beyond `127.0.0.1`. The helper binds locally and enables write mode only because input is required.
-- Keep the helper's default `--max-clients 3` unless a test specifically needs single-client behavior; browser automation can transiently open or retry pages.
-- Redact screenshots, videos, terminal-state JSON, and logs before sharing outside the local repo.
-
-## Alternatives
-
-- **VS Code/Electron integrated terminal:** use `agent_browser` Electron launch/attach only when the target is specifically an editor terminal workflow.
-- **Plain tmux/script/asciinema:** use only when no browser is available. This is weaker for visual/TUI glitches and does not produce normal `agent_browser` artifacts.
+- Do not wrap Pi or rich TUIs in `script(1)`; a real capture produced duplicated/broken-looking sections.
+- If the command exits before the final screenshot, ttyd may show a blank page. Review the video sheets before calling that a product defect.
+- Cursor blink, intentional spinners, and full-screen redraws can look anomalous in frame diffs.
+- Browser viewport and font size determine terminal dimensions; retain both in run metadata.
+- Always run `terminal-stop`, including browser or recording failure paths.
+- Redact screenshots, video frames, terminal-state JSON, and logs before sharing outside the local repo.

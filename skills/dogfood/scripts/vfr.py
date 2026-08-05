@@ -7,13 +7,13 @@ of VFR deterministic: action logging, sync markers, and bundle validation.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import os
 import platform
 import shutil
 import signal
 import socket
+import subprocess
 import sys
 import tempfile
 import time
@@ -72,30 +72,14 @@ def command_sync(args: argparse.Namespace) -> int:
     return 0
 
 
-def command_review_note(args: argparse.Namespace) -> int:
-    run = run_path(args.run)
-    item = Path(args.item).expanduser()
-    row: dict[str, Any] = {
-        "wall": wall_ms(),
-        "item": args.item,
-        "verdict": args.verdict,
-    }
-    if args.note:
-        row["note"] = args.note
-    if item.exists():
-        row["exists"] = True
-        row["size_bytes"] = item.stat().st_size if item.is_file() else 0
-    append_ndjson(run / "reports" / "manual-review.ndjson", row)
-    print(json.dumps(row, indent=2))
-    return 0
-
-
 def file_info(path: Path) -> dict[str, Any]:
     exists = path.exists()
+    is_file = path.is_file()
     return {
         "path": str(path),
         "exists": exists,
-        "size_bytes": path.stat().st_size if exists and path.is_file() else 0,
+        "is_file": is_file,
+        "size_bytes": path.stat().st_size if is_file else 0,
     }
 
 
@@ -217,48 +201,44 @@ def command_available(command: str) -> str:
     return path or "missing"
 
 
-def check_import(module: str) -> bool:
-    return importlib.util.find_spec(module) is not None
-
-
-def import_check(module: str, label: str) -> tuple[bool, str]:
-    ok = check_import(module)
-    return ok, f"{label} import {'available' if ok else 'missing'}"
+def ffmpeg_status() -> tuple[bool, str]:
+    path = shutil.which("ffmpeg")
+    if not path:
+        return False, "missing"
+    try:
+        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"{path}: {exc}"
+    if result.returncode:
+        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        return False, f"{path}: {detail[:240]}"
+    return True, path
 
 
 def command_doctor(args: argparse.Namespace) -> int:
     checks: list[dict[str, Any]] = []
 
-    def add(name: str, ok: bool, detail: str = "", severity: str = "ok") -> None:
-        checks.append({"name": name, "ok": ok, "severity": "ok" if ok else severity, "detail": detail})
+    def add(name: str, ok: bool, detail: str = "") -> None:
+        checks.append({"name": name, "ok": ok, "detail": detail})
 
-    add("python", sys.version_info >= (3, 9), platform.python_version(), "error")
-    add("uv", shutil.which("uv") is not None, command_available("uv"), "warning")
-    add("ffmpeg", shutil.which("ffmpeg") is not None, command_available("ffmpeg"), "warning")
-    add("agent-browser-cli", shutil.which("agent-browser") is not None, f"{command_available('agent-browser')} (pi native agent_browser tool is also acceptable)", "warning")
-    add("ttyd", shutil.which("ttyd") is not None, f"{command_available('ttyd')} (optional; preferred for terminal/TUI VFR)", "warning")
-    add("observer-js", (skill_root() / "assets" / "browser-observer.js").exists(), str(skill_root() / "assets" / "browser-observer.js"), "error")
-    opencv_ok, opencv_detail = import_check("cv2", "cv2")
-    numpy_ok, numpy_detail = import_check("numpy", "numpy")
-    pillow_ok, pillow_detail = import_check("PIL", "Pillow")
-    add("opencv", opencv_ok, opencv_detail, "warning")
-    add("numpy", numpy_ok, numpy_detail, "warning")
-    add("pillow", pillow_ok, pillow_detail, "warning")
+    add("python", sys.version_info >= (3, 9), platform.python_version())
+    ffmpeg_ok, ffmpeg_detail = ffmpeg_status()
+    add("ffmpeg", ffmpeg_ok, ffmpeg_detail)
     try:
-        probe_root = Path(args.run_dir).expanduser() if args.run_dir else Path.cwd() / ".dogfood" / ".doctor"
+        probe_root = Path(args.run_dir).expanduser() if args.run_dir else Path.cwd() / ".dogfood"
         probe_root.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=probe_root, delete=True) as f:
             f.write(b"ok")
         add("run-dir-writable", True, str(probe_root))
     except Exception as exc:
-        add("run-dir-writable", False, str(exc), "error")
+        add("run-dir-writable", False, str(exc))
 
+    errors = [check for check in checks if not check["ok"]]
     result = {
-        "ok": not any(not check["ok"] and check["severity"] == "error" for check in checks),
-        "warnings": [check for check in checks if not check["ok"] and check["severity"] == "warning"],
-        "errors": [check for check in checks if not check["ok"] and check["severity"] == "error"],
+        "ok": not errors,
+        "errors": errors,
         "checks": checks,
-        "installHint": "uv run scripts/analyze-video.py --help downloads video-analysis deps from inline script metadata; use brew install ttyd for terminal/TUI VFR",
+        "installHint": "recording requires ffmpeg on the Pi process PATH; otherwise use inspected screenshots and report low motion confidence",
     }
     if args.json:
         print(json.dumps(result, indent=2))
@@ -266,9 +246,8 @@ def command_doctor(args: argparse.Namespace) -> int:
         print("# VFR Doctor")
         print(f"\nStatus: `{'PASS' if result['ok'] else 'FAIL'}`\n")
         for check in checks:
-            marker = "✓" if check["ok"] else ("!" if check["severity"] == "warning" else "✗")
-            print(f"- {marker} {check['name']}: {check['detail']}")
-        if result["warnings"]:
+            print(f"- {'✓' if check['ok'] else '✗'} {check['name']}: {check['detail']}")
+        if result["errors"]:
             print(f"\nDependency hint: {result['installHint']}")
     return 0 if result["ok"] else 2
 
@@ -279,20 +258,11 @@ def utc_now() -> str:
 
 def command_init(args: argparse.Namespace) -> int:
     run = run_path(args.run)
-    for name in ["logs", "frames", "keyframes", "clips", "diffs", "ocr", "trace", "network", "profile", "reports"]:
+    for name in ["logs", "frames", "reports"]:
         (run / name).mkdir(parents=True, exist_ok=True)
-    config = {
-        "run": str(run),
-        "created_utc": utc_now(),
-        "target_url": args.target_url,
-        "session": args.session,
-        "viewport": args.viewport,
-        "skill_root": str(skill_root()),
-    }
-    (run / "config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
     meta_lines = [
         f"run_id={run.name}",
-        f"started_utc={config['created_utc']}",
+        f"started_utc={utc_now()}",
         f"repo={Path.cwd()}",
         f"target_url={args.target_url or ''}",
         f"session={args.session or ''}",
@@ -305,7 +275,57 @@ def command_init(args: argparse.Namespace) -> int:
         f"ttyd={command_available('ttyd')}",
     ]
     (run / "meta.txt").write_text("\n".join(meta_lines) + "\n", encoding="utf-8")
-    print(json.dumps({"run": str(run), "meta": str(run / "meta.txt"), "config": str(run / "config.json")}, indent=2))
+    print(json.dumps({"run": str(run), "meta": str(run / "meta.txt")}, indent=2))
+    return 0
+
+
+def command_contact_sheet(args: argparse.Namespace) -> int:
+    run = run_path(args.run)
+    video = run / "video.webm"
+    if not video.is_file():
+        print(f"error: video not found: {video}", file=sys.stderr)
+        return 2
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        print("error: ffmpeg not found on PATH", file=sys.stderr)
+        return 2
+    reports = run / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    for old in reports.glob("contact_ffmpeg_*.jpg"):
+        old.unlink()
+    output = reports / "contact_ffmpeg_%03d.jpg"
+    result = subprocess.run(
+        [
+            ffmpeg,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(video),
+            "-vf",
+            "fps=2,scale=480:-1,tile=4x4:padding=4:margin=4:color=0xE879F9",
+            "-vsync",
+            "vfr",
+            "-q:v",
+            "3",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        print(result.stderr.strip() or "error: ffmpeg contact-sheet generation failed", file=sys.stderr)
+        return 2
+    sheets = sorted(reports.glob("contact_ffmpeg_*.jpg"))
+    if not sheets:
+        print("error: ffmpeg produced no contact sheets", file=sys.stderr)
+        return 2
+    print(json.dumps({
+        "video": str(video),
+        "contactSheets": [str(path) for path in sheets],
+        "inspectWith": "read",
+    }, indent=2))
     return 0
 
 
@@ -407,8 +427,8 @@ def command_terminal_start(args: argparse.Namespace) -> int:
         "readyTimeoutSeconds": args.ready_timeout,
         "renderCheckRequired": True,
         "notes": [
-            "Use agent_browser to open url, set viewport, start recording, then take an early render-check screenshot.",
-            "If the render-check screenshot shows duplicated panes, crushed spacing, or missing colors, stop and restart before a long run.",
+            "Use agent_browser to open the URL, set the viewport, then take and inspect frames/render-check.png before recording.",
+            "If render-check shows duplicated panes, crushed spacing, missing colors, or a reconnect page, run terminal-stop and fix setup before capture.",
         ],
     }
     terminal_metadata_path(run).write_text(json.dumps(metadata, indent=2), encoding="utf-8")
@@ -471,62 +491,6 @@ def command_terminal_capture_js(args: argparse.Namespace) -> int:
     return 0
 
 
-def severity_for_issue(message: str, fatal: bool = False) -> str:
-    if fatal:
-        return "fatal"
-    if "HAR has 0 entries" in message or "no __QA_EVENT__" in message:
-        return "warning"
-    return "warning"
-
-
-def motion_confidence(
-    *,
-    has_video: bool,
-    action_count: int,
-    screenshot_count: int,
-    contact_sheet_count: int,
-    manual_review_count: int,
-    has_review: bool,
-    terminal_mode: bool,
-    has_render_check: bool,
-    terminal_state_count: int,
-) -> dict[str, str]:
-    if not has_video:
-        return {
-            "level": "low",
-            "reason": "no video artifact was available, so motion/streaming behavior was not proven",
-        }
-    if not has_review or contact_sheet_count == 0:
-        return {
-            "level": "medium",
-            "reason": "video exists, but analyzer review/contact sheets were not available for systematic motion inspection",
-        }
-    if manual_review_count == 0:
-        return {
-            "level": "medium",
-            "reason": "video and mechanical analysis exist, but no manual frame/contact-sheet review note was recorded",
-        }
-    if action_count == 0:
-        return {
-            "level": "medium",
-            "reason": "video and analysis exist, but no sync/action markers were recorded",
-        }
-    if terminal_mode and not (has_render_check and terminal_state_count > 0):
-        return {
-            "level": "medium",
-            "reason": "terminal video and analysis exist, but render-check screenshot or terminal buffer snapshots are missing",
-        }
-    if screenshot_count == 0:
-        return {
-            "level": "medium",
-            "reason": "video and analysis exist, but no still screenshot anchors were saved",
-        }
-    return {
-        "level": "high",
-        "reason": "video, action markers, screenshots, analyzer review, and contact sheets were available for motion review",
-    }
-
-
 def command_validate(args: argparse.Namespace) -> int:
     run = run_path(args.run)
     reports = run / "reports"
@@ -534,21 +498,15 @@ def command_validate(args: argparse.Namespace) -> int:
     terminal_mode = isinstance(terminal, dict) and terminal.get("mode") == "direct-ttyd"
     required = {
         "meta": run / "meta.txt",
-        "actions": run / "actions.ndjson",
         "video": run / "video.webm",
-        "review": reports / "review.md",
-        "manifest": reports / "manifest.json",
+        "render-check": run / "frames" / "render-check.png",
+        "final": run / "frames" / "final.png",
     }
-    if not terminal_mode:
-        required["har"] = run / "network" / "network.har"
     files = {name: file_info(path) for name, path in required.items()}
     screenshots = sorted((run / "frames").glob("*.png")) + sorted((run / "frames").glob("*.jpg"))
-    render_check = run / "frames" / "render-check.png"
     terminal_state_snapshots = sorted((run / "logs").glob("terminal-state*.json"))
-    contact_sheets = sorted(reports.glob("contact_*.jpg"))
-    manual_review_count = count_ndjson(reports / "manual-review.ndjson")
+    contact_sheets = sorted(path for path in reports.glob("contact*.jpg") if path.is_file() and path.stat().st_size > 0)
     console_candidates = sorted((run / "logs").glob("console*.json"))
-    error_candidates = sorted((run / "logs").glob("errors*.txt"))
     console = summarize_console(console_candidates[-1]) if console_candidates else summarize_console(run / "logs" / "console.final.json")
     har = summarize_har(run / "network" / "network.har")
 
@@ -560,66 +518,35 @@ def command_validate(args: argparse.Namespace) -> int:
             message = f"missing required artifact: {name} ({info['path']})"
             errors.append(message)
             issues.append({"severity": "fatal", "message": message})
+        elif not info["is_file"] or info["size_bytes"] == 0:
+            message = f"required artifact is not a nonempty regular file: {name} ({info['path']})"
+            errors.append(message)
+            issues.append({"severity": "fatal", "message": message})
         elif name == "video" and info["size_bytes"] < 1024:
             message = "video exists but is suspiciously small"
             errors.append(message)
             issues.append({"severity": "fatal", "message": message})
     warning_messages: list[str] = []
-    if not console_candidates and not terminal_mode:
-        message = "missing console capture in logs/console*.json"
-        errors.append(message)
-        issues.append({"severity": "fatal", "message": message})
-    if not error_candidates and not terminal_mode:
-        message = "missing page error capture in logs/errors*.txt"
-        errors.append(message)
-        issues.append({"severity": "fatal", "message": message})
     action_count = count_ndjson(run / "actions.ndjson")
     if action_count == 0:
         warning_messages.append("actions.ndjson has no action markers")
-    elif action_count < args.min_actions:
-        warning_messages.append(f"actions.ndjson has only {action_count} marker(s); expected at least {args.min_actions}")
-    if not screenshots:
-        message = "no frame screenshots found in frames/"
+    if not contact_sheets:
+        message = "no nonempty regular contact sheets found in reports/"
         errors.append(message)
         issues.append({"severity": "fatal", "message": message})
-    elif len(screenshots) < args.min_screenshots:
-        warning_messages.append(f"only {len(screenshots)} frame screenshot(s); expected at least {args.min_screenshots}")
-    if terminal_mode:
-        if not render_check.exists():
-            warning_messages.append("missing terminal render-check screenshot at frames/render-check.png")
-        if not terminal_state_snapshots:
-            warning_messages.append("missing terminal buffer snapshot in logs/terminal-state*.json")
-    if not contact_sheets:
-        warning_messages.append("no contact sheets found in reports/")
-    if (screenshots or contact_sheets) and manual_review_count == 0:
-        warning_messages.append("no manual visual review notes found in reports/manual-review.ndjson")
     if console["errors"]:
         warning_messages.append(f"console contains {console['errors']} error message(s)")
-    if not terminal_mode and not console.get("qa_events"):
-        warning_messages.append("no __QA_EVENT__ telemetry found in console capture")
     if not terminal_mode and har["exists"] and har["entries"] == 0:
         warning_messages.append("HAR has 0 entries; start HAR before navigation or before the network-heavy scenario")
     if not terminal_mode and har.get("failed"):
         warning_messages.append(f"HAR contains {len(har['failed'])} failed request sample(s)")
     for message in warning_messages:
         warnings.append(message)
-        issues.append({"severity": severity_for_issue(message), "message": message})
-    if args.strict and warnings:
-        for message in warnings:
-            if message not in errors:
-                errors.append(f"strict validation warning: {message}")
-
-    confidence = motion_confidence(
-        has_video=files["video"]["exists"] and files["video"]["size_bytes"] >= 1024,
-        action_count=action_count,
-        screenshot_count=len(screenshots),
-        contact_sheet_count=len(contact_sheets),
-        manual_review_count=manual_review_count,
-        has_review=files["review"]["exists"],
-        terminal_mode=terminal_mode,
-        has_render_check=render_check.exists(),
-        terminal_state_count=len(terminal_state_snapshots),
-    )
+        issues.append({"severity": "warning", "message": message})
+    readiness = {
+        "status": "ready" if not errors else "incomplete",
+        "reason": "required artifacts are ready for agent visual inspection" if not errors else "required visual artifacts are missing or invalid",
+    }
 
     result = {
         "run": str(run),
@@ -632,17 +559,16 @@ def command_validate(args: argparse.Namespace) -> int:
             "actions": action_count,
             "screenshots": len(screenshots),
             "contact_sheets": len(contact_sheets),
-            "manual_reviews": manual_review_count,
             "terminal_state_snapshots": len(terminal_state_snapshots),
         },
-        "confidence": confidence,
+        "evidence_readiness": readiness,
         "console": console,
         "har": har,
         "terminal": terminal if terminal_mode else None,
     }
     reports.mkdir(parents=True, exist_ok=True)
     (reports / "validation.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
-    lines = ["# VFR Bundle Validation", "", f"Run: `{run}`", f"Mode: `{'terminal' if terminal_mode else 'browser'}`", "", f"Status: `{'PASS' if result['ok'] else 'FAIL'}`", f"Strict: `{'yes' if args.strict else 'no'}`", ""]
+    lines = ["# VFR Bundle Validation", "", f"Run: `{run}`", f"Mode: `{'terminal' if terminal_mode else 'browser'}`", "", f"Status: `{'PASS' if result['ok'] else 'FAIL'}`", ""]
     if issues:
         lines += ["## Issues", ""] + [f"- `{issue['severity']}` — {issue['message']}" for issue in issues] + [""]
     lines += [
@@ -651,15 +577,15 @@ def command_validate(args: argparse.Namespace) -> int:
         f"- Actions: `{result['counts']['actions']}`",
         f"- Screenshots: `{result['counts']['screenshots']}`",
         f"- Contact sheets: `{result['counts']['contact_sheets']}`",
-        f"- Manual visual reviews: `{result['counts']['manual_reviews']}`",
         f"- Terminal buffer snapshots: `{result['counts']['terminal_state_snapshots']}`",
         f"- Console errors: `{console['errors']}`",
         f"- HAR entries: `{har['entries']}`",
         "",
-        "## Motion Confidence",
+        "## Evidence Readiness",
         "",
-        f"- Level: `{confidence['level']}`",
-        f"- Reason: {confidence['reason']}",
+        f"- Status: `{readiness['status']}`",
+        f"- Reason: {readiness['reason']}",
+        "- Motion confidence remains unrated until the agent opens and inspects the images.",
         "",
     ]
     (reports / "validation.md").write_text("\n".join(lines), encoding="utf-8")
@@ -702,30 +628,33 @@ def build_parser() -> argparse.ArgumentParser:
             "examples:\n"
             "  scripts/vfr.py doctor\n"
             "  scripts/vfr.py init RUN --target-url http://localhost:3000 --viewport 1440x1000\n"
-            "  scripts/vfr.py terminal-start RUN --cwd . -- pi --model cursor/grok-4.5 \"/create-goal ...\"\n"
-            "  # alternative model id: xai/grok-4.5\n"
+            "  scripts/vfr.py terminal-start RUN --cwd . -- pi --no-session \"check terminal redraw\"\n"
             "  scripts/vfr.py sync RUN --url http://localhost:3000 --viewport 1440x1000\n"
             "  scripts/vfr.py action RUN click \"Submit\" --note \"start checkout\"\n"
-            "  scripts/vfr.py review-note RUN RUN/reports/contact_001.jpg --verdict ok --note \"contact sheet inspected\"\n"
+            "  scripts/vfr.py contact-sheet RUN\n"
+            "  scripts/vfr.py validate RUN\n"
             "  scripts/vfr.py terminal-capture-js | agent-browser eval --stdin\n"
-            "  scripts/vfr.py observer-js | agent-browser eval --stdin\n"
-            "  scripts/vfr.py validate RUN --strict\n\n"
+            "  scripts/vfr.py observer-js | agent-browser eval --stdin\n\n"
             "exit codes: 0 success, 2 validation/doctor failure or missing observer asset"
         ),
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
     doctor = sub.add_parser("doctor", help="Check local VFR dependencies and writable output paths")
-    doctor.add_argument("--run-dir", help="Directory to probe for write access. Defaults to .dogfood/.doctor")
+    doctor.add_argument("--run-dir", help="Directory to probe for write access. Defaults to .dogfood")
     doctor.add_argument("--json", action="store_true", help="Print machine-readable JSON")
     doctor.set_defaults(func=command_doctor)
 
-    init = sub.add_parser("init", help="Create a VFR run directory with standard subdirectories, config.json, and meta.txt")
+    init = sub.add_parser("init", help="Create a VFR run directory with standard subdirectories and meta.txt")
     init.add_argument("run", help="VFR run directory")
     init.add_argument("--target-url", help="Target URL under test")
     init.add_argument("--session", help="Browser session label")
     init.add_argument("--viewport", help="Viewport label, e.g. 1440x1000")
     init.set_defaults(func=command_init)
+
+    contact_sheet = sub.add_parser("contact-sheet", help="Create image-tool-readable contact sheets from RUN/video.webm with ffmpeg")
+    contact_sheet.add_argument("run", help="VFR run directory")
+    contact_sheet.set_defaults(func=command_contact_sheet)
 
     terminal_start = sub.add_parser("terminal-start", help="Launch a localhost ttyd terminal/TUI session with VFR-safe defaults")
     terminal_start.add_argument("run", help="VFR run directory")
@@ -762,18 +691,8 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--performance-now", type=float, help="Browser performance.now() if known")
     sync.set_defaults(func=command_sync)
 
-    review_note = sub.add_parser("review-note", help="Record manual/agent visual inspection of an artifact")
-    review_note.add_argument("run", help="VFR run directory")
-    review_note.add_argument("item", help="Artifact path or label that was visually inspected")
-    review_note.add_argument("--verdict", choices=["ok", "issue", "uncertain"], required=True, help="Review verdict")
-    review_note.add_argument("--note", help="Short note describing what was inspected")
-    review_note.set_defaults(func=command_review_note)
-
     validate = sub.add_parser("validate", help="Validate a VFR run bundle and summarize telemetry")
     validate.add_argument("run", help="VFR run directory")
-    validate.add_argument("--strict", action="store_true", help="Treat warnings as validation failures")
-    validate.add_argument("--min-actions", type=int, default=1, help="Warn when fewer action/sync markers exist")
-    validate.add_argument("--min-screenshots", type=int, default=1, help="Warn when fewer frame screenshots exist")
     validate.set_defaults(func=command_validate)
 
     observer = sub.add_parser("observer-js", help="Print browser-observer.js to stdout for agent_browser eval --stdin")

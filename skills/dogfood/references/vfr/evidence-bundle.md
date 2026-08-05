@@ -1,122 +1,92 @@
 # Evidence Bundle
 
-Use this reference after a run when deciding what the model should inspect.
+Use this reference after capture to decide what the agent must inspect and cite.
 
-## Timeline normalization
-
-Every signal should be reducible to the same clock:
-
-- `wall`: epoch milliseconds from `Date.now()` or shell `date +%s%3N`
-- `t`: browser `performance.now()` when emitted in-page
-- `video_t`: seconds since `record start`
-
-Create a sync record near recording start:
-
-```json
-{"kind":"sync","wall":1770000000000,"performance_now":1234.56,"video_t":0,"url":"https://app-under-test.local/"}
-```
-
-If exact sync is missing, use action order plus video contact sheets. Good enough is better than losing transient evidence.
-
-## Manifest first
-
-The review model should open `reports/manifest.json` or `reports/review.md` before raw artifacts.
-
-Minimal manifest shape:
-
-```json
-{
-  "run_id": "20260502T000000Z",
-  "url": "https://app-under-test.local/",
-  "video": "video.webm",
-  "summary": {
-    "duration_seconds": 90.2,
-    "visual_anomalies": 4,
-    "blank_frames": 1,
-    "major_changes": 3,
-    "flickers": 0
-  },
-  "artifacts": {
-    "contact_sheets": ["reports/contact_001.jpg"],
-    "anomalies": "anomalies.ndjson"
-  },
-  "top_findings": [
-    {
-      "id": "VIS-001",
-      "score": 85,
-      "kind": "blank_frame",
-      "time": 21.019,
-      "evidence": {
-        "before": "keyframes/VIS-001.before.jpg",
-        "during": "keyframes/VIS-001.during.jpg",
-        "after": "keyframes/VIS-001.after.jpg",
-        "diff": "diffs/VIS-001.diff.jpg"
-      }
-    }
-  ]
-}
-```
-
-## Review order
-
-1. Read `reports/validation.md`; fix strict validation failures before trusting the run.
-2. Read `reports/review.md`.
-3. Inspect low-fps contact sheets for whole-run gestalt.
-4. Inspect the highest-score anomaly triptychs: before/during/after.
-5. Inspect diff heatmaps for changed regions.
-6. Check console/errors/HAR/trace windows around the same timestamps.
-7. Re-run a focused repro only for issues that still look plausible.
-
-## Evidence card template
-
-```markdown
-## VIS-001: Main content flashes blank after submit
-Severity: High
-Time: 21.019s
-Scenario: Submit a long form or message
-Action: Clicked the primary submit action after entering long content
-
-Evidence:
-- Before: keyframes/VIS-001.before.jpg
-- During: keyframes/VIS-001.during.jpg
-- After: keyframes/VIS-001.after.jpg
-- Diff: diffs/VIS-001.diff.jpg
-- Clip: clips/VIS-001.mp4
-
-Correlated signals:
-- RAF gap: 168 ms
-- Long Animation Frame: 142 ms
-- Layout shift: 0.23
-- Console: Cannot read property 'id' of undefined
-
-Expected:
-- Existing content and the active input stay visible while the app processes the submission.
-
-Actual:
-- Main content briefly rendered blank for about 200 ms.
-
-Repro:
-1. Load the app under test.
-2. Navigate to the primary interactive flow.
-3. Enter long content.
-4. Click the primary submit action.
-5. Watch the main content area between 20.9s and 21.2s.
-```
-
-## Signal scoring
-
-Initial score formula:
+## Minimal bundle
 
 ```text
-+40 blank/white/black frame
-+30 console error within +/- 1s
-+25 RAF gap > 100ms or Long Animation Frame > 100ms
-+20 long task > 100ms
-+20 layout shift > 0.1
-+15 failed or slow network request within +/- 2s
-+15 OCR sees Error/undefined/NaN/null
-+10 user action within previous 1s
--15 inside known allowed animation window
+.dogfood/runs/<timestamp>-<slug>/
+  meta.txt
+  actions.ndjson
+  video.webm
+  frames/render-check.png
+  frames/final.png
+  reports/contact_ffmpeg_*.jpg
+  reports/validation.json
+  reports/validation.md
 ```
 
-Use project-specific invariants and masks to reduce false positives, but do not auto-dismiss route changes, scrolls, or animations until the contact sheet confirms they are expected.
+Optional deep analysis adds:
+
+```text
+  anomalies.ndjson
+  reports/manifest.json
+  reports/review.md
+  reports/contact_*.jpg
+  keyframes/<finding>.before|during|after.jpg
+  diffs/<finding>.diff.jpg
+```
+
+Console, page-error, HAR, trace, profile, and terminal-buffer files are correlated signals, not default requirements.
+
+## Timeline
+
+Use action order as the baseline. Add a sync marker near recording start when precise timing matters:
+
+```json
+{"kind":"sync","wall":1770000000000,"video_t":0,"url":"https://app-under-test.local/"}
+```
+
+`wall` is epoch milliseconds. `video_t` is seconds since recording start. Browser `performance.now()` is optional. Exact synchronization is useful but not worth losing the visual evidence.
+
+## Agent review order
+
+1. Read structural validation output. Fix fatal missing video, screenshot, or contact-sheet artifacts.
+2. Open `frames/render-check.png` with `read`.
+3. Open `frames/final.png` with `read`.
+4. Open every contact sheet in chronological order with `read`; solid pink tail cells are unused helper padding.
+5. When deep analysis exists, read `reports/review.md`, then open every top anomaly’s before/during/after frames.
+6. Check optional console/network/performance signals only around suspicious transitions.
+7. Reproduce plausible issues in a shorter focused recording.
+
+A validation pass means the bundle can be reviewed. It does not prove visual inspection happened. The report must name the exact images the agent opened.
+
+Do not ask the user to inspect evidence. If the image-capable tool cannot open an artifact, report that limitation and lower confidence.
+
+## What to look for
+
+- blank, black, or white intermediate frames
+- A-B-A flicker
+- layout or scroll jumps unrelated to the recorded action
+- clipped, overlapped, or unreadable transient content
+- input, focus, or cursor loss
+- stale loading indicators or missing progress
+- terminal duplicate regions or redraw residue
+- errors that appear only between stable screenshots
+
+Expected scrolling, navigation, resizing, animation, and theme changes are not findings unless they cause visible loss, unreadability, or broken interaction.
+
+## Confidence
+
+**High motion confidence** requires a verified completed video, screenshot anchors, action markers, contact sheets covering the run, and agent inspection of those images.
+
+**Medium** means video exists but evidence is incomplete, poorly synchronized, too long, or only partly inspected.
+
+**Low** means only steady-state screenshots exist or recording could not be verified.
+
+## Finding evidence
+
+For each transient finding include:
+
+```markdown
+### High — Main content flashes blank after submit
+- Repro: exact user steps
+- Expected: existing content remains visible while processing
+- Actual: main content blanks briefly after submit
+- Video: `.dogfood/runs/.../video.webm`
+- Frames: before, during, and after image paths
+- Contact sheet: exact sheet path
+- Correlated signals: optional console/network/performance evidence
+```
+
+Before sharing outside the local repo, inspect and redact private data, URLs/query strings, tokens, emails, headers, terminal output, and account identifiers.
