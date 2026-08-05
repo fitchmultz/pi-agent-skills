@@ -10,7 +10,7 @@ const panel = readFileSync(path.join(root, "skills/propose-then-ship-pi/referenc
 const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-pi/evals/evals.json"), "utf8"));
 
 test("regular reviewer is never panel guidance or a deslop proxy", () => {
-  assert.match(skill, /version: "1\.1\.2"/);
+  assert.match(skill, /version: "1\.2\.0"/);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never substitutes for parent-run deslop/i);
   assert.match(panel, /Regular `reviewer` is never a panel member and never substitutes for deslop/);

@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review, CI, and Greptile to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
 metadata:
-  version: "1.1.2"
+  version: "1.2.0"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -41,6 +41,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **The gate is real.** Phase 1 ends by asking the user to choose. Never continue into implementation on your own judgment, even when the answer looks obvious.
 - **Approval resumes the run.** In pi, `ask_question` returns the answer into the same assistant turn. A proceed choice satisfies the direction gate: continue immediately through Phase 2 into Phase 3. Do not return a final response just to restate acceptance, announce that the PR is ready, or report merge-ready. After approval, continue until the Ship report or a named stop rule.
 - **One approved direction per PR.** Never widen a diff with discoveries. From the main run they queue for the Phase 6 chain; from inside a chain item they are filed or reported, never queued.
+- **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-service policy changes which remote gates exist; it never excuses a failing gate.
 - **Scale rigor with risk.** `reviewer-gpt`, deslop, and the evidence gate always run. `reviewer-security` is required whenever the change touches a trust boundary: authentication, authorization, untrusted input, secrets, dependencies, outbound calls, or data exposure. `reviewer-claude` is required when the change carries real blast radius. Skip a conditional pass only for genuinely low-risk work, and name the skip and its reason in the report. Never drop a pass silently.
