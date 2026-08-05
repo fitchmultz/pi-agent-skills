@@ -24,24 +24,32 @@
 |--------------|----------|-------|
 | {flow} | {screenshot/log/video path} | {notes} |
 
-## Artifact Hygiene
+## Visual evidence inspected by the agent
+
+| Artifact | What was checked |
+|----------|------------------|
+| {exact image path} | {layout, transition, flicker, loading, redraw, etc.} |
+
+## Artifact hygiene
 
 | Item | Status |
 |------|--------|
-| Artifact directory | `.dogfood/` |
+| Artifact directory | `.dogfood/runs/{RUN}` |
 | `.gitignore` includes `.dogfood/` | yes / no / blocked: {reason} |
-| Prior artifacts pruned | none / {summary} |
+| Existing evidence deleted | no / user-authorized: {summary} |
+| Recording stopped and verified | yes / no / N/A: {reason} |
+| Run-owned browser/app/terminal processes stopped | yes / no / N/A: {reason} |
 
 ## Confidence
 
 | Claim | Level | Evidence / reason |
 |-------|-------|-------------------|
-| Steady-state layout | high / medium / low | {screenshots/rendered states inspected} |
-| Motion / streaming behavior | high / medium / low / N/A | {video/frame sequence/contact sheet inspected, or only screenshots inspected} |
+| Steady-state layout | high / medium / low | {exact screenshots opened} |
+| Motion / streaming behavior | high / medium / low / N/A | {verified video and exact contact sheets/frames opened, or limitation} |
 
 ## Findings
 
-<!-- Copy this block for each issue. Interactive/timing issues need video or step screenshots. Static visible issues can use one annotated screenshot and Repro Video: N/A. -->
+<!-- Copy this block for each issue. Static issues need one inspected screenshot. Transient issues need verified video plus inspected frame evidence. -->
 
 ### ISSUE-001: {Severity} — {Short title}
 
@@ -52,8 +60,8 @@
 | URL | {page URL} |
 | Viewport | {viewport} |
 | Auth state | {auth state} |
-| Evidence | {primary screenshot/log/video path} |
-| Repro Video | {path, or N/A} |
+| Evidence | {primary inspected screenshot/frame path} |
+| Repro video | {verified path, or N/A} |
 
 **Expected**
 
@@ -69,9 +77,9 @@
 2. {Action}.
 3. Observe {failure}.
 
-**Notes / Likely Area**
+**Notes / Correlated Signals**
 
-{Optional notes, correlated console/network errors, or likely owning area.}
+{Optional console/network/performance evidence or likely owning area.}
 
 ---
 

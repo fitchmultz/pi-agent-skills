@@ -359,7 +359,7 @@ def make_contact_sheets(out: Path, samples: list[Sample], contact_fps: float, sa
         imgs = [frame_to_pil(s.frame, width, timestamp(s.t)) for s in chunk]
         tile_w = max(img.width for img in imgs)
         tile_h = max(img.height for img in imgs)
-        sheet = Image.new("RGB", (tile_w * cols, tile_h * rows), (24, 24, 24))
+        sheet = Image.new("RGB", (tile_w * cols, tile_h * rows), (232, 121, 249))
         for i, img in enumerate(imgs):
             x = (i % cols) * tile_w
             y = (i // cols) * tile_h
@@ -464,12 +464,6 @@ def summarize_run_signals(out: Path) -> dict:
             pass
 
     warnings = []
-    if not console_summary["found"]:
-        warnings.append("console capture missing; save logs/console.final.json before analysis")
-    elif not console_summary["qa_events"]:
-        warnings.append("console capture found, but no __QA_EVENT__ telemetry was present")
-    if not page_errors_summary["found"]:
-        warnings.append("page error capture missing; save logs/errors.final.txt before analysis")
     if console_summary["errors"]:
         warnings.append(f"console contains {console_summary['errors']} error message(s)")
     if har_summary["found"] and har_summary["entries"] == 0:

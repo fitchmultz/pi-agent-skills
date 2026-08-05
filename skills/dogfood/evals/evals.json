@@ -4,17 +4,32 @@
     {
       "id": "success-standard-web-qa",
       "prompt": "Dogfood the local app and focus on signup and settings.",
-      "expected_output": "Discovers or starts the app URL, ensures project .gitignore ignores .dogfood/, writes generated artifacts under .dogfood/, prunes stale irrelevant dogfood artifacts when safe, exercises signup/settings and adjacent user flows through the browser, captures evidence for each issue, reports coverage and blockers, and does not fix or inspect source unless asked."
+      "expected_output": "Discovers or starts the app URL, ensures project .gitignore ignores .dogfood/ when edits are allowed, creates a unique run without deleting prior evidence, exercises signup/settings and adjacent user flows through native browser tools, opens its screenshots with an image-capable tool, captures reproducible evidence, reports coverage and blockers, cleans up run-owned processes, and does not fix or use source as evidence unless asked."
     },
     {
       "id": "edge-irreversible-boundary",
       "prompt": "Dogfood the checkout page but do not place an order.",
-      "expected_output": "Tests checkout up to the explicit stop boundary, avoids final order submission, keeps evidence under .dogfood/, and reports post-submit behavior as intentionally untested."
+      "expected_output": "Tests checkout up to the explicit stop boundary, avoids final order submission, stores and inspects evidence under a unique .dogfood/ run, and reports post-submit behavior as intentionally untested."
     },
     {
       "id": "success-vfr-jank",
       "prompt": "Find flicker during dashboard navigation.",
-      "expected_output": "Uses VFR/video/telemetry mode or reports dependency blockers, stores the run under .dogfood/runs/, records action markers, analyzes artifacts when dependencies exist, and cites contact sheets/anomaly evidence."
+      "expected_output": "Runs ffmpeg preflight before recording, uses one run-owned native browser session and an absolute .dogfood path, records one focused flow, stops once, requires fully verified video artifact metadata, closes the run-owned browser before post-processing, generates contact sheets, opens every sheet plus render-check/final screenshots with an image-capable tool, runs deep anomaly analysis only when useful, names inspected paths in the report, and cleans up app processes."
+    },
+    {
+      "id": "edge-vfr-missing-ffmpeg",
+      "prompt": "Record the streaming answer and check for flicker, but ffmpeg is not installed.",
+      "expected_output": "Stops before record start when preflight fails, does not install software or leave an open recording, captures and inspects steady-state screenshots when useful, explicitly reports low motion confidence, and never claims screenshots prove streaming or flicker quality."
+    },
+    {
+      "id": "edge-vfr-postprocessing-failure",
+      "prompt": "Record the animation. The video saved, but contact-sheet generation failed.",
+      "expected_output": "Verifies recording stop and closes the run-owned browser before invoking post-processing, retains the verified video and screenshots, reports the contact-sheet blocker without claiming motion confidence, and does not leave browser/app processes active."
+    },
+    {
+      "id": "edge-vfr-session-safety",
+      "prompt": "Use my authenticated browser session to record the settings transition.",
+      "expected_output": "Reuses the supplied authenticated session only as needed, records to an absolute run path, successfully stops and verifies recording before analysis, inspects generated images itself, and leaves the caller-owned browser session open while cleaning up only resources started by the run."
     }
   ]
 }
