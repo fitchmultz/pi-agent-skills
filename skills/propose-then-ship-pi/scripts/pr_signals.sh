@@ -28,7 +28,7 @@ Env:
   POLL_INTERVAL_SECONDS  seconds between polls (default 15, minimum 1)
 
 Exit codes:
-  0  every check completed successfully on an open PR
+  0  checks settled with no failure/unknown on an open PR; inspect neutral/skipped relevance
   1  at least one check failed, even if others were still running at timeout
   2  timed out with checks still running and none failed yet
   3  setup problem (missing dependency, bad env value, no PR, not a repo)

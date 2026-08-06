@@ -47,7 +47,7 @@ expect "all green"               0 MOCK_CASE=green
 expect "check failed"            1 MOCK_CASE=failing
 expect "no checks at all"        4 MOCK_CASE=no_checks
 expect "closed pr, else green"   4 MOCK_CASE=closed_ok
-expect "neutral and skipped ok"  0 MOCK_CASE=neutral
+expect "neutral and skipped settled"  0 MOCK_CASE=neutral
 expect "completed but unknown"   4 MOCK_CASE=unknown
 expect "still running, no wait"  2 MOCK_CASE=running MAX_WAIT_SECONDS=0
 expect "failure outranks timeout" 1 MOCK_CASE=fail_run MAX_WAIT_SECONDS=0

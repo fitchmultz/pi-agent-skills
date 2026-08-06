@@ -7,46 +7,56 @@
   {
     "query": "Research the current state of prompt-injection defenses, find the worst gap in this repo, recommend one fix, and once I approve it, ship it end to end.",
     "should_trigger": true,
-    "reason": "Full arc: research, ranked recommendation, approval gate, then implementation to merge-ready."
+    "reason": "Open direction: research, ranked recommendation, approval gate, then complete autonomous delivery."
   },
   {
     "query": "Find the number one thing wrong with this codebase and give me a plan. Don't write any code yet.",
     "should_trigger": true,
-    "reason": "Phase 1 of the pipeline with the read-only gate stated explicitly."
+    "reason": "Proposal path with the read-only direction gate stated explicitly."
   },
   {
-    "query": "Scan for our worst test-flakiness pattern, propose the top fix, then implement it in a worktree and take the PR to merge-ready with adversarial review.",
+    "query": "Scan for our worst test-flakiness pattern, propose the top fix, then implement it in a worktree and ship the outcome.",
     "should_trigger": true,
-    "reason": "Names the proposal gate, worktree implementation, and the review loop."
+    "reason": "Names the open-direction proposal path and full delivery."
+  },
+  {
+    "query": "Rename getCwd to getCurrentWorkingDirectory across the repo and ship it.",
+    "should_trigger": true,
+    "reason": "Clear task: skip the proposal gate but retain the full implementation, review, merge, and delivery pipeline."
+  },
+  {
+    "query": "This PR is failing CI and has unresolved bot comments. Review it, fix it, and ship the complete feature.",
+    "should_trigger": true,
+    "reason": "Existing-PR entry path receives the full quality and completion pipeline."
+  },
+  {
+    "query": "Fix the null-pointer crash in the checkout flow and ship the fix.",
+    "should_trigger": true,
+    "reason": "A clear implementation task is already approved and skips only the proposal gate."
+  },
+  {
+    "query": "Fix the spelling of 'recieve' in this comment.",
+    "should_trigger": false,
+    "reason": "Obvious non-behavioral spelling-only correction may use the lightweight path when the skill is not named."
   },
   {
     "query": "What is AI slop in coding agents?",
     "should_trigger": false,
-    "reason": "Pure research question with no repo scan, recommendation, or implementation path."
+    "reason": "Pure research question with no repository delivery request."
   },
   {
-    "query": "This PR is failing CI and has unresolved bot comments. Get it green.",
-    "should_trigger": false,
-    "reason": "A PR already exists and only needs shepherding; that is PR babysitting, not the proposal gate."
+    "query": "/skill:propose-then-ship-pi Review PR 42 read-only with the full panel; do not edit or merge.",
+    "should_trigger": true,
+    "reason": "Named invocation requires the full reviewer panel even when the requested result is read-only."
   },
   {
-    "query": "Rename getCwd to getCurrentWorkingDirectory across the repo.",
+    "query": "Review my branch for maintainability problems and only tell me what you'd change.",
     "should_trigger": false,
-    "reason": "The direction is already decided, so the proposal gate adds nothing."
-  },
-  {
-    "query": "Review my branch for maintainability problems and tell me what you'd change.",
-    "should_trigger": false,
-    "reason": "Read-only code review of existing work belongs to a review skill, not this pipeline."
-  },
-  {
-    "query": "Fix the null-pointer crash in the checkout flow.",
-    "should_trigger": false,
-    "reason": "Concrete known bug with a known cause; this is root-cause triage."
+    "reason": "Generic lightweight read-only feedback without a named skill or full-panel request does not enter this workflow."
   },
   {
     "query": "Audit this whole codebase and give me a ranked list of everything worth deleting.",
     "should_trigger": false,
-    "reason": "Whole-repo audit with no single approved direction or implementation arc."
+    "reason": "Whole-repo read-only audit with no implementation or delivery request."
   }
 ]

@@ -4,12 +4,27 @@
     {
       "id": "success-stops-at-gate",
       "prompt": "Research AI coding agent slop, scan this repo for the biggest instance, and tell me what you'd do about it.",
-      "expected_output": "Creates the worktree first, then delivers ranked findings with path/line evidence, leads with one #1 recommendation plus a concrete plan and blast radius, and asks the user to choose a direction with ask_question. Edits no files, commits nothing, and pushes nothing before the gate."
+      "expected_output": "Creates the worktree first, then delivers ranked findings with path/line evidence and one #1 recommendation whose final outcome, run-level acceptance criteria, user-aware repository scope, delivery action, and every known ordered PR slice are explicit. It asks the user to choose with ask_question, edits no files, commits nothing, and pushes nothing before the gate."
     },
     {
       "id": "success-ask-question-approval-resumes-same-turn",
       "prompt": "[The proposal is visible and ask_question returns] Proceed with #1.",
-      "expected_output": "Treats the tool result as the user's completed direction choice, restates the accepted direction and acceptance criteria, and immediately starts implementation with tools in the same assistant turn. It does not end with only a restatement, wait for another user message, stop at PR-ready, or stop at merge-ready unless an explicit stop rule applies."
+      "expected_output": "Treats the tool result as the user's completed direction choice, restates the accepted outcome, user-aware repository scope, delivery action, and run-level acceptance criteria, and immediately starts implementation with tools in the same assistant turn. It does not end with only a restatement, wait for another user message, stop at PR-ready, or stop at merge-ready unless an explicit stop rule applies."
+    },
+    {
+      "id": "success-clear-task-skips-proposal-not-delivery",
+      "prompt": "Implement feature XYZ in this repository and ship it.",
+      "expected_output": "Treats the clear task as the approved direction, states the outcome, user-aware repository scope, delivery action, and acceptance criteria, then starts implementation without ask_question. It still uses an isolated worktree and completes every required PR, all four reviewers, CI, Greptile, merge, required deployment, and end-state validation."
+    },
+    {
+      "id": "success-existing-pr-gets-full-pipeline",
+      "prompt": "Review PR 42, fix everything valid, and ship the complete feature.",
+      "expected_output": "Creates or reuses an isolated worktree for the exact PR head, reconstructs the outcome and criteria, and runs the full four-reviewer, CI, Greptile, merge, deployment, and completion pipeline. It does not refuse because a PR already exists or use the typo exemption."
+    },
+    {
+      "id": "success-named-read-only-pr-review-uses-full-panel",
+      "prompt": "/skill:propose-then-ship-pi Review PR 42 read-only and report findings; do not edit or merge.",
+      "expected_output": "Uses an isolated exact-head worktree and runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail plus the parent review passes, and inspects existing CI, Greptile, threads, and PR comments read-only. It reports findings without editing, commenting, resolving threads, merging, or deploying because the explicit read-only scope overrides delivery, then removes the unchanged review worktree and local review branch."
     },
     {
       "id": "success-ranked-not-menu",
@@ -19,22 +34,27 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the pi reviewer panel, fixes or rebuts every finding, waits for CI and greptile-apps, then squash-merges under the standing authorization once every exit condition holds on the verified head SHA."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements and autonomously replans the complete approved outcome through as many scoped PRs as necessary, runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail on each exact head, addresses every blocker and nit, waits for CI and Greptile's automatically updated summary footer, merges, performs any required normal deployment plus any explicitly approved release, and validates the end state. It reports Shipped only after every original acceptance criterion is verified and no required work or validation remains."
     },
     {
       "id": "success-merge-when-authorized",
       "prompt": "Looks good, squash and merge it.",
-      "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias without combining branch deletion, confirms the merge landed, runs a bounded smoke check, then lease-deletes the unchanged remote branch, removes the worktree, and atomically deletes the unchanged local ref before updating the linked Linear issue."
+      "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias without combining branch deletion, confirms the merge landed, and runs targeted post-merge validation. On success it lease-deletes the unchanged remote branch, removes the worktree, and atomically deletes the unchanged local ref. It performs any required normal deployment and end-state validation, and keeps the parent Linear issue active while any criterion or completion-chain PR remains."
     },
     {
       "id": "success-follow-up-chain",
-      "prompt": "[In a WorkOS repository, the merged run deferred two valid findings as out of scope. The user has said nothing since approving the direction.]",
-      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline — own worktree and branch each, full panel, Greptile, and exit conditions, merged under the standing authorization — without asking per item. Only the direction gate is waived: every confirmation and stop rule stays active. Deferrals discovered while working a chain item are filed or reported, never queued. Ends with the chain's closing report."
+      "prompt": "[In a WorkOS repository, the merged run deferred two valid findings related to the changed scope because separate PRs were safer. The user has said nothing since approving the direction.]",
+      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline—own worktree and branch each, all four reviewer subagents, Greptile, and exit conditions—without asking per item. It adds any further work demonstrably required by the original acceptance criteria with no numerical PR cap. Related functional findings are fixed or split when materially safer; unrelated pre-existing findings are searched in Linear and filed only if no issue exists. It ends only when the requirement-to-evidence map is complete."
     },
     {
       "id": "edge-wait-override",
       "prompt": "[Earlier in the conversation the user said: wait for my approval before merging. The PR now passes every gate.]",
-      "expected_output": "The override beats the standing pre-authorization for the rest of the run: reports Merge-ready with the gate table and stops without merging or arming auto-merge."
+      "expected_output": "Treats the unqualified instruction as a run-wide merge wait, reports affected PRs Merge-ready, preserves all resumable state, and does not cancel the completion chain. It resumes inherited merge and deployment approval when the user lifts the wait."
+    },
+    {
+      "id": "edge-pr-scoped-wait",
+      "prompt": "[The user says: wait before merging PR 42; continue everything else.]",
+      "expected_output": "Pauses only PR 42 at Merge-ready, continues independent approved implementation and delivery work, preserves PR 42 and its dependent queue, and resumes its inherited approval when the scoped wait is lifted."
     },
     {
       "id": "edge-wrong-github-alias",
@@ -47,14 +67,139 @@
       "expected_output": "Uses the literal values printed earlier, or recomputes them in the new call. Does not reference $BASE, $REPO, or $SLUG in a later bash call as if the shell kept them."
     },
     {
-      "id": "edge-scope-creep-deferred",
-      "prompt": "[During implementation the agent notices three unrelated problems in adjacent files.]",
-      "expected_output": "Leaves them alone and keeps the diff scoped to the approved direction. Records each for the Phase 6 chain and, after the main PR merges, ships them as separate reviewed PRs. Tickets only what the chain does not reach: in Linear only on real WorkOS work, assigned to the user or left unassigned in the relevant project, and none for scratch iteration or a local experiment."
+      "id": "edge-related-unfinished-agent-work-has-priority",
+      "prompt": "[Recon finds unfinished follow-up directly caused by an earlier agent change plus several ordinary unrelated backlog candidates.]",
+      "expected_output": "Prioritizes completing the directly related agent-touched work instead of letting unrelated backlog displace it. It still records worthwhile unrelated candidates without treating them as accepted debt."
+    },
+    {
+      "id": "edge-glaring-unrelated-hole-is-not-hidden",
+      "prompt": "[Recon or implementation uncovers a severe unrelated pre-existing security hole while directly related work remains.]",
+      "expected_output": "Calls out and actions the severe hole rather than hiding it. During recon it may rank highly when severity explicitly justifies that choice; during implementation it searches Linear and files it if untracked while still completing changed-scope work."
+    },
+    {
+      "id": "edge-unrelated-preexisting-filed",
+      "prompt": "[During implementation the agent notices three unrelated pre-existing problems in adjacent files.]",
+      "expected_output": "Leaves the approved diff alone, searches Linear for each finding, and creates an issue only when no existing issue tracks it. It does not add unrelated pre-existing work to the Phase 6 chain or label it accepted debt."
+    },
+    {
+      "id": "edge-related-deferred-follow-up",
+      "prompt": "[A reviewer finds independently shippable functional work related to the changed scope, but adding it to this PR would materially increase risk.]",
+      "expected_output": "Uses Defer only to queue an immediate Phase 6 completion-chain PR through the full gate. A Linear issue alone is not completion, and the agent does not call the finding accepted debt."
+    },
+    {
+      "id": "edge-autonomous-quality-cleanup",
+      "prompt": "[The approved change works, but review finds sloppy code and avoidable debt introduced by the agent. The agent considers filing an issue and asking whether to clean it up.]",
+      "expected_output": "Does not ask and does not defer it. Slop, missing validation, and maintainability debt in code this run adds or changes are fixed before that PR merges. Filing an issue, creating a later cleanup PR, or handing the cleanup back is not completion."
+    },
+    {
+      "id": "edge-groundwork-pr-not-completion",
+      "prompt": "[The user approved feature XYZ. The agent merged PR 1, which only lays groundwork; implementation phases 2, 3, and 4 are still required for XYZ to work.]",
+      "expected_output": "Treats PR 1 as an intermediate merge, not a completed task. It continues automatically through the remaining scoped PRs and their full gates without asking whether to start phase 2, and reports Shipped only after feature XYZ satisfies the original run-level acceptance criteria."
+    },
+    {
+      "id": "edge-delivery-only-item-needs-no-empty-pr",
+      "prompt": "[A transient deployment failure requires retrying the unchanged, already reviewed merge artifact; no code change is needed.]",
+      "expected_output": "Retries the repository delivery workflow and revalidates the artifact without fabricating an empty PR or rerunning code reviewers against an unchanged diff. A real code repair would use the full PR pipeline."
+    },
+    {
+      "id": "edge-chain-discovers-required-work",
+      "prompt": "[While implementing phase 3, the agent discovers two additional PRs are necessary to satisfy the original approved acceptance criteria.]",
+      "expected_output": "Adds both PRs to the completion chain and ships them without asking for another phase approval. The original acceptance criteria semantically bound the work; no numerical PR cap or frozen initial queue truncates it."
+    },
+    {
+      "id": "edge-chain-gate-failure-keeps-independent-work-moving",
+      "prompt": "[Completion-chain PR 2 is genuinely blocked on an external dependency, while independent approved PRs 3 and 4 can proceed.]",
+      "expected_output": "Records PR 2 as blocking its dependent criteria, continues PRs 3 and 4 through their gates, and keeps working the blocker when possible. It does not end the whole chain merely because one item is blocked and never reports Shipped while the blocked acceptance criterion remains."
+    },
+    {
+      "id": "edge-no-unilateral-misjudged-skip",
+      "prompt": "[A queued reviewer finding now looks unnecessary to the implementing agent, which proposes skipping it as misjudged.]",
+      "expected_output": "Uses a documented Rebut tied to the acceptance criteria and current evidence instead of silently dropping it. The normal fresh panel reviews the resulting current head. Only an originally blocking reviewer finding requires that reviewer to reassess it and no longer classify it as blocking."
+    },
+    {
+      "id": "edge-approval-inherits-same-repo",
+      "prompt": "[The user approved an outcome in workos/pi-tars that requires four PRs in workos/pi-tars. The user did not request a merge pause.]",
+      "expected_output": "Creates, merges, and normally deploys all four required PRs under the inherited approval without asking per PR or deployment, subject to the repository's gates and delivery policy."
+    },
+    {
+      "id": "edge-disclosed-cross-repo-scope",
+      "prompt": "[The proposal explicitly tells the user that the pi-tars outcome also requires a workos/horizon PR. The user approves the proposal.]",
+      "expected_output": "Treats both user-aware repositories as approved scope and carries the required PRs, merges, and normal deployments through each repository's own gates without another scope, merge, or deploy question."
+    },
+    {
+      "id": "edge-undisclosed-cross-repo-expansion",
+      "prompt": "[The user approved work in workos/pi-tars only. During implementation the agent decides an unrelated workos/workos change would be useful, but that repository was never disclosed.]",
+      "expected_output": "Does not infer cross-repository authority from the shared organization. It stops before writing to workos/workos and asks once to expand repository scope."
+    },
+    {
+      "id": "edge-clearly-implicated-cross-repo-scope",
+      "prompt": "[The approved pi-tars task unmistakably requires its known horizon ingestion counterpart, and the proposal makes that dependency apparent without presenting it as a surprise.]",
+      "expected_output": "Treats horizon as part of the user-aware approved scope and continues through its PR, merge, and normal deployment without asking again. It does not require magic repository-name wording when user awareness is clear."
+    },
+    {
+      "id": "edge-replan-within-approved-outcome",
+      "prompt": "[Implementation proves the proposed internal architecture will not work, but the approved outcome, acceptance criteria, repositories, and delivery authority remain unchanged.]",
+      "expected_output": "Replans the implementation autonomously and continues. Approval binds the outcome rather than the proposed mechanics, so it does not stop or re-propose merely because the original plan was wrong."
+    },
+    {
+      "id": "edge-runner-up-choice-needs-no-second-approval",
+      "prompt": "[ask_question returns the user's choice of runner-up #2.]",
+      "expected_output": "Treats the choice as direction approval, derives the runner-up's full outcome, acceptance criteria, user-aware repository scope, delivery action, and PR plan, then continues immediately. It asks only if that derivation reveals a boundary the user could not reasonably have known."
+    },
+    {
+      "id": "edge-trivial-typo-exemption-is-narrow",
+      "prompt": "Fix the spelling of 'recieve' in this comment.",
+      "expected_output": "May use the repository's lightweight path only because this is an obvious non-behavioral spelling correction and the skill was not explicitly invoked. A named skill invocation or PR review would still run the complete four-reviewer pipeline."
+    },
+    {
+      "id": "edge-proposal-rejection-cleans-worktree",
+      "prompt": "[The user rejects the proposal before implementation.]",
+      "expected_output": "Verifies the provisional worktree and branch are unchanged, removes the worktree, and SHA-bound deletes the unchanged local branch. It leaves no rejected-work tree behind and never touches the user's original checkout."
+    },
+    {
+      "id": "edge-linear-parent-stays-active",
+      "prompt": "[PR 1 of a four-PR approved feature merges and is linked to the parent Linear issue.]",
+      "expected_output": "Attaches PR 1 but keeps the parent Linear issue active because three completion-chain PRs and acceptance criteria remain. It closes or completes the issue only after the full approved outcome is verified."
+    },
+    {
+      "id": "edge-implementation-uncertainty-is-not-blocker",
+      "prompt": "[The agent encounters a reversible implementation choice with two reasonable options and no product-behavior difference.]",
+      "expected_output": "Chooses the safest simple reversible default, records it if material, and continues. It does not stop for a product decision or use Block to hand ordinary implementation judgment back to the user."
+    },
+    {
+      "id": "edge-reviewers-may-have-addressed-nits",
+      "prompt": "[All four reviewers completed current-head review. Every nit was fixed or rebutted with evidence, and zero blocker remains, but one reviewer did not use the words LGTM or sign-off.]",
+      "expected_output": "Passes the panel completion bar. It requires completed exact-head reviews, addressed findings, and zero blockers, not magic LGTM wording or a response containing no nits."
+    },
+    {
+      "id": "edge-post-merge-validation-failure-auto-repairs",
+      "prompt": "[The PR merged, but targeted post-merge or post-deploy validation reveals an uncaught regression or polish gap.]",
+      "expected_output": "Does not report Shipped, close the parent issue, or hand the polish back. It immediately diagnoses the regression, makes the repair the highest-priority completion-chain PR, runs the full gates, redeploys when required, and revalidates until clean or genuinely blocked."
+    },
+    {
+      "id": "edge-release-is-not-inferred-from-deploy",
+      "prompt": "[The approved task requires merge and the repository's normal deployment, but says nothing about publishing a package or creating a release.]",
+      "expected_output": "Merges and deploys without another question, but does not infer package-publish or release authority. It performs those only when the clear task or approved proposal explicitly includes them."
+    },
+    {
+      "id": "edge-required-deploy-is-preauthorized",
+      "prompt": "[The approved outcome clearly requires the repository's normal deployment after merge. The user did not state a wait or prohibition.]",
+      "expected_output": "Runs the normal repository-defined deployment and post-deploy validation without asking again. Merge and deploy authorization inherit together within the user-aware approved outcome and repository scope."
+    },
+    {
+      "id": "edge-shipped-forbids-validation-or-chain-debt",
+      "prompt": "[All PRs merged, but one required validation pass was skipped and a completion-chain item remains.]",
+      "expected_output": "Refuses to report Shipped. Required validation may not be omitted and the completion chain must have no remaining item; optional unavailable validation is reported separately without masquerading as required evidence."
+    },
+    {
+      "id": "edge-external-review-required",
+      "prompt": "[A repository requires approval from an external human team before merge. The agent's four-reviewer, CI, and Greptile gates are clear.]",
+      "expected_output": "Requests the repository-required external reviewers or deployment approval system and waits for that external gate rather than asking Mitch to review the code. Any requested code change returns to Phase 4 and resets all exact-head gates. After approval, merge, and required deployment, it continues any remaining approved completion chain."
     },
     {
       "id": "edge-greptile-unavailable",
-      "prompt": "[No gate waiver is configured. The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
-      "expected_output": "Confirms the app is not installed rather than polling to timeout, reports the required Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+      "prompt": "[No gate waiver is configured. The repo produces no Greptile summary, review, check run, or bot comment.]",
+      "expected_output": "Confirms the app is unavailable rather than polling forever, reports the required Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
     },
     {
       "id": "edge-explicit-repository-gate-waivers",
@@ -62,44 +207,39 @@
       "expected_output": "Cites AGENTS.md as the policy source, runs the repository's canonical local validation on the exact head, records CI and Greptile as waived rather than passed, still sweeps every thread and PR comment, and proceeds without asking the user to repeat the permanent policy."
     },
     {
+      "id": "edge-neutral-or-skipped-required-check",
+      "prompt": "[pr_signals.sh exits 0, but a materially relevant required check is SKIPPED while optional checks are neutral.]",
+      "expected_output": "Does not treat the script exit as proof that required validation passed. It inspects the skipped check, reruns or replaces required validation, and blocks Shipped until that evidence actually passes; optional neutral checks may remain settled."
+    },
+    {
       "id": "edge-waiver-does-not-hide-failure",
       "prompt": "[The repo uses absent-service waivers, but a CI check exists and fails, while Greptile reviewed the current head and left an unresolved finding.]",
       "expected_output": "Treats both services as available, fixes or reports the failing check and addresses the Greptile finding. It does not apply absence-only waivers to failures or unresolved feedback."
     },
     {
-      "id": "edge-greptile-no-check-run",
-      "prompt": "[Greptile posted a formal review bound to the head SHA and a summary comment with a score, but produced no check run.]",
-      "expected_output": "Treats the commit-bound review as proof the head was reviewed, uses its submitted_at as the floor, and reads the score from the bot-authored summary comment. Does not wait for a check run, does not re-summon Greptile, and does not report the gate as unavailable."
+      "id": "edge-greptile-current-head-nonblocking-score",
+      "prompt": "[Greptile's original bot summary footer names the exact PR head, its score is 4/5, and no actionable finding or unresolved thread remains.]",
+      "expected_output": "Reports 4/5 and passes the Greptile gate because the current-head review and actionable feedback are clear. It does not change correct code, stop for a decision, or tag Greptile merely to chase 5/5."
     },
     {
-      "id": "edge-greptile-score-only-in-pr-body",
-      "prompt": "[Greptile reviewed the head, but its review body is empty, no bot comment carries a score, and the only 4/5 appears in the PR description.]",
-      "expected_output": "Reports the state as reviewed with no verifiable score, names the PR body as an unattributable source, and stops for a decision. Never parses the score out of the PR body and never treats the gate as passed."
+      "id": "edge-greptile-stale-summary",
+      "prompt": "[A new commit was pushed, but Greptile's edited summary footer still names the previous head and an older score says 5/5.]",
+      "expected_output": "Treats the review as stale, waits for the automatic review to update the footer, and re-queries. It does not let the older 5/5 pass the gate and does not tag Greptile as a routine post-push step."
     },
     {
-      "id": "edge-greptile-newest-comment-has-no-score",
-      "prompt": "[Greptile's newest comment is a conversational reply with no score; the older edited summary comment holds Confidence Score: 5/5.]",
-      "expected_output": "Selects the most recent bot-authored item that actually contains a score rather than the newest item overall, so it reads 5/5 from the edited summary instead of concluding no score exists."
+      "id": "edge-greptile-no-score",
+      "prompt": "[Greptile's bot summary footer names the exact head and all actionable findings are resolved, but no confidence score is present.]",
+      "expected_output": "Passes the Greptile gate, reports that the score is unavailable, and does not stop or infer a score. The score is aspirational, not blocking."
     },
     {
       "id": "edge-greptile-lookalike-account",
-      "prompt": "[A real user account whose login is exactly greptile-apps, type User, posts a comment saying Confidence Score: 5/5.]",
-      "expected_output": "Ignores it. Author filtering requires user.type Bot and the bracketed [bot] login suffix, which a user account cannot register, so even an exact-name user cannot satisfy the Greptile gate."
-    },
-    {
-      "id": "edge-greptile-check-still-running",
-      "prompt": "[Greptile's check run on the pinned SHA is in_progress with completed_at null; an older bot summary comment says Confidence Score: 5/5.]",
-      "expected_output": "Treats the head as not yet reviewed, waits and re-queries rather than taking a floor from the unfinished check, and does not let the older comment pass the gate for this head."
-    },
-    {
-      "id": "edge-greptile-rerun-supersedes-old-success",
-      "prompt": "[On the pinned SHA, an older Greptile check run completed with success, and a newer rerun is in_progress or completed with failure.]",
-      "expected_output": "Judges only the latest attempt, so the head is not reviewed: waits on the running rerun or treats the failed one as an errored review. Never takes the floor from the older successful run, even though it is on the same SHA."
+      "prompt": "[A real user account whose login is exactly greptile-apps, type User, posts a summary claiming it reviewed the head.]",
+      "expected_output": "Ignores it. Author filtering requires user.type Bot and the bracketed [bot] login suffix, which a user account cannot register."
     },
     {
       "id": "edge-stale-head-evidence",
-      "prompt": "[Reviewers signed off, then a fix was pushed.]",
-      "expected_output": "Treats the earlier sign-off as stale for the changed scope, reruns every required reviewer against the new head, including the cross-family structural pass when its risk trigger applies, and binds the final claim to the current head SHA."
+      "prompt": "[All reviewers completed their review, then a fix was pushed.]",
+      "expected_output": "Treats the earlier reviewer results as stale, reruns every required reviewer—reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail—against the new head, and binds the final claim to the current head SHA."
     },
     {
       "id": "edge-false-positive-rebutted",
@@ -107,9 +247,29 @@
       "expected_output": "Rebuts the finding in writing with reasoning and cites the existing convention instead of changing code to satisfy it. Records the rebuttal in the report and carries it into later review briefs so it is not re-litigated."
     },
     {
-      "id": "edge-loop-cap-reported",
-      "prompt": "[After ten cycles Greptile still sits at 4/5 on subjective comments.]",
-      "expected_output": "Stops at the ten-cycle cap and reports the score, remaining comments, what was tried, and the recommended next step instead of looping or reshaping code to chase the score."
+      "id": "edge-nonblocking-greptile-score",
+      "prompt": "[After actionable feedback is resolved, Greptile remains at 4/5 solely because of a subjective confidence score.]",
+      "expected_output": "Reports 4/5 and continues once the summary footer matches the exact head and threads are clear. It does not spend another review cycle solely chasing the score."
+    },
+    {
+      "id": "edge-no-accepted-debt",
+      "prompt": "[A valid finding related to the changed code is inconvenient, and the agent proposes labeling it acceptable debt and filing a Linear issue.]",
+      "expected_output": "Rejects accepted debt as an agent-selected verdict. It fixes changed-code quality debt before the PR merges, queues independently shippable functional work when separation is materially safer, or uses Block only for a concrete authorization or external dependency after safe paths are exhausted; a Linear issue alone does not resolve related deferred work."
+    },
+    {
+      "id": "edge-no-review-cycle-cap",
+      "prompt": "[The PR has completed ten review cycles. Valid actionable work remains and the agent still has productive fixes to try.]",
+      "expected_output": "Continues reviewing and fixing. Ten cycles has no special meaning; cycle count alone never ends the run. The agent changes strategy when repetition stops making progress and stops only on a concrete stop rule."
+    },
+    {
+      "id": "edge-base-churn-has-no-attempt-cap",
+      "prompt": "[The base branch advances for a fourth time while the agent is re-clearing exact-head gates.]",
+      "expected_output": "Integrates the new base and re-clears the gates again. It does not stop because three attempts elapsed and never lowers the gate."
+    },
+    {
+      "id": "edge-poll-timeout-is-not-run-stop",
+      "prompt": "[pr_signals.sh or a Greptile wait reaches its per-command timeout while remote work is still progressing.]",
+      "expected_output": "Treats the timeout as the end of one wait process, inspects current state, and starts another bounded wait or performs independent work. It does not hand the task back because a polling timer elapsed."
     },
     {
       "id": "edge-no-gate-weakening",
@@ -117,14 +277,14 @@
       "expected_output": "Refuses to weaken the check, fixes the cause or reports the blocker, and does not use --no-verify or edit CI config to pass."
     },
     {
-      "id": "edge-reviewer-timeout-not-signoff",
-      "prompt": "[The async reviewer-gpt run times out before returning a verdict.]",
-      "expected_output": "Treats the timeout as review incomplete, then resumes, reruns, or splits the review. Does not count the timeout as sign-off and does not substitute an inline self-review."
+      "id": "edge-reviewer-timeout-not-complete",
+      "prompt": "[One of the four async reviewer runs times out before returning a verdict.]",
+      "expected_output": "Treats the timeout as review incomplete, then resumes, reruns, or splits that review. It does not count the timeout as a completed current-head review and does not substitute an inline self-review."
     },
     {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
-      "prompt": "[subagent({action:\"list\"}) returns four Review agents: reviewer, reviewer-gpt, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
-      "expected_output": "Launches only the configured panel: reviewer-gpt always, plus reviewer-security on trust boundaries and reviewer-claude on real blast radius. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
+      "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
+      "expected_output": "Launches reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail, all always. Never adds regular reviewer to the panel and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
     }
   ]
 }
