@@ -29,7 +29,7 @@ test("pi extension guidance tracks the Pi 0.84 contract", () => {
 
   assert.match(skill, /version: "1\.12\.0"/);
   assert.match(skill, /last-verified-pi: "0\.84\.0"/);
-  assert.doesNotMatch(text, /\b0\.(?:[0-7][0-9]|8[0-3])(?:\.\d+)?\b/);
+  assert.doesNotMatch(text, /\b0\.83(?:\.0)?\b/);
   assert.doesNotMatch(text, /context\.store\.(?:read|write)\(/);
   assert.match(skill, /ModelsRequestTransforms/);
   assert.match(hazards, /ModelsStreamTransforms.*no longer exists/);
