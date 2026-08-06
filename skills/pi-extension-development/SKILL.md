@@ -1,10 +1,10 @@
 ---
 name: pi-extension-development
 description: "Pi extension/package runtime and bundled-resource install/discovery: tools, commands/events, providers, TUI, SDK/RPC, release/publish, debugging, and performance. Do not use for Pi core, Agent Skill content authoring, prompt-only work, Crabbox/cbx, platform matrices, dependency-contract research, or non-Pi publishing."
-compatibility: Python 3.9+ for the bundled resolver; verify against the active Pi version.
+compatibility: Pi 0.84.0+; Python 3.9+ for the bundled resolver.
 metadata:
-  version: "1.11.0"
-  last-verified-pi: "0.83.0"
+  version: "1.12.0"
+  last-verified-pi: "0.84.0"
 ---
 
 # Pi Extension Development
@@ -52,12 +52,12 @@ The active package's executable `dist/*.js`, emitted `.d.ts`, package exports, a
 - TUI: `docs/tui.md`, `docs/keybindings.md`, matching examples, `dist/*` and bundled `@earendil-works/pi-tui` types;
 - packages/install/release: `docs/packages.md` and package-manager/resource-loader source;
 - skills/prompts: `docs/skills.md`, `docs/prompt-templates.md`;
-- SDK/RPC/session: `docs/sdk.md`, `docs/rpc.md`, `examples/sdk/README.md`, matching examples/types/source;
+- SDK/RPC/session: `docs/sdk.md`, `docs/rpc.md`, `examples/sdk/README.md`, matching examples/types/source; for pi-agent-core harness or remote sessions also read the released agent/client/protocol READMEs, root package exports, session/repository types, and matching implementations;
 - providers/auth/models: `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, `docs/llama-cpp.md` when applicable, matching examples/types/source.
 
 For upgrades, read every crossed changelog entry. If docs, examples, generated `.d.ts`, CLI help, and implementation disagree, follow the active implementation and emitted types, confirm with a safe CLI/runtime probe when possible, and record the mismatch.
 
-Pi 0.83.0 still ships some misleading docs/examples. Before copying tool, TUI, SDK/RPC, lifecycle, provider, session, or model snippets, read `references/current-version-hazards.md` and verify applicable claims against active source and emitted types.
+Pi 0.84.0 still ships some misleading docs/examples. Before copying tool, TUI, SDK/RPC, lifecycle, provider, session, or model snippets, read `references/current-version-hazards.md` and verify applicable claims against active source and emitted types.
 
 ## Available scripts
 
@@ -91,17 +91,21 @@ Use runtime code only when the outcome needs runtime behavior.
 ## Runtime invariants
 
 - During factory load, register handlers/tools/commands/shortcuts/flags/message and entry renderers/providers. Default-only `getFlag()` reads and `pi.exec()` are also available, but keep startup work minimal. Run session-bound actions from `session_start`, commands, tools, or events, and read CLI-provided flag values only after parsing.
-- Treat reload, session replacement/import, cwd changes, and branch navigation as real boundaries. Rehydrate durable state from session entries/branch data and clean up timers, streams, subprocesses, listeners, overlays, and subscriptions. Pi 0.83 aborts and persists active work before committed session replacement or tree navigation, but it does not synthesize results for unstarted siblings in a sequential tool batch. If balanced tool-call history matters, wait for final idle before switching; do not race the transition with synthetic session writes.
+- Treat reload, session replacement/import, cwd changes, and branch navigation as real boundaries. Rehydrate durable state from session entries/branch data and clean up timers, streams, subprocesses, listeners, overlays, and subscriptions. Pi 0.84 aborts and persists active work before committed session replacement or tree navigation, but it does not synthesize results for unstarted siblings in a sequential tool batch. If balanced tool-call history matters, wait for final idle before switching; do not race the transition with synthetic session writes.
 - Use `agent_end` for one low-level run; use `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` for final-idle work after retries, compaction retry, and queued continuations. Never use low-level `session.agent.waitForIdle()` for settlement.
 - Tools run in parallel by default. Queue the whole file read-modify-write window with `withFileMutationQueue()`. `executionMode: "sequential"` serializes the entire sibling-call batch in source order; use it only when sibling calls truly share one state machine.
-- Pi 0.83 bundles TypeBox 1.3.7. Import from `typebox`; migrate removed `Type.Base`, `Type.Awaited`, `Type.Promise`, `Type.AsyncIterator`, `Type.Iterator`, `Type.Options`, and `Value.Mutate` calls instead of pinning an older copy or adding a compatibility shim.
+- Pi 0.84 bundles TypeBox 1.3.7. Import from `typebox`; use supported APIs rather than old TypeBox compatibility shims.
 - For cache-friendly lazy tools, register every tool up front, keep searchable tools inactive, and activate them additively from a loader tool. Removing or replacing tools uses the normal fallback; prompt metadata on newly active tools can still invalidate the stable system-prompt prefix.
 - Guard terminal-only UI with `ctx.mode === "tui"`; use `ctx.hasUI` for TUI/RPC dialogs. Define print/JSON/RPC behavior instead of relying on interactive confirmation.
-- Use `before_provider_headers` for outbound assembled headers, `before_provider_request` for serialized payload changes, and `after_provider_response` for response status/headers. `ModelRuntime` owns final auth/header assembly and applies `before_provider_headers` as the Models header transform before dispatch. Never log resolved credentials or auth headers.
-- Use legacy `pi.registerProvider(id, config)` for supported APIs with static/simple catalogs; use `pi.registerProvider(createProvider(...))` when the provider owns native auth, filtering, refresh/cache, or streaming. Native providers still receive `models.json` overlays; inspect field precedence for legacy config. Validate removal/reload for any conditional registration.
+- Use `before_provider_headers` for outbound assembled headers, `before_provider_request` for serialized payload changes, and `after_provider_response` for response status/headers. `ModelRuntime` owns final auth/header assembly and applies the pi-ai `ModelsRequestTransforms` header transform before dispatch. `ProviderHeaders` values are `string | null`; preserve `null` deletion markers when forwarding. Never log resolved credentials or auth headers.
+- Use legacy `pi.registerProvider(id, config)` for supported APIs with static/simple catalogs; use `pi.registerProvider(createProvider(...))` when the provider owns native auth, filtering, refresh/cache, or streaming. `createProvider({ fetchModels })` still returns fetched models and owns publication. Handwritten refresh code reads `context.stored` and commits persistence plus synchronous state through generation-checked `context.publish()`, never `context.store`. Native providers still receive `models.json` overlays; inspect field precedence for legacy config. Validate removal/reload for any conditional registration.
 - When extension model UI or actions must honor `--models` or `enabledModels`, use the read-only `ctx.scopedModels` snapshot when non-empty. An empty array means the session is unscoped, so all available models remain eligible.
 - Put nested-LLM `Usage` from tools, custom compaction, and branch summaries in the top-level `usage` field so persisted session totals include it; do not hide it in `details`.
 - Gate tool `constrainedSampling` on model capability flags; prefer `json_schema`/`prefer`. Bash tools expose `PI_SESSION_ID`/`PI_SESSION_FILE`/`PI_PROVIDER`/`PI_MODEL`/`PI_REASONING_LEVEL`; direct RPC bash runs `user_bash` handlers before execution and streams `bash_execution_update`.
+- JSON/RPC `message_update` is delta-only in Pi 0.84: accumulate `assistantMessageEvent` deltas between `message_start` and `message_end`, and replace local state with authoritative `message_end.message`. Internal SDK/extension `AgentSessionEvent` still carries its in-process cumulative message.
+- `ModelRegistry.refresh(options)` returns `ModelsRefreshResult`; inspect `aborted` and provider `errors`. `setRuntimeApiKey(providerId, key, { signal })` accepts auth cancellation only; call `refresh({ providers: [providerId], signal })` separately when remote catalog freshness is required. Config-form OAuth `refreshToken(credentials, signal)` must honor the concrete signal.
+- New pi-agent-core harness work imports v2 `AgentHarness` and the v4 lane-based `Session`, `SessionStorage`, `SessionRepo`, `JsonlSessionRepo`, and `InMemorySessionRepo` from the package root. `AgentHarness` is currently a compile-complete scaffold with many operation paths rejecting `HarnessNotImplemented`; verify the exact path before adoption. Custom `FileSystem` implementations provide atomic same-filesystem replacement through `renameFile()`. Do not import removed experimental or legacy repository subpaths.
+- `RemoteSession.sessions` contains durable `SessionMetadata`; inspect an acquired `SessionSnapshot` for runtime phase, model, thinking, attachment, and lock state.
 - RPC clients should query `get_available_thinking_levels` after model changes rather than hard-code a global level set.
 - Pair `pi.appendEntry()` with `pi.registerEntryRenderer()` for durable display-only transcript state excluded from model context. Use custom messages when content should enter model context. Message renderers receive `outputPad`; apply it to horizontal spacing, while entry renderers receive only `expanded`.
 - Visually inspect changed TUI behavior; code review alone is not proof.
@@ -110,7 +114,7 @@ Use runtime code only when the outcome needs runtime behavior.
 
 Read only when applicable:
 
-- `references/current-version-hazards.md` — Pi 0.83.0 migrations and stale docs/examples before copying affected snippets.
+- `references/current-version-hazards.md` — Pi 0.84.0 migrations and stale docs/examples before copying affected snippets.
 - `references/runtime-authoring-guide.md` — runtime authority, trust, load order, lifecycle, events, packages, RPC, performance, and validation.
 - `references/tui-authoring-guide.md` — terminal UI, overlays, widgets, editors, shortcuts, autocomplete, renderers, and mode fallbacks.
 - `references/provider-model-guide.md` — providers, auth, model catalogs/compatibility, ModelRuntime, or SDK model/auth migration.

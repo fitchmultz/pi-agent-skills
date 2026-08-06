@@ -17,6 +17,8 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - process exit / `ctx.shutdown()`
 - model or thinking-level changes
 - SDK/RPC `AgentSessionRuntime` replacement, including `importFromJsonl()`
+- pi-agent-core v4 `Session` lane movement/forking and durable open-operation recovery
+- remote-session acquisition/release and authoritative `SessionSnapshot` replacement
 - cwd switches whose project trust is unresolved
 - TUI component/overlay/widget disposal
 
@@ -45,7 +47,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.
 - Runtime `pi.setActiveTools()` changes are persisted or reconstructed when needed.
-- Provider register/unregister timing is clear and validated if model availability matters. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
+- Provider register/unregister timing is clear and validated if model availability matters. Dynamic refresh uses read-only `context.stored` and generation-checked `context.publish()`; no state mutates before successful publication. `createProvider({ fetchModels })` and config callbacks that only return models keep factory-owned publication. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
 - `/reload` is used for source/resource reload, not as a substitute for supported dynamic APIs; reload also applies updated steering/follow-up mode settings to the current session in current pi.
 
 ## Replacement footguns
@@ -67,7 +69,8 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - TUI-only UI checks `ctx.mode === "tui"`.
 - Dialog-capable flows check `ctx.hasUI`.
-- RPC behavior is checked when extension UI should work through clients; hosts query `get_available_thinking_levels` again after model changes instead of assuming one global set, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output.
+- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output.
+- Remote clients treat listed `SessionMetadata` as durable discovery only and read runtime phase/model/thinking/attachment/lock state from acquired `SessionSnapshot` values.
 - Print/JSON behavior is explicit.
 - Non-interactive automation policy is explicit and not accidentally blocked by UI-only assumptions.
 - `--approve/-a`, `--no-approve/-na`, and `defaultProjectTrust` behavior is tested when trust-gated project settings/resources/packages/skills affect the result; context-file behavior is tested separately when relevant.
