@@ -228,7 +228,7 @@ pi --model "$MODEL_ID" --thinking "$THINKING_LEVEL" \
   -p "$SMOKE_PROMPT"
 ```
 
-Pi 0.83.0 direct Kimi K3 routes expose `low`, `high`, and `max`. Still derive the smoke level from current model metadata rather than a model name. For Qwen Token Plan, map only `QWEN_TOKEN_PLAN_API_KEY` or `QWEN_TOKEN_PLAN_CN_API_KEY` for the selected route into the model-only phase.
+Pi 0.84.0 direct Kimi K3 routes expose `low`, `high`, and `max`. Still derive the smoke level from current model metadata rather than a model name. For Qwen Token Plan, map only `QWEN_TOKEN_PLAN_API_KEY` or `QWEN_TOKEN_PLAN_CN_API_KEY` for the selected route into the model-only phase.
 
 Do not use `--no-session` for adoption smokes when session JSONL is useful evidence.
 

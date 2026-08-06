@@ -21,23 +21,35 @@ const tui = readFileSync(path.join(skillDir, "references", "tui-authoring-guide.
 const lifecycle = readFileSync(path.join(skillDir, "references", "lifecycle-checklist.md"), "utf8");
 const evals = JSON.parse(readFileSync(path.join(skillDir, "evals", "evals.json"), "utf8"));
 
-test("pi extension guidance tracks the Pi 0.83 contract", () => {
+test("pi extension guidance tracks the Pi 0.84 contract", () => {
   const text = filesUnder(skillDir)
     .filter((file) => /\.(?:json|md|py)$/.test(file))
     .map((file) => readFileSync(file, "utf8"))
     .join("\n");
 
-  assert.match(skill, /version: "1\.11\.0"/);
-  assert.match(skill, /last-verified-pi: "0\.83\.0"/);
-  assert.doesNotMatch(text, /\b0\.82(?:\.0)?\b/);
+  assert.match(skill, /version: "1\.12\.0"/);
+  assert.match(skill, /last-verified-pi: "0\.84\.0"/);
+  assert.doesNotMatch(text, /\b0\.(?:[0-7][0-9]|8[0-3])(?:\.\d+)?\b/);
+  assert.doesNotMatch(text, /context\.store\.(?:read|write)\(/);
+  assert.match(skill, /ModelsRequestTransforms/);
+  assert.match(hazards, /ModelsStreamTransforms.*no longer exists/);
+  assert.match(skill, /ProviderHeaders.*string \| null/);
+  assert.match(skill, /message_update.*delta-only/);
+  assert.match(skill, /ModelsRefreshResult/);
+  assert.match(skill, /context\.stored.*context\.publish/);
+  assert.match(skill, /JsonlSessionRepo.*InMemorySessionRepo/);
+  assert.match(skill, /AgentHarness.*HarnessNotImplemented/);
+  assert.match(skill, /RemoteSession\.sessions.*SessionMetadata/);
   assert.match(hazards, /SettingsManager\.create\(cwd, agentDir\?, options\?\)/);
   assert.match(hazards, /There is no `create\(\{ cwd, \.\.\. \}\)` overload/);
-  assert.match(hazards, /Type\.Base.*Value\.Mutate/);
+  assert.match(hazards, /TypeBox 1\.3\.7/);
+  assert.match(hazards, /message_end\.message/);
+  assert.match(hazards, /renameFile\(source, destination, signal\?\)/);
   assert.match(skill, /ctx\.scopedModels/);
   assert.match(tui, /\{ expanded, outputPad \}/);
   assert.match(runtime, /RPC bash runs extension `user_bash` handlers before execution/);
   assert.match(skill, /does not synthesize results for unstarted siblings in a sequential tool batch/);
-  assert.match(hazards, /sequential tool batch remains an exception/);
+  assert.match(hazards, /unstarted siblings in a sequential tool batch can remain unmatched/);
   assert.match(runtime, /leaves later unstarted sibling calls without results/);
   assert.match(lifecycle, /Unstarted siblings in a sequential tool batch can remain unmatched/);
 
@@ -52,6 +64,14 @@ test("pi extension guidance tracks the Pi 0.83 contract", () => {
     "message-renderer-output-padding",
     "rpc-user-bash-policy",
     "active-session-replacement-persistence",
+    "models-request-transforms-and-null-headers",
+    "json-rpc-delta-message-updates",
+    "model-refresh-and-auth-cancellation",
+    "provider-refresh-generation-publication",
+    "oauth-refresh-concrete-abort-signal",
+    "agent-core-v4-session-repositories",
+    "agent-core-filesystem-rename",
+    "remote-session-metadata-snapshot",
   ]) {
     assert.ok(ids.has(id), `missing eval ${id}`);
   }

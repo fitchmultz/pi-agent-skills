@@ -115,12 +115,12 @@
     "reason": "Pi extension dynamic-tool and model compatibility behavior."
   },
   {
-    "query": "Fix TypeScript errors in my pi extension after pi 0.80 moved getModel out of @earendil-works/pi-ai.",
+    "query": "Fix legacy TypeScript errors in my pi extension after upgrading to Pi 0.84 and losing the pi-ai getModel export.",
     "should_trigger": true,
     "reason": "Pi extension import/API migration behavior."
   },
   {
-    "query": "Migrate my embedded Pi SDK harness to 0.80.8 now that authStorage and modelRegistry session options are gone.",
+    "query": "Migrate my legacy embedded Pi SDK harness to Pi 0.84 now that authStorage and modelRegistry session options are gone.",
     "should_trigger": true,
     "reason": "Pi SDK ModelRuntime and credential migration behavior."
   },

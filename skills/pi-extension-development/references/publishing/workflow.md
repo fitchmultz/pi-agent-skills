@@ -53,7 +53,7 @@ Do not publish `.pi/` as the primary package layout. It is project-local state/c
 Package rules:
 
 - Include the `pi-package` keyword when the package should be discoverable and eligible for the Pi package gallery.
-- Put imported Pi core packages in `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, and `typebox`.
+- Put imported Pi core packages in `peerDependencies` with `"*"` and mark them optional in `peerDependenciesMeta`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, and `typebox`. Pin any direct Pi development dependency used only for validation to the exact supported baseline; do not turn that pin into a runtime dependency.
 - Put required third-party runtime libraries in `dependencies`, not `devDependencies`.
 - Put Pi resource packages referenced through `node_modules/...` in both `dependencies` and `bundledDependencies`.
 - Do not store mutable data, caches, or generated artifacts inside managed Git package checkouts; Pi may reset and clean them during update.
