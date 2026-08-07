@@ -7,17 +7,31 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const skill = readFileSync(path.join(root, "skills/propose-then-ship-pi/SKILL.md"), "utf8");
 const greptile = readFileSync(path.join(root, "skills/propose-then-ship-pi/references/greptile-loop.md"), "utf8");
+const mergeGate = readFileSync(path.join(root, "skills/propose-then-ship-pi/references/merge-gate.md"), "utf8");
 const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-pi/evals/evals.json"), "utf8"));
 
-test("explicit repository policy can waive only absent remote gates", () => {
+test("explicit repository policy can waive only absent CI", () => {
   assert.match(skill, /CI: `required` or `waived-if-absent`/);
-  assert.match(skill, /Greptile: `required` or `waived-if-unavailable`/);
   assert.match(skill, /Never infer a waiver/i);
   assert.match(skill, /canonical local validation/i);
   assert.match(skill, /policy source, and exact-head local validation/i);
-  assert.match(skill, /missing service is not an implicit waiver/i);
-  assert.match(greptile, /does not waive the thread and comment sweep/i);
-  assert.match(greptile, /current-head Greptile signal establishes availability/i);
+  assert.match(skill, /Missing CI is not an implicit waiver/i);
   assert.ok(evals.evals.some(({ id }) => id === "edge-explicit-repository-gate-waivers"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-waiver-does-not-hide-failure"));
+});
+
+test("Greptile is automatic feedback, never a merge gate", () => {
+  assert.match(skill, /Greptile is not a gate/i);
+  assert.match(skill, /never wait for it, poll it, trigger it/i);
+  assert.match(skill, /Fix or rebut any Greptile comments already present/i);
+  assert.doesNotMatch(skill, /Greptile: `required`/);
+  assert.doesNotMatch(skill, /Greptile is at 5\/5/);
+  assert.match(greptile, /reviews and comments automatically/i);
+  assert.match(greptile, /normal \*\*Fix\*\* or \*\*Rebut\*\* verdict/i);
+  assert.match(greptile, /proceed without waiting/i);
+  assert.match(mergeGate, /never wait for acknowledgment or re-review/i);
+  const unavailable = evals.evals.find(({ id }) => id === "edge-greptile-unavailable");
+  const running = evals.evals.find(({ id }) => id === "edge-greptile-check-still-running");
+  assert.match(unavailable.expected_output, /does not affect readiness/i);
+  assert.match(running.expected_output, /cannot delay/i);
 });
