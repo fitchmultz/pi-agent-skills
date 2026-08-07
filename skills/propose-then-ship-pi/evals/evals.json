@@ -19,7 +19,7 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the pi reviewer panel, fixes or rebuts every finding, waits for CI and greptile-apps, then squash-merges under the standing authorization once every exit condition holds on the verified head SHA."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the pi reviewer panel, fixes or rebuts every panel finding and any Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
     },
     {
       "id": "success-merge-when-authorized",
@@ -29,7 +29,7 @@
     {
       "id": "success-follow-up-chain",
       "prompt": "[In a WorkOS repository, the merged run deferred two valid findings as out of scope. The user has said nothing since approving the direction.]",
-      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline — own worktree and branch each, full panel, Greptile, and exit conditions, merged under the standing authorization — without asking per item. Only the direction gate is waived: every confirmation and stop rule stays active. Deferrals discovered while working a chain item are filed or reported, never queued. Ends with the chain's closing report."
+      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline — own worktree and branch each, full panel, required CI, and exit conditions, merged under the standing authorization — without asking per item. It never waits for or triggers Greptile. Only the direction gate is waived: every confirmation and stop rule stays active. Deferrals discovered while working a chain item are filed or reported, never queued. Ends with the chain's closing report."
     },
     {
       "id": "edge-wait-override",
@@ -54,47 +54,47 @@
     {
       "id": "edge-greptile-unavailable",
       "prompt": "[No gate waiver is configured. The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
-      "expected_output": "Confirms the app is not installed rather than polling to timeout, reports the required Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+      "expected_output": "Does not investigate, poll, or trigger the absent app. Greptile is advisory, so its absence does not affect readiness; proceeds when the required panel, CI policy, and blocking human feedback are clear."
     },
     {
       "id": "edge-explicit-repository-gate-waivers",
-      "prompt": "[Repository AGENTS.md explicitly says CI is waived-if-absent and Greptile is waived-if-unavailable. The open PR has zero checks, the app/review surface is confirmed unavailable, and all other gates pass.]",
-      "expected_output": "Cites AGENTS.md as the policy source, runs the repository's canonical local validation on the exact head, records CI and Greptile as waived rather than passed, still sweeps every thread and PR comment, and proceeds without asking the user to repeat the permanent policy."
+      "prompt": "[Repository AGENTS.md explicitly says CI is waived-if-absent. The open PR has zero checks, Greptile is unavailable, and all other gates pass.]",
+      "expected_output": "Cites AGENTS.md as the CI policy source, runs the repository's canonical local validation on the exact head, records CI as waived rather than passed, ignores Greptile availability because it is always advisory, sweeps blocking human and required-reviewer feedback, and proceeds without asking the user to repeat the permanent policy."
     },
     {
       "id": "edge-waiver-does-not-hide-failure",
-      "prompt": "[The repo uses absent-service waivers, but a CI check exists and fails, while Greptile reviewed the current head and left an unresolved finding.]",
-      "expected_output": "Treats both services as available, fixes or reports the failing check and addresses the Greptile finding. It does not apply absence-only waivers to failures or unresolved feedback."
+      "prompt": "[The repo waives absent CI, but a required CI check exists and fails while Greptile leaves an unresolved finding.]",
+      "expected_output": "Fixes or reports the failing required check because an absence-only waiver never hides failure. Fixes or rebuts the already-present Greptile finding, but does not wait for acknowledgment, thread resolution, or re-review."
     },
     {
       "id": "edge-greptile-no-check-run",
       "prompt": "[Greptile posted a formal review bound to the head SHA and a summary comment with a score, but produced no check run.]",
-      "expected_output": "Treats the commit-bound review as proof the head was reviewed, uses its submitted_at as the floor, and reads the score from the bot-authored summary comment. Does not wait for a check run, does not re-summon Greptile, and does not report the gate as unavailable."
+      "expected_output": "Does not inspect the review, bind it to the head, read its score, or wait for a check run. Greptile is automatic and advisory, so ship readiness is unchanged."
     },
     {
       "id": "edge-greptile-score-only-in-pr-body",
       "prompt": "[Greptile reviewed the head, but its review body is empty, no bot comment carries a score, and the only 4/5 appears in the PR description.]",
-      "expected_output": "Reports the state as reviewed with no verifiable score, names the PR body as an unattributable source, and stops for a decision. Never parses the score out of the PR body and never treats the gate as passed."
+      "expected_output": "Does not parse or verify any Greptile score and does not stop. Greptile is advisory, so the panel and required CI determine readiness."
     },
     {
       "id": "edge-greptile-newest-comment-has-no-score",
       "prompt": "[Greptile's newest comment is a conversational reply with no score; the older edited summary comment holds Confidence Score: 5/5.]",
-      "expected_output": "Selects the most recent bot-authored item that actually contains a score rather than the newest item overall, so it reads 5/5 from the edited summary instead of concluding no score exists."
+      "expected_output": "Does not select, parse, or wait for any Greptile score. Its comments are advisory and do not affect readiness."
     },
     {
       "id": "edge-greptile-lookalike-account",
       "prompt": "[A real user account whose login is exactly greptile-apps, type User, posts a comment saying Confidence Score: 5/5.]",
-      "expected_output": "Ignores it. Author filtering requires user.type Bot and the bracketed [bot] login suffix, which a user account cannot register, so even an exact-name user cannot satisfy the Greptile gate."
+      "expected_output": "Does not use any Greptile-like comment as gate evidence because Greptile never gates merging. Human feedback retains its normal priority based on content, not a score label."
     },
     {
       "id": "edge-greptile-check-still-running",
       "prompt": "[Greptile's check run on the pinned SHA is in_progress with completed_at null; an older bot summary comment says Confidence Score: 5/5.]",
-      "expected_output": "Treats the head as not yet reviewed, waits and re-queries rather than taking a floor from the unfinished check, and does not let the older comment pass the gate for this head."
+      "expected_output": "Does not wait or re-query. A running Greptile check is advisory and cannot delay a panel-cleared merge."
     },
     {
       "id": "edge-greptile-rerun-supersedes-old-success",
       "prompt": "[On the pinned SHA, an older Greptile check run completed with success, and a newer rerun is in_progress or completed with failure.]",
-      "expected_output": "Judges only the latest attempt, so the head is not reviewed: waits on the running rerun or treats the failed one as an errored review. Never takes the floor from the older successful run, even though it is on the same SHA."
+      "expected_output": "Does not judge, wait for, or retrigger either attempt. Greptile status is advisory and cannot reset or block the required gates."
     },
     {
       "id": "edge-stale-head-evidence",
@@ -108,8 +108,8 @@
     },
     {
       "id": "edge-loop-cap-reported",
-      "prompt": "[After ten cycles Greptile still sits at 4/5 on subjective comments.]",
-      "expected_output": "Stops at the ten-cycle cap and reports the score, remaining comments, what was tried, and the recommended next step instead of looping or reshaping code to chase the score."
+      "prompt": "[The review panel and required CI are clear while Greptile sits at 4/5 with unresolved subjective comments.]",
+      "expected_output": "Rebuts the already-present subjective Greptile comments, then proceeds through the normal merge path without looping, waiting, triggering, or reshaping code for a score, acknowledgment, or re-review."
     },
     {
       "id": "edge-no-gate-weakening",
