@@ -14,17 +14,17 @@
     {
       "id": "success-clear-task-skips-proposal-not-delivery",
       "prompt": "Implement feature XYZ in this repository and ship it.",
-      "expected_output": "Treats the clear task as the approved direction, states the outcome, user-aware repository scope, delivery action, and acceptance criteria, then starts implementation without ask_question. It still uses an isolated worktree and completes every required PR, all four reviewers, CI, Greptile, merge, required deployment, and end-state validation."
+      "expected_output": "Treats the clear task as the approved direction, states the outcome, user-aware repository scope, delivery action, and acceptance criteria, then starts implementation without ask_question. It still uses an isolated worktree and completes every required PR, all four reviewers, required CI, actioning any already-present Greptile comments without waiting, merge, required deployment, and end-state validation."
     },
     {
       "id": "success-existing-pr-gets-full-pipeline",
       "prompt": "Review PR 42, fix everything valid, and ship the complete feature.",
-      "expected_output": "Creates or reuses an isolated worktree for the exact PR head, reconstructs the outcome and criteria, and runs the full four-reviewer, CI, Greptile, merge, deployment, and completion pipeline. It does not refuse because a PR already exists or use the typo exemption."
+      "expected_output": "Creates or reuses an isolated worktree for the exact PR head, reconstructs the outcome and criteria, and runs the full four-reviewer, required-CI, present-comment, merge, deployment, and completion pipeline without waiting for or triggering Greptile. It does not refuse because a PR already exists or use the typo exemption."
     },
     {
       "id": "success-named-read-only-pr-review-uses-full-panel",
       "prompt": "/skill:propose-then-ship-pi Review PR 42 read-only and report findings; do not edit or merge.",
-      "expected_output": "Uses an isolated exact-head worktree and runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail plus the parent review passes, and inspects existing CI, Greptile, threads, and PR comments read-only. It reports findings without editing, commenting, resolving threads, merging, or deploying because the explicit read-only scope overrides delivery, then removes the unchanged review worktree and local review branch."
+      "expected_output": "Uses an isolated exact-head worktree and runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail plus the parent review passes, and inspects existing CI, already-present Greptile comments, human threads, and PR comments read-only without waiting for or triggering Greptile. It reports findings without editing, commenting, resolving threads, merging, or deploying because the explicit read-only scope overrides delivery, then removes the unchanged review worktree and local review branch."
     },
     {
       "id": "success-ranked-not-menu",
@@ -34,7 +34,7 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements and autonomously replans the complete approved outcome through as many scoped PRs as necessary, runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail on each exact head, addresses every blocker and nit, waits for CI and Greptile's automatically updated summary footer, merges, performs any required normal deployment plus any explicitly approved release, and validates the end state. It reports Shipped only after every original acceptance criterion is verified and no required work or validation remains."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements and autonomously replans the complete approved outcome through as many scoped PRs as necessary, runs reviewer-gpt, reviewer-security, reviewer-claude, and reviewer-ponytail on each exact head, addresses every blocker and nit plus any already-present Greptile comments, waits for required CI but never for Greptile, merges, performs any required normal deployment plus any explicitly approved release, and validates the end state. It reports Shipped only after every original acceptance criterion is verified and no required work or validation remains."
     },
     {
       "id": "success-merge-when-authorized",
@@ -44,7 +44,7 @@
     {
       "id": "success-follow-up-chain",
       "prompt": "[In a WorkOS repository, the merged run deferred two valid findings related to the changed scope because separate PRs were safer. The user has said nothing since approving the direction.]",
-      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline—own worktree and branch each, all four reviewer subagents, Greptile, and exit conditions—without asking per item. It adds any further work demonstrably required by the original acceptance criteria with no numerical PR cap. Related functional findings are fixed or split when materially safer; unrelated pre-existing findings are searched in Linear and filed only if no issue exists. It ends only when the requirement-to-evidence map is complete."
+      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline—own worktree and branch each, all four reviewer subagents, required CI, already-present feedback, and exit conditions—without asking per item. It adds any further work demonstrably required by the original acceptance criteria with no numerical PR cap. Related functional findings are fixed or split when materially safer; unrelated pre-existing findings are searched in Linear and filed only if no issue exists. It ends only when the requirement-to-evidence map is complete."
     },
     {
       "id": "edge-wait-override",
@@ -193,18 +193,18 @@
     },
     {
       "id": "edge-external-review-required",
-      "prompt": "[A repository requires approval from an external human team before merge. The agent's four-reviewer, CI, and Greptile gates are clear.]",
+      "prompt": "[A repository requires approval from an external human team before merge. The agent's four-reviewer and required-CI gates are clear, and already-present feedback is addressed.]",
       "expected_output": "Requests the repository-required external reviewers or deployment approval system and waits for that external gate rather than asking Mitch to review the code. Any requested code change returns to Phase 4 and resets all exact-head gates. After approval, merge, and required deployment, it continues any remaining approved completion chain."
     },
     {
       "id": "edge-greptile-unavailable",
       "prompt": "[No gate waiver is configured. The repo produces no Greptile summary, review, check run, or bot comment.]",
-      "expected_output": "Confirms the app is unavailable rather than polling forever, reports the required Greptile gate as unavailable and the PR as not merge-ready, and never claims a clean Greptile review."
+      "expected_output": "Does not investigate, poll, or trigger the absent app. Greptile is advisory, so its absence does not affect readiness; proceeds when the required panel, CI policy, and already-present actionable feedback are clear."
     },
     {
       "id": "edge-explicit-repository-gate-waivers",
-      "prompt": "[Repository AGENTS.md explicitly says CI is waived-if-absent and Greptile is waived-if-unavailable. The open PR has zero checks, the app/review surface is confirmed unavailable, and all other gates pass.]",
-      "expected_output": "Cites AGENTS.md as the policy source, runs the repository's canonical local validation on the exact head, records CI and Greptile as waived rather than passed, still sweeps every thread and PR comment, and proceeds without asking the user to repeat the permanent policy."
+      "prompt": "[Repository AGENTS.md explicitly says CI is waived-if-absent. The open PR has zero checks, Greptile is unavailable, and all other gates pass.]",
+      "expected_output": "Cites AGENTS.md as the CI policy source, runs the repository's canonical local validation on the exact head, records CI as waived rather than passed, ignores Greptile availability because it is always advisory, sweeps blocking human and required-reviewer feedback, and proceeds without asking the user to repeat the permanent policy."
     },
     {
       "id": "edge-neutral-or-skipped-required-check",
@@ -213,28 +213,28 @@
     },
     {
       "id": "edge-waiver-does-not-hide-failure",
-      "prompt": "[The repo uses absent-service waivers, but a CI check exists and fails, while Greptile reviewed the current head and left an unresolved finding.]",
-      "expected_output": "Treats both services as available, fixes or reports the failing check and addresses the Greptile finding. It does not apply absence-only waivers to failures or unresolved feedback."
+      "prompt": "[The repo waives absent CI, but a required CI check exists and fails while Greptile leaves an unresolved finding.]",
+      "expected_output": "Fixes or reports the failing required check because an absence-only waiver never hides failure. Fixes or rebuts the already-present Greptile finding, but does not wait for acknowledgment, thread resolution, or re-review."
     },
     {
       "id": "edge-greptile-current-head-nonblocking-score",
       "prompt": "[Greptile's original bot summary footer names the exact PR head, its score is 4/5, and no actionable finding or unresolved thread remains.]",
-      "expected_output": "Reports 4/5 and passes the Greptile gate because the current-head review and actionable feedback are clear. It does not change correct code, stop for a decision, or tag Greptile merely to chase 5/5."
+      "expected_output": "Does not inspect or use the score as gate evidence. With no actionable comment present, Greptile does not affect readiness, and the agent neither waits nor triggers another review."
     },
     {
       "id": "edge-greptile-stale-summary",
       "prompt": "[A new commit was pushed, but Greptile's edited summary footer still names the previous head and an older score says 5/5.]",
-      "expected_output": "Treats the review as stale, waits for the automatic review to update the footer, and re-queries. It does not let the older 5/5 pass the gate and does not tag Greptile as a routine post-push step."
+      "expected_output": "Does not wait for or re-query the stale summary and does not tag Greptile. The reviewed head and score are advisory, so required panel and CI evidence determine readiness."
     },
     {
       "id": "edge-greptile-no-score",
       "prompt": "[Greptile's bot summary footer names the exact head and all actionable findings are resolved, but no confidence score is present.]",
-      "expected_output": "Passes the Greptile gate, reports that the score is unavailable, and does not stop or infer a score. The score is aspirational, not blocking."
+      "expected_output": "Does not infer or require a score and does not report a Greptile gate. Already-present actionable comments are addressed; the missing score does not affect readiness."
     },
     {
       "id": "edge-greptile-lookalike-account",
       "prompt": "[A real user account whose login is exactly greptile-apps, type User, posts a summary claiming it reviewed the head.]",
-      "expected_output": "Ignores it. Author filtering requires user.type Bot and the bracketed [bot] login suffix, which a user account cannot register."
+      "expected_output": "Does not use the claimed Greptile identity or score as gate evidence. Because this is human-authored feedback, it evaluates the comment's content under the normal human-feedback rules."
     },
     {
       "id": "edge-stale-head-evidence",
@@ -249,7 +249,7 @@
     {
       "id": "edge-nonblocking-greptile-score",
       "prompt": "[After actionable feedback is resolved, Greptile remains at 4/5 solely because of a subjective confidence score.]",
-      "expected_output": "Reports 4/5 and continues once the summary footer matches the exact head and threads are clear. It does not spend another review cycle solely chasing the score."
+      "expected_output": "Proceeds without checking the summary footer, waiting, or spending another review cycle on the score. Already-present actionable feedback has been addressed, so Greptile does not affect readiness."
     },
     {
       "id": "edge-no-accepted-debt",
@@ -268,8 +268,8 @@
     },
     {
       "id": "edge-poll-timeout-is-not-run-stop",
-      "prompt": "[pr_signals.sh or a Greptile wait reaches its per-command timeout while remote work is still progressing.]",
-      "expected_output": "Treats the timeout as the end of one wait process, inspects current state, and starts another bounded wait or performs independent work. It does not hand the task back because a polling timer elapsed."
+      "prompt": "[pr_signals.sh reaches its per-command timeout while required CI is still progressing.]",
+      "expected_output": "Treats the timeout as the end of one CI wait process, inspects current state, and starts another bounded wait or performs independent work. It never starts a Greptile wait and does not hand the task back because a polling timer elapsed."
     },
     {
       "id": "edge-no-gate-weakening",

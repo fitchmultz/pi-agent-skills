@@ -26,7 +26,7 @@ Bring base in with `git merge "origin/<base>"` or `<gh> pr update-branch --rebas
 - **Nothing intersects.** Push, then return to Phase 4.
 - **Something intersects.** Run the targeted checks that exercise the intersection against the merged result first, fix what broke, then push and let the PR's CI run the full suite while you re-clear the other gates. Return to Phase 4.
 
-**Integrating base creates a new head, and every gate resets with it.** CI is not the only gate: the reviewer panel, Greptile, and the thread sweep all judged the previous head. Re-clear the full Phase 4 exit conditions on the new SHA. Never arm auto-merge to escape this, because GitHub's own conditions do not include the reviewer panel or Greptile confidence, so `--auto` can land a head no reviewer has seen.
+**Integrating base creates a new head, and the exact-head gates reset with it.** CI and the reviewer panel judged the previous head, so re-clear the Phase 4 exit conditions on the new SHA. Greptile remains automatic and advisory; never wait for or trigger it. Never arm auto-merge to escape the required panel, because GitHub's own conditions do not include that sign-off.
 
 Re-check the commit count before merging. There is no attempt cap: if base advances, integrate it and re-clear the gates again. Repeated churn is not permission to lower the bar or stop by count; stop only when a concrete external condition makes progress impossible and no independent approved work remains.
 
@@ -34,7 +34,7 @@ Re-check the commit count before merging. There is no attempt cap: if base advan
 
 ## Merge
 
-Run one full review of the exact head immediately before merging. Authorization may arrive long after Phase 4 finished, and prior reviewer results cover only the SHA they examined. Re-check head SHA, mergeability, draft state, checks, reviews, and unresolved threads in the same pass. Anything older is a memory, not evidence.
+Run one full review of the exact head immediately before merging. Authorization may arrive long after Phase 4 finished, and prior reviewer results cover only the SHA they examined. Re-check head SHA, mergeability, draft state, required checks, panel reviews, blocking human or required-reviewer feedback, and any Greptile comments already present in the same pass. Fix or rebut present Greptile comments, but never wait for acknowledgment or re-review. Anything older is a memory, not evidence.
 
 Bind the merge to the SHA you verified, so a push that lands between the check and the merge aborts instead of shipping unreviewed:
 

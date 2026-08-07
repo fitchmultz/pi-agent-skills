@@ -2,10 +2,8 @@
 # Poll a PR's CI checks until they settle.
 # Read-only: never comments, pushes, resolves, or merges.
 #
-# Scope: CI checks only. Greptile is deliberately not handled here. It produces
-# no check run in some installations, so requiring one deadlocks, and the check
-# rollup does not expose the producing app, so a name match proves nothing about
-# authorship. The Greptile gate lives in references/greptile-loop.md.
+# Scope: required CI checks only. Advisory automated reviewers such as Greptile
+# never affect this script's result.
 set -uo pipefail
 
 GH_BIN="${GH_BIN:-}"
@@ -16,9 +14,9 @@ usage() {
   cat <<'EOF'
 Usage: pr_signals.sh [PR_NUMBER]
 
-Polls CI checks for PR_NUMBER (default: the PR for the current branch) until
-every check completes or the wait budget is exhausted. Does not evaluate
-Greptile; see references/greptile-loop.md for that gate.
+Polls required CI checks for PR_NUMBER (default: the PR for the current branch)
+until every check completes or the wait budget is exhausted. Advisory automated
+reviewers such as Greptile never affect ship readiness.
 
 Env:
   GH_BIN                 required. The gh alias for this repository, gh-work or
@@ -94,6 +92,7 @@ NORMALIZE='
     else
       { name: (.context // .name // "status"), state: (.state // "PENDING") }
     end
+    | select((.name | test("greptile"; "i")) | not)
   ]'
 
 PENDING_STATES='["PENDING","QUEUED","IN_PROGRESS","WAITING","EXPECTED","REQUESTED"]'

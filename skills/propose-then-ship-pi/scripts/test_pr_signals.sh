@@ -21,6 +21,9 @@ case "${MOCK_CASE:-}" in
   unknown)     pr OPEN   "$(check ci COMPLETED ''),$(check lint COMPLETED SUCCESS)" ;;
   running)     pr OPEN   "$(check ci IN_PROGRESS ''),$(check lint COMPLETED SUCCESS)" ;;
   fail_run)    pr OPEN   "$(check ci COMPLETED FAILURE),$(check lint IN_PROGRESS '')" ;;
+  greptile_running) pr OPEN "$(check ci COMPLETED SUCCESS),$(check 'Greptile Review' IN_PROGRESS '')" ;;
+  greptile_failed)  pr OPEN "$(check ci COMPLETED SUCCESS),$(check 'Greptile Review' COMPLETED FAILURE)" ;;
+  only_greptile)    pr OPEN "$(check 'Greptile Review' IN_PROGRESS '')" ;;
   *) exit 1 ;;
 esac
 MOCK
@@ -51,6 +54,9 @@ expect "neutral and skipped settled"  0 MOCK_CASE=neutral
 expect "completed but unknown"   4 MOCK_CASE=unknown
 expect "still running, no wait"  2 MOCK_CASE=running MAX_WAIT_SECONDS=0
 expect "failure outranks timeout" 1 MOCK_CASE=fail_run MAX_WAIT_SECONDS=0
+expect "running greptile ignored" 0 MOCK_CASE=greptile_running MAX_WAIT_SECONDS=0
+expect "failed greptile ignored"  0 MOCK_CASE=greptile_failed
+expect "greptile is not CI"        4 MOCK_CASE=only_greptile MAX_WAIT_SECONDS=0
 expect "bad poll interval"       3 MOCK_CASE=green POLL_INTERVAL_SECONDS=0
 expect "gh unset"                3 MOCK_CASE=green GH_BIN=
 expect "gh not executable"       3 MOCK_CASE=green GH_BIN=/nonexistent/gh

@@ -1,9 +1,9 @@
 ---
 name: propose-then-ship-pi
-description: "Use for autonomous delivery in pi. For open-ended work, scan a repo, propose a ranked #1 recommendation, and wait for the user's direction. For a clear task or existing PR, treat the request as the direction and skip the proposal gate. Then deliver the complete approved outcome through every required PR and deployment with subagent review, CI, and Greptile. Do not use for plain research or generic read-only feedback unless the user names this skill or requests its full reviewer panel."
-compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Greptile review needs the greptile-apps GitHub App unless an explicit unavailable-service waiver applies. Bundled scripts need bash and jq."
+description: "Use for autonomous delivery in pi. For open-ended work, scan a repo, propose a ranked #1 recommendation, and wait for the user's direction. For a clear task or existing PR, treat the request as the direction and skip the proposal gate. Then deliver the complete approved outcome through every required PR and deployment with subagent review and CI. Do not use for plain research or generic read-only feedback unless the user names this skill or requests its full reviewer panel."
+compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -47,7 +47,7 @@ Turn one open-ended request into a fully delivered outcome across a single human
 - **One approved outcome, scoped PRs.** Keep each PR coherent, but never reinterpret a PR boundary as the task boundary. A valid finding related to the changed scope is fixed now or, when a separate PR is materially safer, queued for the Phase 6 chain. An unrelated pre-existing finding is filed in Linear if no existing issue tracks it.
 - **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
-- **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-service policy changes which remote gates exist; it never excuses a failing gate.
+- **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
 - **Four-agent review is mandatory.** `reviewer-gpt`, `reviewer-security`, `reviewer-claude`, and `reviewer-ponytail` always run as fresh-context subagents, followed by deslop and the evidence gate in the parent. The user does not review agent-authored code, so no panel member is optional. Add task-specific reviewers when repository policy or risk requires them.
 - **Every finding gets a verdict, not silence.** Address blockers and nits alike: fix them, rebut them with reasoning, queue independently shippable related work, file an unrelated pre-existing issue, or stop on a real blocker. Reviewers do not need to return zero nits or an explicit LGTM; all four must complete current-head review, every finding must be addressed, and no blocker may remain. The agent cannot declare accepted debt.
 - **Autonomy includes completion and cleanup.** After direction approval, never ask whether to continue an already approved implementation phase or clean up valid slop or debt in the changed scope. A groundwork PR is an intermediate step, not completion. Continue through every PR required by the approved acceptance criteria. Slop, missing validation, and maintainability debt in code this run adds or changes must be fixed before that PR merges; Phase 6 is not a cleanup escape hatch for sloppy code. A Linear issue or handoff is not completion for work this run introduced.
@@ -78,8 +78,8 @@ Choose the path from the user's request; do not manufacture another approval gat
 
 - **Open direction:** create the provisional worktree, run Phases 1 and 2, then deliver.
 - **Clear task:** the request itself is the approved direction. Create the worktree, state the outcome, user-aware repository scope, and run-level acceptance criteria, then start Phase 3 without `ask_question`.
-- **Existing PR:** create or reuse an isolated worktree for its exact head, reconstruct the outcome and acceptance criteria from the request, issue, and PR, then enter Phase 3 if implementation remains or Phase 4 if the diff is ready. The full reviewer, CI, Greptile, merge, deployment, and completion rules still apply.
-- **Named read-only PR review:** run all four fresh reviewers and the parent review passes against the exact head, and inspect existing CI, Greptile, threads, and PR comments without mutating them. Report findings only; make no edits, comments, thread resolutions, merge, or deployment because read-only scope is explicit. Then remove the unchanged review worktree and any unchanged local review branch.
+- **Existing PR:** create or reuse an isolated worktree for its exact head, reconstruct the outcome and acceptance criteria from the request, issue, and PR, then enter Phase 3 if implementation remains or Phase 4 if the diff is ready. The full reviewer, CI, merge, deployment, and completion rules still apply.
+- **Named read-only PR review:** run all four fresh reviewers and the parent review passes against the exact head, and inspect existing CI, already-present Greptile comments, human threads, and PR comments without mutating them. Report findings only; make no edits, comments, thread resolutions, merge, or deployment because read-only scope is explicit. Then remove the unchanged review worktree and any unchanged local review branch.
 - **Obvious typo outside this skill:** a non-behavioral spelling-only correction may use the repository's normal lightweight path. If this skill is named or a PR review is requested, do not take the exemption.
 
 ### Phase 0 — Worktree
@@ -102,15 +102,16 @@ Record the printed worktree path and base. Call `change_dir` with that worktree 
 
 The slug is provisional when direction is open. Nothing is pushed until Phase 3, so rename the branch with `git branch -m` once the approved direction has a sharper name. If the user rejects, stops, or cancels before implementation, verify the provisional worktree is unchanged, remove it, and delete the unchanged local branch with a SHA-bound `git update-ref`; leave no rejected-work tree behind.
 
-#### Remote gate policy
+#### CI gate policy
 
-Before the next proposal or implementation phase, read the current user/project instructions and repository guidance, then record this run's policy and its source for every repository in the user-aware scope:
+Before the next proposal or implementation phase, read the current user/project instructions and repository guidance, then record this run's CI policy and its source for every repository in the user-aware scope:
 
 - CI: `required` or `waived-if-absent`
-- Greptile: `required` or `waived-if-unavailable`
 - Source: the user instruction or repository guidance path that grants any waiver
 
-Both gates default to `required`. A standing user or project instruction can cover an owner or repository; a permanent repository policy belongs in checked-in guidance such as `AGENTS.md`. Never infer a waiver from missing workflows, a missing app, repository ownership, or what another repository did. If explicit sources conflict and normal instruction precedence does not resolve them, ask once. Carry the recorded policy through reviewer briefs and the Ship report so an absent service is reported as **waived**, never as passed.
+CI defaults to `required`. A standing user or project instruction can cover an owner or repository; a permanent repository policy belongs in checked-in guidance such as `AGENTS.md`. Never infer a waiver from missing workflows, repository ownership, or what another repository did. If explicit sources conflict and normal instruction precedence does not resolve them, ask once. Carry the recorded policy through reviewer briefs and the Ship report so absent CI is reported as **waived**, never as passed.
+
+Greptile reviews and comments automatically after changes but is never a merge gate. Never wait for it, poll it, trigger it, or require an exact-head review, confidence score, acknowledgment, resolved thread, or re-review. Fix or rebut comments already present when the PR is checked, then proceed without waiting; the required panel determines code sign-off.
 
 ### Phase 1 — Recon and proposal (read-only)
 
@@ -138,14 +139,14 @@ A result returned by `ask_question` is the user's direction choice, even though 
 
 ### Phase 4 — Review loop
 
-There is no review-cycle cap. Steps 1 through 4 are local and settle in minutes. Let CI and Greptile run in the background, but do not wait on either until the local panel is clean: they review whatever is pushed at that moment, so blocking early spends a remote cycle on a diff you are about to rewrite. Keep iterating until the exit conditions hold or a real stop rule applies; a cycle count is never a stop reason.
+There is no review-cycle cap. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Greptile reviews automatically and remains advisory; never wait for or trigger it. Keep iterating until the exit conditions hold or a real stop rule applies; a cycle count is never a stop reason.
 
 1. **Panel.** Launch the review panel below in one `subagent` call. Every required reviewer performs a fresh analysis of the current diff; ledger reuse never replaces a reviewer pass.
 2. **Triage.** Fix valid findings related to the changed scope. Rebut invalid ones in writing with reasoning. Queue a separate PR only for independently shippable functional work when separation is materially safer; never defer slop, missing validation, or maintainability debt in code this run adds or changes. File unrelated pre-existing findings under the File verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
-6. **Greptile and threads.** Apply the recorded policy, then follow `references/greptile-loop.md`. `required` needs the normal current-head verdict. `waived-if-unavailable` permits only a confirmed unavailable app/review surface; any current-head Greptile signal makes the normal verdict and findings required. Sweep threads and PR comments from every author under either policy.
+6. **Automatic feedback and threads.** Never wait for, poll, trigger, score, or require Greptile. Fix or rebut each Greptile comment already visible when the PR is checked, but do not wait for acknowledgment, resolution, or re-review. Its absence, latency, status, score, and reviewed head never block or reset readiness. Sweep blocking feedback from humans and required reviewers.
 7. **Re-run the required reviewers** after any diff change since their last review. Reuse still-valid deterministic checks, not reviewer judgment; a prior clean verdict never signs off a changed diff.
 
 #### Review panel
@@ -171,8 +172,7 @@ Leave the loop only when all of these hold against the current head SHA:
 - `reviewer-gpt`, `reviewer-security`, `reviewer-claude`, and `reviewer-ponytail` each completed a fresh review of the exact diff being shipped after their last requested change. Every finding has a recorded verdict and zero blocking findings remain; explicit LGTM wording and a zero-nit response are not required.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
 - The head contains the current base tip and the PR is mergeable with no conflicts. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
-- Greptile's bot-authored summary footer identifies the current head and every actionable finding is addressed, or the app/review surface is confirmed unavailable under a cited `waived-if-unavailable` policy. Strive for 5/5 and report the score when available, but a lower or unavailable score is not blocking once the current-head review and actionable feedback are clear.
-- Zero unresolved review threads from any author, and every PR-level comment addressed. Threads and issue comments are separate surfaces; check both.
+- Zero unresolved blocking feedback from humans or required reviewers, and every Greptile comment already present when checked has a recorded Fix or Rebut verdict. Greptile acknowledgment, thread resolution, and re-review are not required.
 - Any linked Linear issue is current.
 
 Passing tests alone never satisfies panel completion. If the same failure repeats, inspect why, change strategy, rebut invalid feedback through the normal process, or identify the concrete stop rule. Continue independent completion-chain work when possible; elapsed cycles alone never justify stopping.
@@ -193,7 +193,7 @@ Follow `references/merge-gate.md` for the mechanics: the base freshness gate, th
 
 The chain contains every remaining implementation or delivery slice required by the approved outcome and valid changed-scope findings deferred because a separate PR was materially safer. A merged groundwork PR never completes the run while approved acceptance criteria remain. After each merge and cleanup, announce the next queued item and execute it; the announcement is informational, not a permission request.
 
-Each code-change item gets its own slug, worktree, branch, and PR through the full Phase 3→5 pipeline: same panel, same Greptile, same exit conditions, and the repository's merge, deployment, or external-approval path. A delivery-only item runs the repository workflow and validates the already reviewed artifact without fabricating an empty PR or rerunning reviewers against unchanged code. No per-item permission is needed because the direction approved the outcome, not merely the first PR. Every other stop rule stays live, including the dotfiles stop. A scoped `wait` pauses only its stated work and preserves the queue; an explicit `stop` or `cancel` ends the chain and triggers safe cleanup of agent-owned worktrees.
+Each code-change item gets its own slug, worktree, branch, and PR through the full Phase 3→5 pipeline: same panel, CI policy, exit conditions, and the repository's merge, deployment, or external-approval path. A delivery-only item runs the repository workflow and validates the already reviewed artifact without fabricating an empty PR or rerunning reviewers against unchanged code. No per-item permission is needed because the direction approved the outcome, not merely the first PR. Every other stop rule stays live, including the dotfiles stop. A scoped `wait` pauses only its stated work and preserves the queue; an explicit `stop` or `cancel` ends the chain and triggers safe cleanup of agent-owned worktrees.
 
 The acceptance criteria, not a PR count or a frozen queue, bound the chain:
 
@@ -206,7 +206,7 @@ End the chain only after a requirement-to-evidence map proves every original acc
 
 ## Available scripts
 
-**pr_signals.sh**: poll a PR's CI checks until they settle. Read-only. Call it by absolute path, since the working directory is the worktree. It does not evaluate Greptile — some installs produce no Greptile check, and the rollup hides the producing app — so that gate lives in `references/greptile-loop.md`.
+**pr_signals.sh**: poll a PR's required CI checks until they settle. Read-only. Call it by absolute path, since the working directory is the worktree. It excludes advisory Greptile checks.
 
 Resolve `scripts/pr_signals.sh` from this skill directory before invoking it:
 
@@ -222,7 +222,7 @@ Exit codes: `0` every reported check settled with no failure or unknown state on
 ## Reference loading
 
 - Read `references/review-panel.md` before Phase 4. It carries the exact subagent invocation forms and the completion bar.
-- Read `references/greptile-loop.md` when waiting on Greptile, reading its verdict, or sweeping unresolved threads.
+- `references/greptile-loop.md` records how to action already-present Greptile comments without waiting for or triggering a review.
 - Read `references/merge-gate.md` only after Phase 4 exits, before merging and any required deployment.
 
 ## Proposal contract
@@ -271,8 +271,7 @@ Title it `Shipped` only when the complete approved outcome is delivered, every o
 | --- | --- |
 | Panel | [all four current-head reviews completed, blockers remaining: 0, findings fixed/rebutted/queued/filed] |
 | CI | [green and what ran / waived-if-absent, policy source, and exact-head local validation] |
-| Greptile | [reviewed head/footer hash, score if available, actionable findings and threads resolved / waived-if-unavailable and policy source] |
-| Threads | [unresolved count across all authors] |
+| Feedback | [blocking human or required-reviewer feedback addressed; already-present Greptile comments fixed or rebutted] |
 | Linear | [issue and state, or "none"] |
 | Merge | [each PR squash-merged and post-merge checked / scoped merge-ready wait] |
 | Delivery | [required deploy/release and post-deploy validation / not required] |
@@ -287,7 +286,8 @@ Title it `Shipped` only when the complete approved outcome is delivered, every o
 ## Gotchas
 
 - **A settled CI check is not automatically evidence that required validation ran.** Empty or unknown is incomplete. Neutral or skipped may be valid for an optional check, but a required or materially relevant check must actually pass or be rerun; inspect what was skipped instead of treating exit 0 as proof.
-- **A missing service is not an implicit waiver.** Cite the recorded instruction or repository guidance, apply only the matching absence policy, and report the gate as waived rather than passed.
+- **Missing CI is not an implicit waiver.** Cite the recorded instruction or repository guidance, apply only the matching absence policy, and report the gate as waived rather than passed.
+- **Greptile never gates shipping.** It reviews automatically. Fix or rebut comments already present, but never wait, poll, trigger, score, or require it, and never wait for acknowledgment or re-review.
 - **A clean merge is not a working merge.** Git reports a conflict only when both sides touch the same lines. A renamed function, a new required field, a tightened lint rule, or a new test all merge cleanly and fail afterward. Prove compatibility by testing the merged result.
 - **A fresh worktree is not a working checkout.** Ignored files and dependencies are missing until you restore them.
 - **Draft PRs do not run all checks** in some repos, and a draft never becomes mergeable. Mark ready early.
@@ -312,4 +312,4 @@ On explicit rejection, stop, or cancellation, clean every agent-owned isolated w
 - Calling a groundwork PR "Shipped" while approved acceptance criteria remain, or asking whether to begin the next already approved phase.
 - Treating a gate failure in one PR as permission to abandon independent approved work.
 - Writing to an undisclosed repository because another repository in the same organization was approved.
-- Changing correct code or looping solely to chase Greptile 5/5 after the current-head review has no actionable findings.
+- Waiting for, manually triggering, or treating any Greptile result as a merge condition.

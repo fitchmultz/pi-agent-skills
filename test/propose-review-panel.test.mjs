@@ -10,7 +10,7 @@ const panel = readFileSync(path.join(root, "skills/propose-then-ship-pi/referenc
 const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-pi/evals/evals.json"), "utf8"));
 
 test("the four configured reviewers are always required", () => {
-  assert.match(skill, /version: "1\.3\.0"/);
+  assert.match(skill, /version: "1\.4\.0"/);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never a deslop proxy/i);
   assert.match(panel, /Regular `reviewer` is never a panel member and never substitutes for deslop/);

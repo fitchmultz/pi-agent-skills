@@ -13,7 +13,7 @@ Four reviewers run as fresh-context subagents; two passes run in the parent sess
 | `deslop` | parent | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
 
-In a named read-only PR review, all four subagents still run and the parent applies the deslop and verification rubrics as analysis only; also inspect existing CI, Greptile, threads, and PR comments, but explicit read-only scope forbids edits, comments, thread resolutions, merge, and deployment.
+In a named read-only PR review, all four subagents still run and the parent applies the deslop and verification rubrics as analysis only; also inspect existing CI, already-present Greptile comments, human threads, and PR comments, but explicit read-only scope forbids edits, comments, thread resolutions, merge, and deployment. Never wait for or trigger Greptile.
 
 A spelling-only typo outside a named invocation may use the repository's lightweight path. Once this skill is active or a PR review is requested, all four reviewers are required regardless of diff size.
 
@@ -39,7 +39,7 @@ subagent({
 
 ## Brief contents
 
-Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the PR number and link once one exists, the approved outcome, acceptance criteria, user-aware repository scope, delivery action, and non-goals, the recorded remote gate policy and source, the validation already run, and the running record of rebutted findings and user-approved tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse still-valid deterministic validation outputs instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Ledger reuse never replaces the reviewer's own fresh analysis. Prior findings and rebuttals are context, but prior verdicts and sign-off cannot satisfy a later review cycle or a changed diff. Tell reviewers not to modify project or source files. Record each run ID and inspect its result.
+Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the PR number and link once one exists, the approved outcome, acceptance criteria, user-aware repository scope, delivery action, and non-goals, the recorded CI gate policy and source, the validation already run, and the running record of rebutted findings and user-approved tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse still-valid deterministic validation outputs instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Ledger reuse never replaces the reviewer's own fresh analysis. Prior findings and rebuttals are context, but prior verdicts and sign-off cannot satisfy a later review cycle or a changed diff. Tell reviewers not to modify project or source files. Record each run ID and inspect its result.
 
 Never ask a child for evidence only the parent can obtain. Children do not receive the `subagent` tool, so registry listings, agent configs, and run status must be captured in the parent and pasted into the brief. A child asked to "verify the registry" will stall or guess.
 
