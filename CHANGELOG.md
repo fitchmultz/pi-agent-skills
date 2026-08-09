@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2026-08-09
+
+- Aligned `package-lock.json` with the released package version. No skill or guidance changes.
+
 ## [0.3.1] - 2026-08-07
 
 - Made Greptile automatic advisory feedback instead of a merge gate. Existing comments are fixed or rebutted without waiting for acknowledgment or re-review.
@@ -12,5 +16,6 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.3.2]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.2.0...v0.3.0

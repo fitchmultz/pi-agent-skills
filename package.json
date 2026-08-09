@@ -1,6 +1,6 @@
 {
   "name": "@fitch/pi-agent-skills",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Source-managed Pi skills for reusable agent workflows.",
   "type": "module",
