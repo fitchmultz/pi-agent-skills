@@ -19,7 +19,7 @@ function pngDimensions(file) {
 }
 
 function render(args, env = {}) {
-  return spawnSync(script, args, { encoding: "utf8", env: { ...process.env, ...env } });
+  return spawnSync(script, args, { encoding: "utf8", env: { ...process.env, BASH_ENV: "/dev/null", ...env } });
 }
 
 test("renderer creates a 980px preview and overlapping native crops", { skip: !toolsAvailable }, () => {
