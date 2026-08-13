@@ -24,7 +24,7 @@
     {
       "id": "capability-boundary",
       "prompt": "An admitted agent request is refused later because its URL is outside an internal browser allowlist that is unrelated to documented security or admission policy, although the destination platform would permit it.",
-      "expected_output": "Flags the convenience restriction as a UX defect, places policy at the earliest accurate admission point, preserves real security boundaries, and treats destination-enforced permission as a valid downstream boundary."
+      "expected_output": "Confirms the restriction has no security purpose before flagging it as a UX defect, places policy at the earliest accurate admission point, preserves real security boundaries, and treats destination-enforced permission as a valid downstream boundary."
     },
     {
       "id": "explicit-scope-fidelity",
@@ -35,6 +35,16 @@
       "id": "request-denominator",
       "prompt": "Review a dashboard that counts the original request, each retry, and each callback as separate requests, then reports a 97% success rate. One request can appear in success and failure.",
       "expected_output": "Requires one canonical admitted-request denominator, separates diagnostic attempts from outcomes, and prevents contradictory success and failure classification."
+    },
+    {
+      "id": "clean-change-approval",
+      "prompt": "Review a small settings PR that changes an unclear 'Export' label to 'Export data'. Existing screenshots and tests show the control, loading, error, and completed states are unchanged and usable.",
+      "expected_output": "Approves with 'No material UX findings', does not invent failures or force irrelevant retry and receipt checks, and reports no blocker-sized evidence gap."
+    },
+    {
+      "id": "legitimate-user-decision",
+      "prompt": "Review an agent flow that pauses before a $500 purchase, keeps visible status and full context, and resumes after the user confirms or cancels.",
+      "expected_output": "Recognizes a legitimate user decision rather than permission ceremony, then verifies that the awaiting-user state is visible, resumable, and reaches a truthful confirmed or canceled outcome."
     },
     {
       "id": "general-information-ux",
