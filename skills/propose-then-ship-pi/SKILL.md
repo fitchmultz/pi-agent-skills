@@ -128,13 +128,13 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Greptile reviews automatically and remains advisory; never wait for or trigger it.
 
-1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave.
+1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave. Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict.
 2. **Triage.** Fix valid panel findings. Rebut invalid ones in writing with reasoning. Give out-of-scope panel findings the Defer verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
 6. **Advisory automation and threads.** Never wait for, poll, trigger, score, or require Greptile. Fix or rebut each Greptile comment already visible when the PR is checked, but do not wait for acknowledgment, resolution, or re-review. Its absence, latency, status, score, and reviewed head never block or reset readiness. Sweep blocking feedback from humans and required reviewers.
-7. **Launch only the next required wave** after remediation: `reviewer-ponytail` plus the seats that blocked the previous wave, with the security override above. A mechanical rebase or merge of unchanged content does not trigger re-review. New substantive scope restarts the full four-seat panel. Reuse still-valid deterministic checks, not reviewer judgment.
+7. **Launch only the next required wave** after remediation: `reviewer-ponytail` plus the seats that blocked the previous wave, with the security override above. An unchanged-head rebuttal reruns only the blocking seat with that rebuttal. A mechanical rebase or merge of unchanged content does not trigger re-review. New substantive scope restarts the full four-seat panel. Reuse still-valid deterministic checks, not reviewer judgment.
 
 #### Review panel
 
@@ -154,7 +154,7 @@ Two reviewers disagreeing is signal, not noise. The code is usually ambiguous en
 
 Leave the loop only when all of these hold against the current head SHA:
 
-- All four seats returned real verdicts on the first substantive head for the current scope.
+- The full four-seat first wave completed for the current scope, and every blocking finding from it or a later wave was cleared by its originating seat on a required rerun.
 - Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
 - No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
@@ -248,13 +248,13 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 | Gate | Result |
 | --- | --- |
-| Panel | [cycles run, findings fixed, findings rebutted] |
+| Panel | [waves run and seats in each, findings fixed, findings rebutted] |
 | CI | [green and what ran / waived-if-absent, policy source, and exact-head local validation] |
 | Feedback | [blocking human or required-reviewer feedback addressed] |
 | Linear | [issue and state, or "none"] |
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
 
-**Skipped or deferred validation** — [each pass not run, with the reason, or "none"]
+**Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, not here]
 **Rebutted findings** — [each one, with the reasoning, or "none"]
 **Follow-up chain** — [items queued for the chain, or "none"; per-item outcomes land in the chain's closing report]
 ```

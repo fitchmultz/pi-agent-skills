@@ -16,6 +16,8 @@ test("the first wave uses the four configured panel seats", () => {
   assert.match(skill, /version: "1\.4\.0"/);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never substitutes for parent-run deslop/i);
+  assert.match(skill, /Every PR's first substantive change gets one fresh-context async exact-head panel.+reviewer-ponytail/s);
+  assert.match(skill, /Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict/);
   assert.match(panel, /Regular `reviewer` is never a panel member and never substitutes for deslop/);
   assert.match(panel, /Deslop runs in the parent only/);
   assert.match(panel, /does not add it to this panel/);
@@ -38,6 +40,9 @@ test("remediation reruns ponytail, prior blockers, and sensitive security paths"
   assert.match(remediationWave, /Keep when this seat blocked, or when remediation touches auth, secrets, injection, or data exposure/);
   assert.match(panel, /mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review/i);
   assert.match(panel, /New substantive scope always resets to a full four-seat panel/i);
+  assert.match(panel, /When the head is unchanged and the response is only a rebuttal, rerun the blocking seat/i);
+  assert.match(skill, /full four-seat first wave completed.+every blocking finding.+cleared by its originating seat/s);
+  assert.ok(![...remediationWave.matchAll(/agent:\s*"([^"]+)"/g)].map((match) => match[1]).includes("reviewer"));
 
   const staleHead = evals.evals.find(({ id }) => id === "edge-stale-head-evidence");
   assert.ok(staleHead);

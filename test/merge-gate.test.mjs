@@ -13,6 +13,10 @@ test("merge and SHA-bound branch cleanup are separate ordered steps", () => {
   assert.match(guide, /--force-with-lease="refs\/heads\/\$BRANCH:<verified-SHA>"/);
   assert.match(guide, /git update-ref -d "refs\/heads\/\$BRANCH" "<verified-SHA>"/);
   assert.match(guide, /remote_status.*-eq 2/s);
+  assert.match(guide, /mechanical base sync changes the commit SHA but does not invalidate panel clearance/i);
+  assert.match(guide, /substantive conflict resolution reopens review/i);
+  assert.doesNotMatch(guide, /exact-head gates reset with it/i);
+  assert.doesNotMatch(guide, /CI and the reviewer panel judged the previous head/i);
 
   const confirm = guide.indexOf("Confirm the merge actually landed");
   const smoke = guide.indexOf("Run a bounded smoke check");

@@ -23,10 +23,10 @@ Direct file overlap is the cheap signal. Base changes also reach a PR through a 
 
 Bring base in with `git merge "origin/<base>"` or `<gh> pr update-branch --rebase`, then:
 
-- **Nothing intersects.** Push, then return to Phase 4.
-- **Something intersects.** Run the targeted checks that exercise the intersection against the merged result first, fix what broke, then push and let the PR's CI run the full suite while you re-clear the other gates. Return to Phase 4.
+- **Nothing intersects.** Push, then refresh CI, mergeability, draft state, and other deterministic exact-head gates. Carry panel clearance forward because the reviewed content did not change.
+- **Something intersects.** Run the targeted checks that exercise the intersection against the merged result first. If the reviewed content remains unchanged, push and refresh the same non-panel gates. If conflict resolution or another edit changes reviewed content, commit it, push it, and return to Phase 4 under the normal remediation or new-scope wave rules.
 
-**Integrating base creates a new head, and the exact-head gates reset with it.** CI and the reviewer panel judged the previous head, so re-clear the Phase 4 exit conditions on the new SHA. Greptile remains automatic and advisory; never wait for or trigger it. Never arm auto-merge to escape the required panel, because GitHub's own conditions do not include that sign-off.
+A mechanical base sync changes the commit SHA but does not invalidate panel clearance when the reviewed content is unchanged. CI and other commit-bound evidence must still be refreshed on the new SHA. Greptile remains automatic and advisory; never wait for or trigger it. Never arm auto-merge to escape a panel wave required by substantive changes, because GitHub's own conditions do not include that sign-off.
 
 Re-check the commit count before merging. Cap at 3 attempts. When base advances faster than you can re-clear the gates, stop and report the churn rather than lowering the bar.
 
@@ -34,7 +34,7 @@ Re-check the commit count before merging. Cap at 3 attempts. When base advances 
 
 ## Merge
 
-Run one full review of the exact head immediately before merging. Authorization may arrive long after Phase 4 finished, and prior sign-off covers only the SHA it examined. Re-check head SHA, mergeability, draft state, required checks, panel reviews, blocking human or required-reviewer feedback, and any Greptile comments already present in the same pass. Fix or rebut present Greptile comments, but never wait for acknowledgment or re-review. Anything older is a memory, not evidence.
+Run one final gate check immediately before merging. Authorization may arrive long after Phase 4 finished. Re-check head SHA, mergeability, draft state, required checks, the panel-wave history required for the current content, blocking human or required-reviewer feedback, and any Greptile comments already present in the same pass. A mechanical base sync may carry panel clearance across SHAs only after confirming the reviewed content is unchanged; substantive conflict resolution reopens review. Fix or rebut present Greptile comments, but never wait for acknowledgment or re-review. Anything older is a memory, not evidence.
 
 Bind the merge to the SHA you verified, so a push that lands between the check and the merge aborts instead of shipping unreviewed:
 

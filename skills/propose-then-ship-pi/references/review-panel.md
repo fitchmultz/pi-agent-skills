@@ -22,10 +22,11 @@ The implementing agent remains the sole writer and owns the PR through merge. Pa
 1. **First wave.** The first substantive head for a PR, and every new substantive scope, launches all four seats together. The panel is fresh-context, async, and bound to the committed head SHA.
 2. **Remediation wave.** A fix within the same approved scope reruns `reviewer-ponytail` plus only the seats that blocked the immediately preceding wave. A seat that clears drops from the next wave unless it blocks again.
 3. **Sensitive remediation.** Any remediation touching auth, secrets, injection, or data-exposure paths also reruns `reviewer-security`, even when it previously cleared.
-4. **Extensive remediation.** The owning agent may rerun the full panel or add reviewers when a fix is broad enough that the selective wave would miss meaningful risk.
-5. **Base changes.** A mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review. Substantive conflict-resolution changes reopen review. When several cleared PRs become a new combined stack, review that combined tree once as a new first wave instead of re-paneling each component PR.
+4. **Blocking rebuttal.** When the head is unchanged and the response is only a rebuttal, rerun the blocking seat with that rebuttal. Do not invent a remediation wave or rerun `reviewer-ponytail` solely for an unchanged head.
+5. **Extensive remediation.** The owning agent may rerun the full panel or add reviewers when a fix is broad enough that the selective wave would miss meaningful risk.
+6. **Base changes.** A mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review. Substantive conflict-resolution changes reopen review. When several cleared PRs become a new combined stack, review that combined tree once as a new first wave instead of re-paneling each component PR.
 
-Commit remediation before launching a wave. A dirty checkout is not an exact-head review.
+Commit remediation before launching a wave. A dirty checkout is not an exact-head review. Do not change the checkout or HEAD until every scheduled seat returns a real verdict.
 
 ## Launch shape
 
