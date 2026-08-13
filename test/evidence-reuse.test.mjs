@@ -20,8 +20,8 @@ test("unchanged full-suite evidence is shared instead of rerun", () => {
   assert.match(skill, /Findings, verdicts, and sign-off are review history, not reusable validation evidence/i);
   assert.match(skill, /Manual observations.+current-only.+must not be reused/i);
   assert.match(propose, /current inspectable evidence/i);
-  assert.match(propose, /ledger reuse never replaces a reviewer pass/i);
-  assert.match(propose, /prior clean verdict never signs off a changed diff/i);
+  assert.match(propose, /ledger reuse never replaces a reviewer pass required in that wave/i);
+  assert.match(propose, /seats that blocked the previous wave/i);
   assert.doesNotMatch(propose, /passing tests need fresh output/i);
   assert.match(panel, /Ledger reuse never replaces the reviewer's own fresh analysis/i);
   assert.ok(evals.evals.some(({ id }) => id === "edge-reuse-full-suite-on-unchanged-tree"));
@@ -30,6 +30,7 @@ test("unchanged full-suite evidence is shared instead of rerun", () => {
   assert.ok(evals.evals.some(({ id }) => id === "edge-environment-invalidates-reused-evidence"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-review-verdict-is-not-reusable"));
   const staleReview = proposeEvals.evals.find(({ id }) => id === "edge-stale-head-evidence");
-  assert.match(staleReview.expected_output, /reruns every required reviewer/i);
-  assert.doesNotMatch(staleReview.expected_output, /affected reviewers/i);
+  assert.match(staleReview.expected_output, /reviewer-ponytail/i);
+  assert.match(staleReview.expected_output, /reviewer-gpt/i);
+  assert.doesNotMatch(staleReview.expected_output, /every required reviewer/i);
 });
