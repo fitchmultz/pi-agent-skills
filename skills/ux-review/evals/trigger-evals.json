@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Give this PR an end-user UX review before I merge it.",
+    "should_trigger": true,
+    "reason": "Explicit review of user impact in a PR."
+  },
+  {
+    "query": "Review this Slack agent design for retries, visible progress, and truthful completion.",
+    "should_trigger": true,
+    "reason": "Agentic long-running workflow and failure UX."
+  },
+  {
+    "query": "Does this checkout redesign own the whole user journey, including loading and persistent failures?",
+    "should_trigger": true,
+    "reason": "Design review spanning working and error states."
+  },
+  {
+    "query": "Check whether this CLI change gives users an honest outcome when the remote write finishes late.",
+    "should_trigger": true,
+    "reason": "Human-visible terminal UX and external-write reconciliation."
+  },
+  {
+    "query": "Review the retry worker refactor for code quality and abstraction boundaries only.",
+    "should_trigger": false,
+    "reason": "Maintainability-only review explicitly excludes user experience."
+  },
+  {
+    "query": "Dogfood the local app and capture screenshots of every broken flow.",
+    "should_trigger": false,
+    "reason": "Live exploratory QA belongs to the dogfood skill."
+  },
+  {
+    "query": "Threat model the authentication service.",
+    "should_trigger": false,
+    "reason": "Security-only review."
+  },
+  {
+    "query": "Refactor this internal database adapter; behavior and user-visible states are unchanged.",
+    "should_trigger": false,
+    "reason": "Backend-only change with no user-visible impact."
+  }
+]
