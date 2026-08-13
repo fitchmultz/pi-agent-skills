@@ -2,32 +2,67 @@
 
 Read before Phase 4. Exact invocation forms and the sign-off bar for the pi reviewer panel.
 
-Up to three reviewers run as fresh-context subagents; two passes run in the parent session. Reviewers are read-only with respect to product code. Apply the risk rule from Core rules: only `reviewer-gpt`, deslop, and the evidence gate are unconditional.
+The first substantive head for each scope gets four fresh-context reviewers in one async exact-head panel. Later remediation waves are selective. Two passes still run in the parent session. Reviewers are read-only with respect to product code.
 
 | Pass | Where | Required | Looks for |
 | --- | --- | --- | --- |
-| `reviewer-gpt` | subagent, fresh | always | Correctness, maintainability, validation gaps. This is the gate. |
-| `reviewer-security` | subagent, fresh | on any trust boundary | Security and data safety against an explicit trust-boundary rubric. Different model family than the gate. |
-| `reviewer-claude` | subagent, fresh | on real blast radius | Cross-family structural review against the thermo-nuclear rubric. |
+| `reviewer-gpt` | subagent, fresh | first wave; later only when it blocked the previous wave | Correctness, maintainability, validation gaps. |
+| `reviewer-ponytail` | subagent, fresh | every wave | Over-engineering and slop without changing intended behavior. |
+| `reviewer-claude` | subagent, fresh | first wave; later only when it blocked the previous wave | Cross-family structural review against the thermo-nuclear rubric. |
+| `reviewer-security` | subagent, fresh | first wave; later when it blocked or remediation touches auth, secrets, injection, or data exposure | Security and data safety against an explicit trust-boundary rubric. |
 | `deslop` | parent, edits | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
 
-Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the three panel agents above. A Review grouping that also lists regular `reviewer` does not add it to this panel.
+Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the four panel agents above. A Review grouping that also lists regular `reviewer` does not add it to this panel.
+
+The implementing agent remains the sole writer and owns the PR through merge. Panel agents inspect and report; they do not modify product code or hand ownership between writer and captain roles.
+
+## Wave rules
+
+1. **First wave.** The first substantive head for a PR, and every new substantive scope, launches all four seats together. The panel is fresh-context, async, and bound to the committed head SHA.
+2. **Remediation wave.** A fix within the same approved scope reruns `reviewer-ponytail` plus only the seats that blocked the immediately preceding wave. A seat that clears drops from the next wave unless it blocks again.
+3. **Sensitive remediation.** Any remediation touching auth, secrets, injection, or data-exposure paths also reruns `reviewer-security`, even when it previously cleared.
+4. **Extensive remediation.** The owning agent may rerun the full panel or add reviewers when a fix is broad enough that the selective wave would miss meaningful risk.
+5. **Base changes.** A mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review. Substantive conflict-resolution changes reopen review. When several cleared PRs become a new combined stack, review that combined tree once as a new first wave instead of re-paneling each component PR.
+
+Commit remediation before launching a wave. A dirty checkout is not an exact-head review.
 
 ## Launch shape
 
-Write the worktree path in literally. Drop a conditional task when its trigger does not apply, and record the skip and its reason in the report:
+### First wave
+
+Write the worktree path and current head SHA into every brief literally:
 
 ```typescript
 subagent({
   tasks: [
-    { agent: "reviewer-gpt",      cwd: "<worktree>", output: false, task: "Review the branch diff against origin/<base> ..." },
-    // conditional: include when the change touches a trust boundary
-    { agent: "reviewer-security", cwd: "<worktree>", output: false, task: "Security review of the branch diff against origin/<base> ..." },
-    // conditional: include when the change carries real blast radius
-    { agent: "reviewer-claude",   cwd: "<worktree>", output: false, task: "Read <skill-dir>/../thermo-nuclear-code-quality-review/agents/subagent.md and follow it ..." }
+    { agent: "reviewer-gpt",      cwd: "<worktree>", output: false, task: "Review the branch diff against origin/<base> at <head-sha> ..." },
+    { agent: "reviewer-ponytail", cwd: "<worktree>", output: false, task: "Review the branch diff against origin/<base> at <head-sha> for over-engineering and slop ..." },
+    { agent: "reviewer-claude",   cwd: "<worktree>", output: false, task: "Read <skill-dir>/../thermo-nuclear-code-quality-review/agents/subagent.md and follow it for the diff at <head-sha> ..." },
+    { agent: "reviewer-security", cwd: "<worktree>", output: false, task: "Security review of the branch diff against origin/<base> at <head-sha> ..." }
   ],
-  concurrency: 3,
+  concurrency: 4,
+  context: "fresh",
+  async: true
+})
+```
+
+### Remediation wave
+
+Delete every inapplicable task before launch. `reviewer-ponytail` stays; other seats stay only under the comments below:
+
+```typescript
+subagent({
+  tasks: [
+    { agent: "reviewer-ponytail", cwd: "<worktree>", output: false, task: "Review the remediated diff at <head-sha> ..." },
+    // Keep only when this seat blocked the previous wave.
+    { agent: "reviewer-gpt",      cwd: "<worktree>", output: false, task: "Re-review the remediated diff and prior blocking finding at <head-sha> ..." },
+    // Keep only when this seat blocked the previous wave.
+    { agent: "reviewer-claude",   cwd: "<worktree>", output: false, task: "Re-review the remediated diff and prior blocking finding at <head-sha> ..." },
+    // Keep when this seat blocked, or when remediation touches auth, secrets, injection, or data exposure.
+    { agent: "reviewer-security", cwd: "<worktree>", output: false, task: "Re-review the remediated diff and relevant security paths at <head-sha> ..." }
+  ],
+  concurrency: 4,
   context: "fresh",
   async: true
 })
@@ -35,7 +70,7 @@ subagent({
 
 ## Brief contents
 
-Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the PR number and link once one exists, the approved direction and its non-goals, the recorded remote gate policy and source, the validation already run, and the running record of declined findings and accepted tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse still-valid deterministic validation outputs instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Ledger reuse never replaces the reviewer's own fresh analysis. Prior findings and rebuttals are context, but prior verdicts and sign-off cannot satisfy a later review cycle or a changed diff. Tell reviewers not to modify project or source files. Record each run ID and inspect its result.
+Every task brief carries: the absolute worktree path, the base branch, the **current head SHA**, the panel wave number, why that seat is included, the PR number and link once one exists, the approved direction and its non-goals, the recorded remote gate policy and source, the validation already run, the remediation since the prior wave, and the running record of declined findings and accepted tradeoffs so they are not re-litigated. Include the shared evidence ledger: exact commands or sources, cwd, tree or head identity, results, and relevant environment. Reviewers may reuse still-valid deterministic validation outputs instead of repeating a full suite; they run missing or invalidated checks and return the same fields for new evidence. Ledger reuse never replaces the reviewer's own fresh analysis in a wave where that seat is required. Prior findings and rebuttals are context. Prior sign-off does not replace a seat required in the current wave; seats omitted by the wave rules are intentionally not rerun.
 
 Never ask a child for evidence only the parent can obtain. Children do not receive the `subagent` tool, so registry listings, agent configs, and run status must be captured in the parent and pasted into the brief. A child asked to "verify the registry" will stall or guess.
 
@@ -48,8 +83,8 @@ cd <worktree> && git diff "origin/<base>...HEAD"
 cd <worktree> && git diff "origin/<base>...HEAD" --name-only -z | xargs -0 wc -l
 ```
 
-`reviewer-claude` is also the cross-family check: it runs a different vendor family than `reviewer-gpt`, so the panel does not share one model's blind spots. When its risk trigger applies, rerun it after every diff change since its last review until it signs off on the exact diff you are shipping.
+`reviewer-claude` is also the cross-family check, so it always runs in a first wave. Rerun it on remediation only when it blocked the previous wave, or when extensive remediation warrants a voluntary full panel.
 
 ## Sign-off bar
 
-An async reviewer that times out is not sign-off. Rerun it, resume it, or split it, then wait for a real verdict. A rebutted blocking finding clears only when that reviewer withdraws it on a rerun with the rebuttal in the brief. After any diff change, every required reviewer must analyze the updated diff again; later passes may find issues an earlier clean pass missed.
+An async reviewer that times out is not sign-off. Resume it, rerun it, or split it, then wait for a real verdict. A rebutted blocking finding clears only when that reviewer withdraws it on a rerun with the rebuttal in the brief. A wave clears only when every seat scheduled for that exact head returns a non-blocking verdict. Non-blocking seats omitted from a later remediation wave retain their earlier clearance by policy; do not turn every fix or mechanical rebase into a full-panel cascade. New substantive scope always resets to a full four-seat panel.

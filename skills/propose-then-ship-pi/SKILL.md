@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -44,7 +44,9 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
-- **Scale rigor with risk.** `reviewer-gpt`, deslop, and the evidence gate always run. `reviewer-security` is required whenever the change touches a trust boundary: authentication, authorization, untrusted input, secrets, dependencies, outbound calls, or data exposure. `reviewer-claude` is required when the change carries real blast radius. Skip a conditional pass only for genuinely low-risk work, and name the skip and its reason in the report. Never drop a pass silently.
+- **Use review waves, not rerun-all churn.** Every PR's first substantive change gets one fresh-context async exact-head panel with `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security`. Later remediation on the same scope reruns only `reviewer-ponytail` plus the seats that blocked the previous wave; also rerun `reviewer-security` when remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Extensive remediation may justify voluntarily rerunning the full panel or adding reviewers.
+- **Keep one writer accountable.** The implementing agent owns the PR through review, fixes, CI, and merge. Reviewers stay read-only; do not split writer and captain roles or hand the PR off mid-loop.
+- **Do not re-panel mechanical base syncs.** A rebase or merge that leaves the reviewed content unchanged does not trigger re-review. Substantive changes, real conflict resolution, and a newly combined stack do.
 - **Every review-panel finding gets a verdict, not silence.** Fix it, rebut it with reasoning, or record it as a follow-up.
 - **Report instead of spinning.** Every loop in Phase 4 has a cap. On cap, hand back state and the blocker.
 
@@ -54,7 +56,7 @@ This skill assumes pi, not Cursor. Four rules carry most of the difference.
 
 1. **Shell state does not persist.** Each `bash` call is a new process. Values such as the base branch, worktree path, and PR number die at the end of the call that computed them. Compute a value, read it, then write the literal into every later command.
 2. **There is no root-switch tool.** Scope work with an absolute path: `cd /Users/<you>/Projects/worktrees/<repo>/<slug> && <command>`. Pass the same absolute path as `cwd` to every subagent.
-3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns for the panel members below. A Review grouping that also lists regular `reviewer` does not expand the panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
+3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns for the four panel members below. A Review grouping that also lists regular `reviewer` does not expand the panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
 4. **Pick the GitHub alias from the remote owner.** Never run bare `gh` and never run `gh auth switch`.
 
 ```bash
@@ -126,17 +128,17 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Greptile reviews automatically and remains advisory; never wait for or trigger it.
 
-1. **Panel.** Launch the review panel below in one `subagent` call. Every required reviewer performs a fresh analysis of the current diff; ledger reuse never replaces a reviewer pass.
+1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave.
 2. **Triage.** Fix valid panel findings. Rebut invalid ones in writing with reasoning. Give out-of-scope panel findings the Defer verdict below. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
 6. **Advisory automation and threads.** Never wait for, poll, trigger, score, or require Greptile. Fix or rebut each Greptile comment already visible when the PR is checked, but do not wait for acknowledgment, resolution, or re-review. Its absence, latency, status, score, and reviewed head never block or reset readiness. Sweep blocking feedback from humans and required reviewers.
-7. **Re-run the required reviewers** after any diff change since their last review. Reuse still-valid deterministic checks, not reviewer judgment; a prior clean verdict never signs off a changed diff.
+7. **Launch only the next required wave** after remediation: `reviewer-ponytail` plus the seats that blocked the previous wave, with the security override above. A mechanical rebase or merge of unchanged content does not trigger re-review. New substantive scope restarts the full four-seat panel. Reuse still-valid deterministic checks, not reviewer judgment.
 
 #### Review panel
 
-`reviewer-gpt` (always), `reviewer-security` (on any trust boundary), and `reviewer-claude` (on real blast radius) run as fresh-context subagents, plus `deslop` and `verification-before-completion` in the parent. Regular `reviewer` is never a panel member and never a deslop proxy; deslop runs only in the parent. `references/review-panel.md` carries the exact invocation forms, brief contents, and the sign-off bar; read it before the first launch.
+The first substantive head gets `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security` together as fresh-context subagents. Remediation waves use the selective rerun rule above. `deslop` and `verification-before-completion` still run in the parent. Regular `reviewer` is never a panel member and never a deslop proxy. `references/review-panel.md` carries the exact invocation forms, wave rules, brief contents, and sign-off bar; read it before the first launch.
 
 #### Triage verdicts
 
@@ -152,8 +154,9 @@ Two reviewers disagreeing is signal, not noise. The code is usually ambiguous en
 
 Leave the loop only when all of these hold against the current head SHA:
 
-- `reviewer-gpt` reports no blocking findings.
-- `reviewer-security` and `reviewer-claude` each either signed off on the diff you are shipping, after their last requested change, or were skipped under the risk rule with the reason recorded in the report.
+- All four seats returned real verdicts on the first substantive head for the current scope.
+- Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
+- No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
 - The head contains the current base tip and the PR is mergeable with no conflicts. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
 - Zero unresolved blocking feedback from humans or required reviewers, and every Greptile comment already present when checked has a recorded Fix or Rebut verdict. Greptile acknowledgment, thread resolution, and re-review are not required.
@@ -279,5 +282,6 @@ Stop before Phase 0 when the target repository is the home dotfiles checkout, wh
 - Presenting five equal options instead of one ranked recommendation.
 - Substituting an inline self-review for the fresh-context reviewer gate.
 - Adding regular `reviewer` to the panel because the registry groups it under Review, or launching it with the deslop skill as a stand-in for the parent deslop pass.
+- Rerunning all four seats after every remediation or mechanical rebase instead of following the wave rules.
 - Expanding the diff with unrelated cleanup discovered mid-implementation.
 - Waiting for, manually triggering, or treating any Greptile result as a merge condition.

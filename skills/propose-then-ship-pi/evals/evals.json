@@ -19,7 +19,7 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the pi reviewer panel, fixes or rebuts every panel finding and any Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the four-seat first review wave, fixes or rebuts every panel finding, uses selective remediation waves, addresses any Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
     },
     {
       "id": "success-merge-when-authorized",
@@ -98,8 +98,28 @@
     },
     {
       "id": "edge-stale-head-evidence",
-      "prompt": "[Reviewers signed off, then a fix was pushed.]",
-      "expected_output": "Treats the earlier sign-off as stale for the changed scope, reruns every required reviewer against the new head, including the cross-family structural pass when its risk trigger applies, and binds the final claim to the current head SHA."
+      "prompt": "[The first full panel ran. reviewer-gpt blocked; the other three seats cleared. The in-scope fix does not touch auth, secrets, injection, or data exposure.]",
+      "expected_output": "Commits the fix, then reruns reviewer-ponytail and reviewer-gpt against the exact new head. Does not rerun reviewer-claude or reviewer-security, because neither blocked and the sensitive-remediation override does not apply. Binds the final claim to the current head SHA."
+    },
+    {
+      "id": "edge-sensitive-remediation-reruns-security",
+      "prompt": "[The first full panel ran. reviewer-gpt blocked and reviewer-security cleared. The remediation changes an injection-sensitive path.]",
+      "expected_output": "Reruns reviewer-ponytail and reviewer-gpt because they are required for the remediation wave, and reruns reviewer-security because the fix touches injection. Does not rerun reviewer-claude unless it blocked or the owner judges the remediation extensive enough for a full panel."
+    },
+    {
+      "id": "edge-new-substantive-scope-full-panel",
+      "prompt": "[After the initial panel, the approved PR gains a new substantive behavior rather than a fix within the reviewed scope.]",
+      "expected_output": "Treats the added behavior as new substantive scope and starts a new fresh-context async exact-head panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Does not treat it as a selective remediation wave."
+    },
+    {
+      "id": "edge-mechanical-rebase-does-not-repanel",
+      "prompt": "[The panel is clear. The branch is mechanically rebased onto the latest base with no substantive or conflict-resolution changes.]",
+      "expected_output": "Confirms the reviewed content is unchanged and does not rerun any reviewer merely because the commit SHA changed. Continues the remaining exact-head CI and merge gates."
+    },
+    {
+      "id": "edge-combined-stack-starts-full-panel",
+      "prompt": "[Several separately cleared PRs are combined into a new stack for shipping.]",
+      "expected_output": "Reviews the combined tree once as a new first wave with all four panel seats. Does not re-panel each component PR independently."
     },
     {
       "id": "edge-false-positive-rebutted",
@@ -123,8 +143,8 @@
     },
     {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
-      "prompt": "[subagent({action:\"list\"}) returns four Review agents: reviewer, reviewer-gpt, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
-      "expected_output": "Launches only the configured panel: reviewer-gpt always, plus reviewer-security on trust boundaries and reviewer-claude on real blast radius. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
+      "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
+      "expected_output": "Launches the configured first-wave panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
     }
   ]
 }
