@@ -1,0 +1,55 @@
+{
+  "skill_name": "ux-review",
+  "evals": [
+    {
+      "id": "end-to-end-ownership",
+      "prompt": "Review a PR where an agent replies 'I'll open the PR' after enqueueing work, then clears its status. The worker may take 50 minutes and no later component owns the final reply.",
+      "expected_output": "Blocks the change because the admitted request can vanish, traces ownership through the worker to the final PR receipt and response, and requires visible activity until a truthful terminal outcome."
+    },
+    {
+      "id": "observed-recovery-only",
+      "prompt": "Review a design that proposes fixed retries for every network call: 3 immediate, 5 exponential, then a platform degradation banner. No observed failure classes or reachability evidence are included.",
+      "expected_output": "Rejects the speculative retry matrix and banner, requires a reachable failure class that is observed or reproducibly documented, and recommends the smallest bounded recovery at the shared cause."
+    },
+    {
+      "id": "silent-means-recovered",
+      "prompt": "Review code that catches provider timeouts, logs them, removes the working indicator, and sends no final message so users are not bothered.",
+      "expected_output": "Treats the vanished request as a blocker: silent is acceptable only after recovery, while exhausted recovery needs a concise honest limitation and a terminal state."
+    },
+    {
+      "id": "external-receipt-truth",
+      "prompt": "A create-document call times out, the UI says creation failed, and a retry creates a second document. The first response can complete late but the code never checks for its receipt.",
+      "expected_output": "Blocks contradictory outcome copy and duplicate writes, requiring receipt reconciliation and one canonical terminal outcome before retry or reporting failure."
+    },
+    {
+      "id": "capability-boundary",
+      "prompt": "An admitted agent request is refused later because its URL is outside an internal browser allowlist that is unrelated to documented security or admission policy, although the destination platform would permit it.",
+      "expected_output": "Flags the convenience restriction as a UX defect, places policy at the earliest accurate admission point, preserves real security boundaries, and treats destination-enforced permission as a valid downstream boundary."
+    },
+    {
+      "id": "explicit-scope-fidelity",
+      "prompt": "Review an analytics answer requested for August 7 through today. The implementation silently includes July because that produces a larger sample.",
+      "expected_output": "Blocks the explicit date-scope violation even if the wider analysis is otherwise useful, and asks for an acceptance check covering the requested range."
+    },
+    {
+      "id": "request-denominator",
+      "prompt": "Review a dashboard that counts the original request, each retry, and each callback as separate requests, then reports a 97% success rate. One request can appear in success and failure.",
+      "expected_output": "Requires one canonical admitted-request denominator, separates diagnostic attempts from outcomes, and prevents contradictory success and failure classification."
+    },
+    {
+      "id": "general-information-ux",
+      "prompt": "Review a settings design where data export exists but is hidden under an unrelated menu label, and a disabled export control gives no explanation. There is no background job or external write.",
+      "expected_output": "Uses the information-or-navigation journey, flags discoverability and feedback problems, and does not invent retries, receipts, or long-running states."
+    },
+    {
+      "id": "review-fix-reverify",
+      "prompt": "Review and fix this user flow, then give me the final UX verdict.",
+      "expected_output": "Records the pre-fix findings, applies requested remediation, reruns the affected journeys and acceptance checks, and bases the final verdict on the post-fix state."
+    },
+    {
+      "id": "reading-surface",
+      "prompt": "Review a Slack answer that posts six long messages of internal diagnostics before the requested two-line recommendation.",
+      "expected_output": "Flags the wall of text, puts the concise Slack-native result first, and moves detailed evidence to a linked artifact or report."
+    }
+  ]
+}

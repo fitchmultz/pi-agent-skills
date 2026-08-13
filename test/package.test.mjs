@@ -17,6 +17,7 @@ const expectedSkills = [
   "propose-then-ship-pi",
   "tdd",
   "thermo-nuclear-code-quality-review",
+  "ux-review",
   "verification-before-completion",
 ];
 

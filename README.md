@@ -14,6 +14,7 @@ Source-managed Pi package for Mitch's reusable agent workflows. Requires Pi 0.84
 - `propose-then-ship-pi`
 - `tdd`
 - `thermo-nuclear-code-quality-review`
+- `ux-review`
 - `verification-before-completion`
 
 ## Install
