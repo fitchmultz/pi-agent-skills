@@ -7,13 +7,13 @@ The first substantive head for each scope gets four fresh-context reviewers in o
 | Pass | Where | Required | Looks for |
 | --- | --- | --- | --- |
 | `reviewer-gpt` | subagent, fresh | first wave; later only when it blocked the previous wave | Correctness, maintainability, validation gaps. |
-| `reviewer-ponytail` | subagent, fresh | every wave | Over-engineering and slop without changing intended behavior. |
+| `reviewer-ponytail` | subagent, fresh | every wave with a new head | Over-engineering and slop without changing intended behavior. |
 | `reviewer-claude` | subagent, fresh | first wave; later only when it blocked the previous wave | Cross-family structural review against the thermo-nuclear rubric. |
 | `reviewer-security` | subagent, fresh | first wave; later when it blocked or remediation touches auth, secrets, injection, or data exposure | Security and data safety against an explicit trust-boundary rubric. |
 | `deslop` | parent, edits | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
 
-Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the four panel agents above. A Review grouping that also lists regular `reviewer` does not add it to this panel.
+Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the four panel agents above. A missing or disabled named seat stops the run; never skip it or substitute another reviewer. A Review grouping that also lists regular `reviewer` does not add it to this panel.
 
 The implementing agent remains the sole writer and owns the PR through merge. Panel agents inspect and report; they do not modify product code or hand ownership between writer and captain roles.
 

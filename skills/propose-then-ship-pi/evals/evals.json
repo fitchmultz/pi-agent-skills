@@ -142,6 +142,11 @@
       "expected_output": "Treats the timeout as review incomplete, then resumes, reruns, or splits the review. Does not count the timeout as sign-off and does not substitute an inline self-review."
     },
     {
+      "id": "edge-required-panel-seat-missing",
+      "prompt": "[subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
+      "expected_output": "Stops and reports the missing reviewer-ponytail seat. Does not silently skip it, substitute regular reviewer, or continue with a smaller first-wave panel."
+    },
+    {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
       "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
       "expected_output": "Launches the configured first-wave panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."

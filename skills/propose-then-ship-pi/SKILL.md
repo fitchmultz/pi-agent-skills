@@ -56,7 +56,7 @@ This skill assumes pi, not Cursor. Four rules carry most of the difference.
 
 1. **Shell state does not persist.** Each `bash` call is a new process. Values such as the base branch, worktree path, and PR number die at the end of the call that computed them. Compute a value, read it, then write the literal into every later command.
 2. **There is no root-switch tool.** Scope work with an absolute path: `cd /Users/<you>/Projects/worktrees/<repo>/<slug> && <command>`. Pass the same absolute path as `cwd` to every subagent.
-3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns for the four panel members below. A Review grouping that also lists regular `reviewer` does not expand the panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
+3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run. Use the effective agent names it returns for the four panel members below. A missing or disabled named seat is a stop-and-report condition, never a silent skip or substitute. A Review grouping that also lists regular `reviewer` does not expand the panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; the configured reviewer agents already carry their own models and fallbacks.
 4. **Pick the GitHub alias from the remote owner.** Never run bare `gh` and never run `gh auth switch`.
 
 ```bash
@@ -272,7 +272,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 ## Stop rules
 
-Stop and hand back when: the direction gate has not been answered; a review finding reveals the approved plan is wrong; a Phase 4 loop hits its cap; CI fails for reasons outside this PR's scope; the required GitHub alias is unavailable; or merging would require weakening a gate.
+Stop and hand back when: the direction gate has not been answered; a review finding reveals the approved plan is wrong; a Phase 4 loop hits its cap; a required panel seat is unavailable; CI fails for reasons outside this PR's scope; the required GitHub alias is unavailable; or merging would require weakening a gate.
 
 Stop before Phase 0 when the target repository is the home dotfiles checkout, where `$HOME` is the repository root. Worktree and branch operations there are governed by separate standing prohibitions. Report the conflict and ask how to proceed.
 
