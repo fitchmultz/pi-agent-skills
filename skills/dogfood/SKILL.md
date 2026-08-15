@@ -1,7 +1,7 @@
 ---
 name: dogfood
 description: "Dogfood or exploratory-QA browser-visible products through real user flows: web apps, local URLs, visual bug hunts, jank/flicker/streaming, and terminal/TUI redraw via VFR. Do not use for backend/unit-test-only checks, code review, trivial visual tweaks, or fixing bugs unless asked."
-compatibility: "Requires a live browser automation surface. Motion capture requires Python 3.9+ and ffmpeg on the Pi process PATH; optional deep anomaly analysis also uses uv."
+compatibility: "Requires a live browser automation surface. Motion capture requires Python 3.9+ and FFmpeg 5.1+ on the Pi process PATH; optional deep anomaly analysis also uses uv."
 ---
 
 # Dogfood
