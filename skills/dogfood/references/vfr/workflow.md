@@ -32,7 +32,7 @@ python3 <dogfood-skill-dir>/scripts/vfr.py init \
   --viewport 1440x1000
 ```
 
-`doctor` exits nonzero when ffmpeg is unavailable. Stop there. Do not call `record start`, install software without permission, or hope `record stop` will work later.
+`doctor` exits nonzero when ffmpeg is unavailable or lacks `-fps_mode` support (FFmpeg 5.1+). Stop there. Do not call `record start`, install software without permission, or hope `record stop` will work later.
 
 `init` prints the absolute run path. Pi shell state does not persist between `bash` calls, so copy that literal absolute path into every later command and browser artifact path. Do not rely on `$RUN` surviving another tool call.
 

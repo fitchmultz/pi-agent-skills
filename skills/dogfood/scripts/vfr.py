@@ -206,12 +206,14 @@ def ffmpeg_status() -> tuple[bool, str]:
     if not path:
         return False, "missing"
     try:
-        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
+        result = subprocess.run([path, "-hide_banner", "-h", "full"], capture_output=True, text=True, timeout=5)
     except (OSError, subprocess.TimeoutExpired) as exc:
         return False, f"{path}: {exc}"
     if result.returncode:
         detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
         return False, f"{path}: {detail[:240]}"
+    if "-fps_mode" not in result.stdout:
+        return False, f"{path}: missing required -fps_mode support (FFmpeg 5.1+)"
     return True, path
 
 
@@ -238,7 +240,7 @@ def command_doctor(args: argparse.Namespace) -> int:
         "ok": not errors,
         "errors": errors,
         "checks": checks,
-        "installHint": "recording requires ffmpeg on the Pi process PATH; otherwise use inspected screenshots and report low motion confidence",
+        "installHint": "recording requires FFmpeg 5.1+ with -fps_mode support on the Pi process PATH; otherwise use inspected screenshots and report low motion confidence",
     }
     if args.json:
         print(json.dumps(result, indent=2))
@@ -305,7 +307,7 @@ def command_contact_sheet(args: argparse.Namespace) -> int:
             str(video),
             "-vf",
             "fps=2,scale=480:-1,tile=4x4:padding=4:margin=4:color=0xE879F9",
-            "-vsync",
+            "-fps_mode",
             "vfr",
             "-q:v",
             "3",

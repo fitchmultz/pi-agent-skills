@@ -59,12 +59,29 @@ test("doctor rejects an ffmpeg executable that cannot run", { skip: process.plat
   }
 });
 
+test("doctor rejects ffmpeg without -fps_mode support", { skip: process.platform === "win32" }, () => {
+  const bin = mkdtempSync(path.join(tmpdir(), "dogfood-bin-"));
+  const probe = mkdtempSync(path.join(tmpdir(), "dogfood-probe-"));
+  const ffmpeg = path.join(bin, "ffmpeg");
+  writeFileSync(ffmpeg, "#!/bin/sh\ncase \" $* \" in *\" -version \"*) echo 'ffmpeg version 4.4.2';; *) echo 'full help without fps mode';; esac\n");
+  chmodSync(ffmpeg, 0o755);
+  try {
+    const result = run(["doctor", "--json", "--run-dir", probe], { ...process.env, PATH: bin });
+    assert.equal(result.status, 2);
+    const report = JSON.parse(result.stdout);
+    assert(report.errors.some(({ name, detail }) => name === "ffmpeg" && detail.includes("-fps_mode")));
+  } finally {
+    rmSync(bin, { recursive: true, force: true });
+    rmSync(probe, { recursive: true, force: true });
+  }
+});
+
 test("contact-sheet and structural validation need no telemetry ceremony", { skip: process.platform === "win32" }, () => {
   const runDir = fixture();
   const bin = mkdtempSync(path.join(tmpdir(), "dogfood-bin-"));
   const expected = path.join(runDir, "reports/contact_ffmpeg_001.jpg");
   const fakeFfmpeg = path.join(bin, "ffmpeg");
-  writeFileSync(fakeFfmpeg, `#!/bin/sh\ncase " $* " in *" -fps_mode "*) exit 9;; esac\ncase " $* " in *" -vsync vfr "*) ;; *) exit 10;; esac\nprintf jpg > '${expected}'\n`);
+  writeFileSync(fakeFfmpeg, `#!/bin/sh\ncase " $* " in *" -vsync "*) exit 9;; esac\ncase " $* " in *" -fps_mode vfr "*) ;; *) exit 10;; esac\nprintf jpg > '${expected}'\n`);
   chmodSync(fakeFfmpeg, 0o755);
   try {
     const contact = run(["contact-sheet", runDir], { ...process.env, PATH: bin });
