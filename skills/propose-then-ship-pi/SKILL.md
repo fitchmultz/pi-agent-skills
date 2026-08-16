@@ -19,8 +19,8 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - Recon is read-only and ends in a hard stop. No edits, no commits, and nothing pushed before the user picks a direction.
 - The proposal ranks candidates and leads with one #1 recommendation plus a concrete plan.
 - Implementation happens in the dedicated worktree on its own branch, scoped to the approved direction plus blocker and nit fixes.
-- Every blocker is fixed or rebutted before completion. Every nit is too unless it is a massive undertaking: file that follow-up and name it in the Ship report. None are silently dropped.
-- Merge-ready is proven against the exact current head, not remembered from an earlier push. Merge only after every blocker is cleared and every remaining nit is fixed or a filed massive undertaking.
+- Every blocker is fixed or rebutted before completion. Every nit is too unless fixing it would be a major level of effort: file that follow-up and name it in the Ship report. When in doubt, include the nit in this PR. None are silently dropped.
+- Merge-ready is proven against the exact current head, not remembered from an earlier push. Merge only after every blocker is cleared and every remaining nit is fixed, rebutted, or filed as a major-effort follow-up.
 - The PR is squash-merged under the user's standing authorization, unless they said to wait.
 
 ## Use when
@@ -40,14 +40,14 @@ Turn one open-ended request into a merged PR across a single human decision poin
 
 - **The gate is real.** Phase 1 ends by asking the user to choose. Never continue into implementation on your own judgment, even when the answer looks obvious.
 - **Approval resumes the run.** In pi, `ask_question` returns the answer into the same assistant turn. A proceed choice satisfies the direction gate: continue immediately through Phase 2 into Phase 3. Do not return a final response just to restate acceptance, announce that the PR is ready, or report merge-ready. After approval, continue until the Ship report or a named stop rule.
-- **One approved direction per PR.** Do not turn discoveries into a new feature. Blockers always get fixed in this PR. Nits do too unless they are a massive undertaking.
+- **One approved direction per PR.** Do not turn discoveries into a new feature. Blockers always get fixed in this PR. Nits do too unless they are a major level of effort. When in doubt, include the nit.
 - **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction plus required blocker and nit fixes: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
 - **Use review waves, not rerun-all churn.** Every PR's first substantive change gets one fresh-context async exact-head panel with `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security`. Later remediation on the same scope reruns only `reviewer-ponytail` plus the seats that blocked the previous wave; also rerun `reviewer-security` when remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Extensive remediation may justify voluntarily rerunning the full panel or adding reviewers.
 - **Keep one writer accountable.** The implementing agent owns the PR through review, fixes, CI, and merge. Reviewers stay read-only; do not split writer and captain roles or hand the PR off mid-loop.
 - **Do not re-panel mechanical base syncs.** A rebase or merge that leaves the reviewed content unchanged does not trigger re-review. Substantive changes, real conflict resolution, and a newly combined stack do.
-- **Every review-panel finding gets a verdict, not silence.** Fix every blocker. Fix every nit, or rebut it. Defer only nits that are a massive undertaking.
+- **Every review-panel finding gets a verdict, not silence.** Fix every blocker. Fix every nit, or rebut it. Defer a nit only if it would be a major level of effort.
 - **Report instead of spinning.** Every loop in Phase 4 has a cap. On cap, hand back state and the blocker.
 
 ## pi runtime contract
@@ -119,7 +119,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 1. Restore what worktrees do not copy: ignored files the build needs, such as `.env*` and installed dependencies. A fresh worktree has no `node_modules`.
 2. Read the repo's own conventions and follow them.
-3. Implement the approved plan, plus ordinary blockers and nits.
+3. Implement the approved plan, plus blockers and nits that are not a major level of effort.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
 5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write. A request for the full arc or a named invocation of this skill, followed by direction approval, already confirms PR creation; otherwise confirm it first.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
@@ -129,7 +129,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Greptile reviews automatically and remains advisory; never wait for or trigger it.
 
 1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave. Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict.
-2. **Triage.** Fix every valid blocker. Fix every valid nit unless it is a massive undertaking. Rebut invalid ones in writing with reasoning. Do not churn code to satisfy a wrong comment.
+2. **Triage.** Fix every valid blocker. Fix every valid nit unless it would be a major level of effort. When in doubt, include it. Rebut invalid ones in writing with reasoning. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
 4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
 5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
@@ -144,9 +144,9 @@ The first substantive head gets `reviewer-gpt`, `reviewer-ponytail`, `reviewer-c
 
 Give every finding one verdict, and record which:
 
-- **Fix** — valid blocker, or a nit that is not a massive undertaking. Change the code now.
+- **Fix** — valid blocker, or a nit that is not a major level of effort. Change the code now.
 - **Rebut** — wrong, or right about a pattern the repo deliberately uses. Write the reasoning. Never silently drop it. Rebutting a **blocking** finding does not clear it: rerun that reviewer with the rebuttal in the brief, and treat only its own withdrawal as sign-off.
-- **Defer** — nits only, and only when addressing them would be a massive undertaking. Never defer a blocker. File the nit as a follow-up — on real WorkOS work a linked Linear issue in the relevant project, assigned to the user or left unassigned, never to an automation you picked — and name it in the Ship report. Anything you would not bet on getting done is **accepted debt**: say so in the report instead of laundering it through a ticket.
+- **Defer** — nits only, and only when fixing them would be a major level of effort. When in doubt, include the nit in this PR. Never defer a blocker. File the nit as a follow-up — on real WorkOS work a linked Linear issue in the relevant project, assigned to the user or left unassigned, never to an automation you picked — and name it in the Ship report. Anything you would not bet on getting done is **accepted debt**: say so in the report instead of laundering it through a ticket.
 
 Two reviewers disagreeing is signal, not noise. The code is usually ambiguous enough to be worth clarifying regardless of who is right.
 
@@ -154,7 +154,7 @@ Two reviewers disagreeing is signal, not noise. The code is usually ambiguous en
 
 Leave the loop only when all of these hold against the current head SHA:
 
-- The full four-seat first wave completed for the current scope, and every blocking finding from it or a later wave was cleared by its originating seat on a required rerun. Every nit from those waves was fixed, rebutted, or filed as a massive undertaking. Do not rerun a non-blocking seat solely because it listed nits the writer then fixed.
+- The full four-seat first wave completed for the current scope, and every blocking finding from it or a later wave was cleared by its originating seat on a required rerun. Every nit from those waves was fixed, rebutted, or filed as a major-effort follow-up. Do not rerun a non-blocking seat solely because it listed nits the writer then fixed.
 - Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
 - No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
@@ -174,7 +174,7 @@ Default: **squash-merge without asking again** once the Phase 4 exit conditions 
 
 Override: if the user says anywhere in the conversation to wait for their approval before merging, that overrides the default for the rest of the run. Report merge-ready and stop.
 
-Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. File any massive-undertaking nits per the Defer verdict, then deliver the **Ship report**.
+Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. File any major-effort nits per the Defer verdict, then deliver the **Ship report**.
 
 ### Phase 6 — Massive follow-ups
 
@@ -247,7 +247,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 **Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, not here]
 **Rebutted findings** — [each one, with the reasoning, or "none"]
-**Follow-ups** — [massive-undertaking nits filed, with links, or "none"]
+**Follow-ups** — [major-effort nits filed, with links, or "none"]
 ```
 
 ## Gotchas

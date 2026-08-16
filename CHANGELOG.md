@@ -2,7 +2,7 @@
 
 ## [0.4.3] - 2026-08-15
 
-- Always address blockers. Address nits unless they are a massive undertaking; file those and name them.
+- Always address blockers. Address nits unless they are a major level of effort; when in doubt, include them.
 
 ## [0.4.2] - 2026-08-15
 

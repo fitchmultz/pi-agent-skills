@@ -60,18 +60,19 @@ test("remediation reruns ponytail, prior blockers, and sensitive security paths"
   }
 });
 
-test("blockers always, nits unless a massive undertaking", () => {
+test("blockers always, nits unless major effort", () => {
   assert.match(skill, /Fix every blocker\. Fix every nit/);
   assert.match(skill, /Never defer a blocker/);
-  assert.match(skill, /Defer only nits that are a massive undertaking/);
+  assert.match(skill, /When in doubt, include the nit/);
+  assert.match(skill, /Defer a nit only if it would be a major level of effort/);
   assert.match(skill, /there is no follow-up PR chain/i);
-  assert.match(skill, /File any massive-undertaking nits per the Defer verdict, then deliver/);
+  assert.match(skill, /File any major-effort nits per the Defer verdict, then deliver/);
   assert.match(skill, /beyond required blocker and nit fixes/);
-  assert.match(skill, /\*\*Follow-ups\*\* — \[massive-undertaking nits filed/);
-  assert.match(panel, /every nit is fixed, rebutted, or filed as a massive undertaking/);
+  assert.match(skill, /\*\*Follow-ups\*\* — \[major-effort nits filed/);
+  assert.match(panel, /every nit is fixed, rebutted, or filed as a major-effort follow-up/);
   assert.match(panel, /Do not rerun a non-blocking seat solely because it listed nits/);
   assert.doesNotMatch(skill, /Phase 6 chain/);
-  assert.doesNotMatch(skill, /dominate this PR/);
+  assert.doesNotMatch(skill, /dominate this PR|own design\/direction/);
   assert.ok(evals.evals.some(({ id }) => id === "success-massive-follow-up-filed"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-nits-fixed-unless-massive"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-nits-block-merge"));

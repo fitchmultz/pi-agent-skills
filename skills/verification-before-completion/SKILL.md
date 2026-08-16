@@ -139,9 +139,9 @@ Verification is complete only when:
 - relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
 - remaining blockers in the claim's scope were fixed or rebutted
-- remaining nits were fixed or rebutted, unless they are a massive undertaking
+- remaining nits were fixed or rebutted, unless they are a major level of effort
 - final status does not exceed evidence
 
-Never defer a blocker. A nit is a massive undertaking only if addressing it would take that kind of effort. File that follow-up and name it in `Unverified` or `Final status`. Do not claim complete while blockers or ordinary nits remain.
+Never defer a blocker. Defer a nit only if fixing it would be a major level of effort. When in doubt, include it. File that follow-up and name it in `Unverified` or `Final status`. Do not claim complete while blockers or ordinary nits remain.
 
 Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
