@@ -35,8 +35,11 @@ test("unchanged full-suite evidence is shared instead of rerun", () => {
   assert.doesNotMatch(staleReview.expected_output, /every required reviewer/i);
 });
 
-test("blockers and nits must be executed unless MASSIVE", () => {
-  assert.match(skill, /remaining blockers and nits in the claim's scope were fixed or rebutted/);
-  assert.match(skill, /Do not claim complete while ordinary blockers or nits remain/);
+test("blockers always, nits unless major effort", () => {
+  assert.match(skill, /Never defer a blocker/);
+  assert.match(skill, /Defer a nit only if fixing it would be a major level of effort/);
+  assert.match(skill, /When in doubt, include it/);
+  assert.match(skill, /Do not claim complete while blockers or ordinary nits remain/);
+  assert.doesNotMatch(skill, /dominate this change|own design\/direction/);
   assert.ok(evals.evals.some(({ id }) => id === "edge-nits-executed-unless-massive"));
 });

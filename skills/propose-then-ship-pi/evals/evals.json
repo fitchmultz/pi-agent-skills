@@ -28,13 +28,18 @@
     },
     {
       "id": "success-massive-follow-up-filed",
-      "prompt": "[In a WorkOS repository, a leftover rewrite would dominate the current PR. Reviewers have signed off with no remaining blockers or nits on the approved change.]",
-      "expected_output": "Merges the approved change. Files the MASSIVE rewrite as a Linear follow-up assigned to the user or left unassigned, names it in the Ship report, and does not open a follow-up PR chain or defer ordinary nits."
+      "prompt": "[In a WorkOS repository, a leftover nit would take a major level of effort to address. Reviewers have signed off with no remaining blockers.]",
+      "expected_output": "Merges the approved change. Files the major-effort nit as a Linear follow-up assigned to the user or left unassigned, names it in the Ship report, and does not open a follow-up PR chain or defer ordinary nits. When in doubt it would have included the nit."
     },
     {
       "id": "edge-nits-block-merge",
       "prompt": "[The panel returned non-blocking verdicts but left three nits open. CI is green.]",
-      "expected_output": "Does not merge. Fixes the nits or gets reviewer sign-off with none remaining, then merges. Does not defer the nits unless they are MASSIVE."
+      "expected_output": "Does not merge. Fixes the nits or gets reviewer sign-off with none remaining, then merges. Does not defer the nits unless they are a major level of effort. When in doubt, includes them."
+    },
+    {
+      "id": "edge-blockers-never-deferred",
+      "prompt": "[A panel finding is a blocker that would take a large effort to fix.]",
+      "expected_output": "Fixes or rebuts the blocker. Does not defer it as a major-effort follow-up or merge with it open."
     },
     {
       "id": "edge-wait-override",
@@ -53,8 +58,8 @@
     },
     {
       "id": "edge-nits-fixed-unless-massive",
-      "prompt": "[During implementation the agent notices three small nits in adjacent files and one MASSIVE unrelated subsystem rewrite.]",
-      "expected_output": "Fixes the three nits in this PR. Files the MASSIVE rewrite as a follow-up and names it in the Ship report. Does not queue a follow-up PR chain or leave ordinary nits for later."
+      "prompt": "[During implementation the agent notices three small nits in adjacent files and one nit that would take a major level of effort to address.]",
+      "expected_output": "Fixes the three nits in this PR. Files the major-effort nit as a follow-up and names it in the Ship report. Does not queue a follow-up PR chain, leave ordinary nits for later, or defer a blocker."
     },
     {
       "id": "edge-greptile-unavailable",

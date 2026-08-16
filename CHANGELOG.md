@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.3] - 2026-08-15
+
+- Always address blockers. Address nits unless they are a major level of effort; when in doubt, include them.
+
 ## [0.4.2] - 2026-08-15
 
 - Execute every blocker and nit before completion. File only MASSIVE leftovers and name them in the final response. No follow-up PR chain.
@@ -28,6 +32,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.3]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.3.2...v0.4.0
