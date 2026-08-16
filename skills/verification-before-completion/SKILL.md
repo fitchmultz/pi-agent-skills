@@ -143,4 +143,4 @@ Verification is complete only when:
 
 A leftover is MASSIVE only if doing it now would dominate this change or needs its own design/direction. File that follow-up and name it in `Unverified` or `Final status`. Do not claim complete while ordinary blockers or nits remain.
 
-Stop when evidence is sufficient for the exact claim and no ordinary blockers or nits remain. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
+Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.

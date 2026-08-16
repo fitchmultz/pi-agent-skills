@@ -41,7 +41,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **The gate is real.** Phase 1 ends by asking the user to choose. Never continue into implementation on your own judgment, even when the answer looks obvious.
 - **Approval resumes the run.** In pi, `ask_question` returns the answer into the same assistant turn. A proceed choice satisfies the direction gate: continue immediately through Phase 2 into Phase 3. Do not return a final response just to restate acceptance, announce that the PR is ready, or report merge-ready. After approval, continue until the Ship report or a named stop rule.
 - **One approved direction per PR.** Do not turn discoveries into a new feature. Ordinary blockers and nits get fixed in this PR. Only MASSIVE leftovers are filed and named in the Ship report.
-- **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
+- **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction plus required blocker and nit fixes: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
 - **Use review waves, not rerun-all churn.** Every PR's first substantive change gets one fresh-context async exact-head panel with `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security`. Later remediation on the same scope reruns only `reviewer-ponytail` plus the seats that blocked the previous wave; also rerun `reviewer-security` when remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Extensive remediation may justify voluntarily rerunning the full panel or adding reviewers.
@@ -179,8 +179,6 @@ Follow `references/merge-gate.md` for the mechanics: the base freshness gate, th
 ### Phase 6 — Massive follow-ups
 
 Do not defer blockers or nits. After merge, there is no follow-up PR chain.
-
-File MASSIVE leftovers per the Defer verdict above before the Ship report; do not start the work.
 
 ## Available scripts
 
