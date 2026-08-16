@@ -1,6 +1,6 @@
 ---
 name: deslop
-description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, casts, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
+description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, evidence-laundering casts, spurious try/catch, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
 ---
 
 # Deslop
@@ -21,7 +21,7 @@ Remove AI-generated noise from a branch or PR diff without changing intended beh
 ## Use when
 
 - The user asks to deslop, remove AI artifacts, clean a noisy diff, or make a PR less obviously AI-written.
-- A branch/PR diff shows comment bloat, temporary debug/scaffold leftovers, spurious try/catch, type-silencing casts, needless wrappers, or nesting that local style would simplify.
+- A branch/PR diff shows comment bloat, temporary debug/scaffold leftovers, spurious try/catch, evidence-laundering casts, needless wrappers, or nesting that local style would simplify.
 
 ## Do not use when
 
@@ -38,7 +38,16 @@ Remove AI-generated noise from a branch or PR diff without changing intended beh
    - comments that repeat the code or use off-style AI narration
    - temporary debug logs, commented-out code, or leftover scaffolding
    - defensive checks abnormal for trusted internal paths
-   - `any`/type assertions used only to silence errors instead of matching local types
+   - evidence-laundering casts:
+     - delete chained assertions (`x as A as B`) and widen-then-assert (`const x: unknown = known; … x as T`) only when the value already has a precise type or a typed replacement is in the hunk
+     - exempt `as const`
+     - after collapsing a laundering pattern, keep a leftover assertion only when a preceding `SAFETY:` or equivalent invariant comment states the checked invariant
+     - fail open if the producer is off-hunk or no compiling replacement exists
+   - try/catch:
+     - delete catch-and-rethrow of the same error with no added context
+     - delete a swallowing catch only when it is proven redundant
+     - keep one that adds context or sits on a real I/O, parse, trust, or security boundary
+     - fail open if you cannot see why it is there
    - needless adapters, wrappers, conditionals, or nesting that neighbors avoid
    - nested or table-driven test ceremony where a plain test or an existing repo helper is clearer
    - names, structure, or error handling inconsistent with the surrounding file
@@ -67,3 +76,6 @@ Report the base inspected, files changed, validation run, and any skipped cleanu
 - Deleting malformed-input coverage from a real trust boundary because downstream types look narrower.
 - Parameterizing typed internal seams with values they cannot produce just to appear defensive.
 - Touching unrelated user changes just because they are nearby.
+- Enforcing type-policy or lint rules beyond the hunk (banning `unknown`, `typeof`, or mocks).
+- Deleting a `SAFETY:`-justified assertion or equivalent invariant comment, or adding a vague comment to paper over a cast.
+- Deleting a catch that handles a real boundary, adds error context, or is an intentional containment swallow.

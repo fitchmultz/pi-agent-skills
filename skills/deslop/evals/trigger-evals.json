@@ -30,6 +30,16 @@
     "reason": "Explicit behavior-preserving cleanup of over-parameterized tests in changed hunks."
   },
   {
+    "query": "Remove the as unknown as User casts the agent left in this PR.",
+    "should_trigger": true,
+    "reason": "Evidence-laundering casts in changed hunks."
+  },
+  {
+    "query": "Deslop the empty try/catch the agent wrapped around this helper.",
+    "should_trigger": true,
+    "reason": "Spurious try/catch cleanup on a branch diff."
+  },
+  {
     "query": "Do a thermonuclear code quality review of this PR.",
     "should_trigger": false,
     "reason": "Broad strict maintainability review belongs to the review skill, not deslop cleanup."
