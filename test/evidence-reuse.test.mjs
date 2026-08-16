@@ -28,6 +28,9 @@ test("unchanged full-suite evidence is shared instead of rerun", () => {
   assert.ok(evals.evals.some(({ id }) => id === "edge-change-invalidates-reused-evidence"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-dirty-tree-not-reusable"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-environment-invalidates-reused-evidence"));
+  assert.match(skill, /remaining blockers and nits in the claim's scope were fixed or rebutted/);
+  assert.match(skill, /Do not claim complete while ordinary blockers or nits remain/);
+  assert.ok(evals.evals.some(({ id }) => id === "edge-nits-executed-unless-massive"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-review-verdict-is-not-reusable"));
   const staleReview = proposeEvals.evals.find(({ id }) => id === "edge-stale-head-evidence");
   assert.match(staleReview.expected_output, /reviewer-ponytail/i);

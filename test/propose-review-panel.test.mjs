@@ -13,7 +13,7 @@ const firstWave = panel.slice(panel.indexOf("### First wave"), panel.indexOf("##
 const remediationWave = panel.slice(panel.indexOf("### Remediation wave"), panel.indexOf("## Brief contents"));
 
 test("the first wave uses the four configured panel seats", () => {
-  assert.match(skill, /version: "1\.4\.0"/);
+  assert.match(skill, /version: "1\.5\.0"/);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never substitutes for parent-run deslop/i);
   assert.match(skill, /Every PR's first substantive change gets one fresh-context async exact-head panel.+reviewer-ponytail/s);
@@ -58,6 +58,19 @@ test("remediation reruns ponytail, prior blockers, and sensitive security paths"
   ]) {
     assert.ok(evals.evals.some((entry) => entry.id === id), `missing ${id}`);
   }
+});
+
+test("blockers and nits are executed unless MASSIVE", () => {
+  assert.match(skill, /Fix every blocker and nit/i);
+  assert.match(skill, /Defer only MASSIVE leftovers/i);
+  assert.match(skill, /no remaining blockers or nits/i);
+  assert.match(skill, /there is no follow-up PR chain/i);
+  assert.match(skill, /\*\*Follow-ups\*\* — \[MASSIVE items filed/);
+  assert.match(panel, /no remaining blockers or nits/);
+  assert.doesNotMatch(skill, /Phase 6 chain/);
+  assert.ok(evals.evals.some(({ id }) => id === "success-massive-follow-up-filed"));
+  assert.ok(evals.evals.some(({ id }) => id === "edge-nits-fixed-unless-massive"));
+  assert.ok(evals.evals.some(({ id }) => id === "edge-nits-block-merge"));
 });
 
 test("regular reviewer remains outside the panel and parent deslop", () => {

@@ -138,6 +138,9 @@ Verification is complete only when:
 - authority/mirror surfaces are aligned, ruled out, or reported as blocked
 - relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
+- remaining blockers and nits in the claim's scope were fixed or rebutted
 - final status does not exceed evidence
 
-Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
+A leftover is MASSIVE only if doing it now would dominate this change or needs its own design/direction. File that follow-up and name it in `Unverified` and `Final status`. Do not claim complete while ordinary blockers or nits remain.
+
+Stop when evidence is sufficient for the exact claim and no ordinary blockers or nits remain. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
