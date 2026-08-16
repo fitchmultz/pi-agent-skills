@@ -43,8 +43,8 @@
     },
     {
       "id": "edge-nits-executed-unless-massive",
-      "prompt": "Verification is otherwise green, but two small nits and one MASSIVE leftover remain. Produce the final status.",
-      "expected_output": "Fixes or requires the two nits before complete. Files the MASSIVE leftover as a follow-up, names it in Unverified or Final status, and does not claim complete while ordinary nits remain."
+      "prompt": "Verification is otherwise green, but two small nits and one nit that is a massive undertaking remain. Produce the final status.",
+      "expected_output": "Fixes or requires the two nits before complete. Files the massive-undertaking nit as a follow-up, names it in Unverified or Final status, and does not claim complete while ordinary nits remain. Never defers a blocker."
     },
     {
       "id": "edge-environment-invalidates-reused-evidence",
