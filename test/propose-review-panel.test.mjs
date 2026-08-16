@@ -65,8 +65,11 @@ test("blockers and nits are executed unless MASSIVE", () => {
   assert.match(skill, /Defer only MASSIVE leftovers/i);
   assert.match(skill, /no remaining blockers or nits/i);
   assert.match(skill, /there is no follow-up PR chain/i);
+  assert.match(skill, /File any MASSIVE leftovers per the Defer verdict, then deliver/);
+  assert.match(skill, /beyond required blocker and nit fixes/);
   assert.match(skill, /\*\*Follow-ups\*\* — \[MASSIVE items filed/);
-  assert.match(panel, /no remaining blockers or nits/);
+  assert.match(panel, /every nit is fixed or rebutted with a recorded verdict/);
+  assert.match(panel, /Do not rerun a non-blocking seat solely because it listed nits/);
   assert.doesNotMatch(skill, /Phase 6 chain/);
   assert.ok(evals.evals.some(({ id }) => id === "success-massive-follow-up-filed"));
   assert.ok(evals.evals.some(({ id }) => id === "edge-nits-fixed-unless-massive"));

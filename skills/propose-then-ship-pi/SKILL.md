@@ -18,7 +18,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 
 - Recon is read-only and ends in a hard stop. No edits, no commits, and nothing pushed before the user picks a direction.
 - The proposal ranks candidates and leads with one #1 recommendation plus a concrete plan.
-- Implementation happens in the dedicated worktree on its own branch, scoped to the approved direction only.
+- Implementation happens in the dedicated worktree on its own branch, scoped to the approved direction plus blocker and nit fixes.
 - Every blocker and nit is fixed or rebutted before completion. Defer only MASSIVE leftovers: file a follow-up and name it in the Ship report. None are silently dropped.
 - Merge-ready is proven against the exact current head, not remembered from an earlier push. Merge only after reviewers sign off with no remaining blockers or nits.
 - The PR is squash-merged under the user's standing authorization, unless they said to wait.
@@ -119,7 +119,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 1. Restore what worktrees do not copy: ignored files the build needs, such as `.env*` and installed dependencies. A fresh worktree has no `node_modules`.
 2. Read the repo's own conventions and follow them.
-3. Implement the approved plan only.
+3. Implement the approved plan, plus ordinary blockers and nits.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
 5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write. A request for the full arc or a named invocation of this skill, followed by direction approval, already confirms PR creation; otherwise confirm it first.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
@@ -154,7 +154,7 @@ Two reviewers disagreeing is signal, not noise. The code is usually ambiguous en
 
 Leave the loop only when all of these hold against the current head SHA:
 
-- The full four-seat first wave completed for the current scope, and every blocking finding from it or a later wave was cleared by its originating seat on a required rerun. Reviewers have signed off with no remaining blockers or nits.
+- The full four-seat first wave completed for the current scope, and every blocking finding from it or a later wave was cleared by its originating seat on a required rerun. Every nit from those waves was fixed or rebutted with a recorded verdict. Do not rerun a non-blocking seat solely because it listed nits the writer then fixed.
 - Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
 - No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
@@ -174,13 +174,13 @@ Default: **squash-merge without asking again** once the Phase 4 exit conditions 
 
 Override: if the user says anywhere in the conversation to wait for their approval before merging, that overrides the default for the rest of the run. Report merge-ready and stop.
 
-Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. Then deliver the **Ship report**.
+Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. File any MASSIVE leftovers per the Defer verdict, then deliver the **Ship report**.
 
 ### Phase 6 — Massive follow-ups
 
 Do not defer blockers or nits. After merge, there is no follow-up PR chain.
 
-A leftover is MASSIVE only if doing it now would dominate this PR or needs its own design/direction. File that follow-up — on real WorkOS work a linked Linear issue in the relevant project, assigned to the user or left unassigned, never to an automation you picked — and name it in the Ship report. Do not start the work. Anything you would not bet on getting done is **accepted debt**: say so in the report instead of laundering it through a ticket.
+File MASSIVE leftovers per the Defer verdict above before the Ship report; do not start the work.
 
 ## Available scripts
 
@@ -202,7 +202,6 @@ Exit codes: `0` every check completed successfully on an open PR, `1` a check fa
 - Read `references/review-panel.md` before Phase 4. It carries the exact subagent invocation forms and the sign-off bar.
 - `references/greptile-loop.md` records the non-blocking Greptile policy. Never use it as a wait or merge gate.
 - Read `references/merge-gate.md` when Phase 4 exits, before merging.
-- Read `references/merge-gate.md` only after merge is authorized.
 
 ## Proposal contract
 
@@ -277,5 +276,5 @@ Stop before Phase 0 when the target repository is the home dotfiles checkout, wh
 - Substituting an inline self-review for the fresh-context reviewer gate.
 - Adding regular `reviewer` to the panel because the registry groups it under Review, or launching it with the deslop skill as a stand-in for the parent deslop pass.
 - Rerunning all four seats after every remediation or mechanical rebase instead of following the wave rules.
-- Expanding the diff with unrelated cleanup discovered mid-implementation.
+- Expanding the diff with unrelated cleanup discovered mid-implementation, beyond required blocker and nit fixes.
 - Waiting for, manually triggering, or treating any Greptile result as a merge condition.
