@@ -42,6 +42,11 @@
       "expected_output": "Reuses only still-valid deterministic validation outputs. Treats the earlier findings as review history, reruns every required reviewer against the updated diff in fresh context, and does not let the earlier verdict or sign-off satisfy the current-head review gate."
     },
     {
+      "id": "edge-nits-executed-unless-massive",
+      "prompt": "Verification is otherwise green, but two small nits and one MASSIVE leftover remain. Produce the final status.",
+      "expected_output": "Fixes or requires the two nits before complete. Files the MASSIVE leftover as a follow-up, names it in Unverified or Final status, and does not claim complete while ordinary nits remain."
+    },
+    {
       "id": "edge-environment-invalidates-reused-evidence",
       "prompt": "The exact Git tree is unchanged since the suite passed, but the toolchain version and test-service configuration changed. Verify before completion.",
       "expected_output": "Invalidates the ledger entry because its relevant toolchain and environment inputs changed, then reruns the affected checks instead of claiming the unchanged tree alone is sufficient."

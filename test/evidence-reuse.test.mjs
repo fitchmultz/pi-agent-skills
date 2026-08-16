@@ -34,3 +34,9 @@ test("unchanged full-suite evidence is shared instead of rerun", () => {
   assert.match(staleReview.expected_output, /reviewer-gpt/i);
   assert.doesNotMatch(staleReview.expected_output, /every required reviewer/i);
 });
+
+test("blockers and nits must be executed unless MASSIVE", () => {
+  assert.match(skill, /remaining blockers and nits in the claim's scope were fixed or rebutted/);
+  assert.match(skill, /Do not claim complete while ordinary blockers or nits remain/);
+  assert.ok(evals.evals.some(({ id }) => id === "edge-nits-executed-unless-massive"));
+});

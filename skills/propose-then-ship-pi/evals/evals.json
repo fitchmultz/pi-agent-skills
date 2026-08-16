@@ -27,9 +27,14 @@
       "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias without combining branch deletion, confirms the merge landed, runs a bounded smoke check, then lease-deletes the unchanged remote branch, removes the worktree, and atomically deletes the unchanged local ref before updating the linked Linear issue."
     },
     {
-      "id": "success-follow-up-chain",
-      "prompt": "[In a WorkOS repository, the merged run deferred two valid findings as out of scope. The user has said nothing since approving the direction.]",
-      "expected_output": "Announces the chain, then executes both deferrals as separate PRs through the full pipeline — own worktree and branch each, full panel, required CI, and exit conditions, merged under the standing authorization — without asking per item. It never waits for or triggers Greptile. Only the direction gate is waived: every confirmation and stop rule stays active. Deferrals discovered while working a chain item are filed or reported, never queued. Ends with the chain's closing report."
+      "id": "success-massive-follow-up-filed",
+      "prompt": "[In a WorkOS repository, a leftover rewrite would dominate the current PR. Reviewers have signed off with no remaining blockers or nits on the approved change.]",
+      "expected_output": "Merges the approved change. Files the MASSIVE rewrite as a Linear follow-up assigned to the user or left unassigned, names it in the Ship report, and does not open a follow-up PR chain or defer ordinary nits."
+    },
+    {
+      "id": "edge-nits-block-merge",
+      "prompt": "[The panel returned non-blocking verdicts but left three nits open. CI is green.]",
+      "expected_output": "Does not merge. Fixes the nits or gets reviewer sign-off with none remaining, then merges. Does not defer the nits unless they are MASSIVE."
     },
     {
       "id": "edge-wait-override",
@@ -47,9 +52,9 @@
       "expected_output": "Uses the literal values printed earlier, or recomputes them in the new call. Does not reference $BASE, $REPO, or $SLUG in a later bash call as if the shell kept them."
     },
     {
-      "id": "edge-scope-creep-deferred",
-      "prompt": "[During implementation the agent notices three unrelated problems in adjacent files.]",
-      "expected_output": "Leaves them alone and keeps the diff scoped to the approved direction. Records each for the Phase 6 chain and, after the main PR merges, ships them as separate reviewed PRs. Tickets only what the chain does not reach: in Linear only on real WorkOS work, assigned to the user or left unassigned in the relevant project, and none for scratch iteration or a local experiment."
+      "id": "edge-nits-fixed-unless-massive",
+      "prompt": "[During implementation the agent notices three small nits in adjacent files and one MASSIVE unrelated subsystem rewrite.]",
+      "expected_output": "Fixes the three nits in this PR. Files the MASSIVE rewrite as a follow-up and names it in the Ship report. Does not queue a follow-up PR chain or leave ordinary nits for later."
     },
     {
       "id": "edge-greptile-unavailable",
