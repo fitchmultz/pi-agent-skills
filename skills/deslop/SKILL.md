@@ -1,6 +1,6 @@
 ---
 name: deslop
-description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, casts, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
+description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, evidence-free casts, spurious try/catch, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
 ---
 
 # Deslop
@@ -38,7 +38,8 @@ Remove AI-generated noise from a branch or PR diff without changing intended beh
    - comments that repeat the code or use off-style AI narration
    - temporary debug logs, commented-out code, or leftover scaffolding
    - defensive checks abnormal for trusted internal paths
-   - `any`/type assertions used only to silence errors instead of matching local types
+   - evidence-laundering casts: chained assertions (`x as A as B`) and widen-then-assert (`const x: unknown = known; … x as T`). Delete those. Keep a remaining assertion only when a preceding `SAFETY:` comment states the checked invariant. Treat `@ts-ignore`, `@ts-expect-error`, and eslint-disable the same way. Fail open if the producer is not in the hunk.
+   - try/catch that only swallows or catch-and-rethrows with no added context, on a trusted path neighbors leave bare. Keep one that adds context or sits on a real I/O or parse boundary. Fail open if you cannot see why it is there.
    - needless adapters, wrappers, conditionals, or nesting that neighbors avoid
    - nested or table-driven test ceremony where a plain test or an existing repo helper is clearer
    - names, structure, or error handling inconsistent with the surrounding file
@@ -67,3 +68,6 @@ Report the base inspected, files changed, validation run, and any skipped cleanu
 - Deleting malformed-input coverage from a real trust boundary because downstream types look narrower.
 - Parameterizing typed internal seams with values they cannot produce just to appear defensive.
 - Touching unrelated user changes just because they are nearby.
+- Enforcing type-policy or lint rules beyond the hunk (banning `unknown`, `typeof`, or mocks).
+- Deleting a `SAFETY:`-justified assertion, or adding a vague comment to paper over a cast.
+- Deleting a catch that handles a real boundary or adds error context.

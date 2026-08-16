@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.4] - 2026-08-16
+
+- Teach deslop to delete evidence-laundering casts and keep only `SAFETY:`-justified assertions. Drop swallow or no-context rethrow try/catch on trusted paths.
+
 ## [0.4.3] - 2026-08-15
 
 - Always address blockers. Address nits unless they are a major level of effort; when in doubt, include them.
@@ -32,6 +36,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.4]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.0...v0.4.1

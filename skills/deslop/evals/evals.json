@@ -27,6 +27,16 @@
       "expected_output": "Collapses the single-test describe.each and removes the string value that only the typed internal mock can inject, while preserving malformed raw OAuth claim cases at the established unvalidated JSON boundary. Checks for an existing repository helper before retaining or writing table scaffolding."
     },
     {
+      "id": "evidence-laundering-casts",
+      "prompt": "Deslop this branch. The diff adds `const user = input as unknown as User` with no parser, `const boxed: unknown = alreadyTypedUser; const again = boxed as User`, and one `// SAFETY: parseUserId validated the identifier before branding it.\nconst userId = value as UserId`. A helper defined only in an unchanged file is asserted as User in the hunk, with no local producer.",
+      "expected_output": "Deletes the chained assertion and the widen-then-assert. Keeps the SAFETY-justified UserId assertion. Leaves the off-diff producer assertion in place and reports it as skipped. Does not start a type-policy or lint pass."
+    },
+    {
+      "id": "spurious-try-catch",
+      "prompt": "Deslop these changed hunks. One trusted internal helper is wrapped in try/catch that swallows the error, another only catch-and-rethrows the same error, and a file-read at the filesystem boundary catch adds context then rethrows.",
+      "expected_output": "Removes the swallowing catch and the no-context rethrow on the trusted internal paths. Keeps the filesystem-boundary catch that adds context. Reports any try/catch it cannot judge from the hunk."
+    },
+    {
       "id": "validation-report",
       "prompt": "Clean the PR diff so it looks less AI-generated.",
       "expected_output": "Reports the base inspected, files changed, validation run, and whether tests were skipped because edits were comment-only or diff-only."
