@@ -28,13 +28,13 @@
     },
     {
       "id": "evidence-laundering-casts",
-      "prompt": "Deslop this branch. The diff adds `const user = input as unknown as User` with no parser, `const boxed: unknown = alreadyTypedUser; const again = boxed as User`, and one `// SAFETY: parseUserId validated the identifier before branding it.\nconst userId = value as UserId`. A helper defined only in an unchanged file is asserted as User in the hunk, with no local producer.",
-      "expected_output": "Deletes the chained assertion and the widen-then-assert. Keeps the SAFETY-justified UserId assertion. Leaves the off-diff producer assertion in place and reports it as skipped. Does not start a type-policy or lint pass."
+      "prompt": "Deslop this branch. The diff adds `const user = input as unknown as User` with no parser, `const boxed: unknown = alreadyTypedUser; const again = boxed as User`, `const names = ['ada'] as const`, `const input = e.target as HTMLInputElement`, and one `// SAFETY: parseUserId validated the identifier before branding it.\nconst userId = value as UserId`. A helper defined only in an unchanged file is asserted as User in the hunk, with no local producer.",
+      "expected_output": "Deletes the widen-then-assert and restores the already-typed value. Leaves the chained unknown-input assertion, reports it as skipped, and does not break compilation. Keeps as const, the HTMLInputElement cast, and the SAFETY-justified UserId assertion. Leaves the off-diff producer assertion in place and reports it as skipped. Does not start a type-policy or lint pass."
     },
     {
       "id": "spurious-try-catch",
-      "prompt": "Deslop these changed hunks. One trusted internal helper is wrapped in try/catch that swallows the error, another only catch-and-rethrows the same error, and a file-read at the filesystem boundary catch adds context then rethrows.",
-      "expected_output": "Removes the swallowing catch and the no-context rethrow on the trusted internal paths. Keeps the filesystem-boundary catch that adds context. Reports any try/catch it cannot judge from the hunk."
+      "prompt": "Deslop these changed hunks. One try/catch wraps `return alreadyComputed` and swallows, another only catch-and-rethrows the same error, a file-read catch adds context then rethrows, a trusted helper swallows with no proof it cannot throw, and an auth boundary catch swallows after recording a sanitized failure.",
+      "expected_output": "Removes the no-context rethrow and the proven-redundant swallow around the non-throwing return. Keeps the filesystem-boundary catch that adds context and the auth-boundary containment swallow. Leaves the unproven helper swallow in place and reports it as skipped."
     },
     {
       "id": "validation-report",

@@ -2,7 +2,7 @@
 
 ## [0.4.4] - 2026-08-16
 
-- Teach deslop to delete evidence-laundering casts and keep only `SAFETY:`-justified assertions. Drop swallow or no-context rethrow try/catch on trusted paths.
+- Teach deslop to collapse evidence-laundering casts when a compiling replacement exists, keep `SAFETY:`-justified leftovers, and drop only no-context rethrows or proven-redundant swallows.
 
 ## [0.4.3] - 2026-08-15
 
