@@ -176,7 +176,7 @@ Override: if the user says anywhere in the conversation to wait for their approv
 
 Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. File any major-effort nits per the Defer verdict, then deliver the **Ship report**.
 
-### Phase 6 — Massive follow-ups
+### Phase 6 — Major-effort follow-ups
 
 Do not defer blockers. After merge, there is no follow-up PR chain.
 

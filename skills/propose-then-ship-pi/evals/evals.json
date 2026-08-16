@@ -39,7 +39,7 @@
     {
       "id": "edge-blockers-never-deferred",
       "prompt": "[A panel finding is a blocker that would take a large effort to fix.]",
-      "expected_output": "Fixes or rebuts the blocker. Does not defer it as a massive undertaking or merge with it open."
+      "expected_output": "Fixes or rebuts the blocker. Does not defer it as a major-effort follow-up or merge with it open."
     },
     {
       "id": "edge-wait-override",
