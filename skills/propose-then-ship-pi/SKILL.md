@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.5.1"
+  version: "1.5.2"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -20,7 +20,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - The proposal ranks candidates and leads with one #1 recommendation plus a concrete plan.
 - Implementation happens in the dedicated worktree on its own branch, scoped to the approved direction plus blocker and nit fixes.
 - Every blocker is fixed or rebutted before completion. Every nit is too unless fixing it would be a major level of effort: file that follow-up and name it in the Ship report. When in doubt, include the nit in this PR. None are silently dropped.
-- Merge-ready is proven against the exact current head, not remembered from an earlier push. Merge only after every blocker is cleared and every remaining nit is fixed, rebutted, or filed as a major-effort follow-up.
+- Merge-ready is proven on the current combined head: CI, base freshness, and mergeability, plus reviewer sign-off for its reviewed content under the mechanical-sync rule below. Merge only after every blocker is cleared and every remaining nit is fixed, rebutted, or filed as a major-effort follow-up.
 - The PR is squash-merged under the user's standing authorization, unless they said to wait.
 
 ## Use when
@@ -46,7 +46,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
 - **Use review waves, not rerun-all churn.** Every PR's first substantive change gets one fresh-context async exact-head panel with `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security`. Later remediation on the same scope reruns only `reviewer-ponytail` plus the seats that blocked the previous wave; also rerun `reviewer-security` when remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Extensive remediation may justify voluntarily rerunning the full panel or adding reviewers.
 - **Keep one writer accountable.** The implementing agent owns the PR through review, fixes, CI, and merge. Reviewers stay read-only; do not split writer and captain roles or hand the PR off mid-loop.
-- **Do not re-panel mechanical base syncs.** A rebase or merge that leaves the reviewed content unchanged does not trigger re-review. Substantive changes, real conflict resolution, and a newly combined stack do.
+- **Do not re-panel mechanical base syncs.** Reviewer sign-off carries across a purely mechanical rebase or merge of the current base with no overlap, conflict resolution, or reviewed-content/behavior change; refresh exact combined-head CI, base freshness, and mergeability instead. Re-review only after substantive edits, real conflict-resolution changes, or new scope.
 - **Every review-panel finding gets a verdict, not silence.** Fix every blocker. Fix every nit, or rebut it. Defer a nit only if it would be a major level of effort.
 - **Report instead of spinning.** Every loop in Phase 4 has a cap. On cap, hand back state and the blocker.
 
