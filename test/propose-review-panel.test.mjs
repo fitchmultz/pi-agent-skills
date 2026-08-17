@@ -13,7 +13,7 @@ const firstWave = panel.slice(panel.indexOf("### First wave"), panel.indexOf("##
 const remediationWave = panel.slice(panel.indexOf("### Remediation wave"), panel.indexOf("## Brief contents"));
 
 test("the first wave uses the four configured panel seats", () => {
-  assert.match(skill, /version: "1\.5\.1"/);
+  assert.match(skill, /version: "1\.5\.2"/);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never substitutes for parent-run deslop/i);
   assert.match(skill, /Every PR's first substantive change gets one fresh-context async exact-head panel.+reviewer-ponytail/s);
@@ -40,6 +40,7 @@ test("remediation reruns ponytail, prior blockers, and sensitive security paths"
   assert.match(remediationWave, /Keep only when this seat blocked the previous wave/);
   assert.match(remediationWave, /Keep when this seat blocked, or when remediation touches auth, secrets, injection, or data exposure/);
   assert.match(panel, /mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review/i);
+  assert.match(skill, /Reviewer sign-off carries across.+no overlap.+refresh exact combined-head CI, base freshness, and mergeability instead.+Re-review only after substantive edits, real conflict-resolution changes, or new scope/is);
   assert.match(panel, /New substantive scope always resets to a full four-seat panel/i);
   assert.match(panel, /When the head is unchanged and the response is only a rebuttal, rerun the blocking seat/i);
   assert.match(skill, /full four-seat first wave completed.+every blocking finding.+cleared by its originating seat/s);
