@@ -121,7 +121,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 2. Read the repo's own conventions and follow them.
 3. Implement the approved plan, plus blockers and nits that are not a major level of effort.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
-5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Task and direction approval authorize branch creation, commits, pushes, and PR creation in both WorkOS and personal repositories; do not ask again solely because the repository is outside WorkOS.
+5. Commit with a message describing why, push the branch, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Task and direction approval authorize branch creation, commits, pushes, and PR creation in both WorkOS and personal repositories; do not ask again solely because the repository is outside WorkOS. That approval does not authorize tags, releases, external artifact publication, release credential reads, or production-control changes outside the repository's defined deployment.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
 
 ### Phase 4 — Review loop
@@ -174,7 +174,7 @@ Default: **squash-merge without asking again** once the Phase 4 exit conditions 
 
 Override: if the user says anywhere in the conversation to wait for their approval before merging, that overrides the default for the rest of the run. Report merge-ready and stop.
 
-Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, and cleanup. File any major-effort nits per the Defer verdict, then deliver the **Ship report**.
+Follow `references/merge-gate.md` for the mechanics: the base freshness gate, the SHA-bound merge command, the post-merge smoke check, repository-defined deployment handling, and cleanup. File any major-effort nits per the Defer verdict, then deliver the **Ship report**.
 
 ### Phase 6 — Major-effort follow-ups
 
@@ -244,6 +244,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 | Feedback | [blocking human or required-reviewer feedback addressed] |
 | Linear | [issue and state, or "none"] |
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
+| Deployment | [run or verified / `N/A` / explicitly blocked pending release authorization] |
 
 **Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, not here]
 **Rebutted findings** — [each one, with the reasoning, or "none"]

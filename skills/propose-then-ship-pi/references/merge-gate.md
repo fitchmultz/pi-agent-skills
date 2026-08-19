@@ -46,7 +46,8 @@ Bind the merge to the SHA you verified, so a push that lands between the check a
 
 1. Confirm the merge actually landed: `<gh> pr view <PR> --json state,mergedAt,mergeCommit`.
 2. Run a bounded smoke check relevant to the change before claiming the end state is good.
-3. Clean up only after the confirmed merge and smoke check. Check for uncommitted work first with `git -C <worktree> status --short`, and never remove a worktree that still holds changes. Capture the current branch from the worktree because its directory can retain an older provisional slug after a branch rename. Bind both branch deletions to the verified SHA so work pushed or committed during the smoke window is preserved instead of force-deleted.
+3. Run or verify the repository's own defined deployment when applicable user or repository instructions define one and the Phase 4 ship gate has passed. Record `N/A` when no deployment is defined. If the deployment publishes or releases an external artifact, or requires production control outside the defined deployment, stop for explicit authorization instead of treating merge permission as release permission.
+4. Clean up only after the confirmed merge, smoke check, and applicable deployment handling. Check for uncommitted work first with `git -C <worktree> status --short`, and never remove a worktree that still holds changes. Capture the current branch from the worktree because its directory can retain an older provisional slug after a branch rename. Bind both branch deletions to the verified SHA so work pushed or committed during the smoke window is preserved instead of force-deleted.
 
 ```bash
 set -e
@@ -67,4 +68,4 @@ git update-ref -d "refs/heads/$BRANCH" "<verified-SHA>"
 
 Exit 2 from `git ls-remote --exit-code` means repository automation already removed the remote branch. Any other remote lookup or lease failure is a blocker, not proof that cleanup succeeded. Leave the local worktree or branch in place when a guard fails and report the advanced ref.
 
-4. Close the linked Linear issue when the real end state and team convention support closure.
+5. Close the linked Linear issue when the real end state and team convention support closure.

@@ -31,7 +31,7 @@ Pi extensions and packages are full-trust executable code. Review scripts, depen
 
 Project trust is an input-loading gate, not a sandbox or per-tool permission system. Do not change trust/approval, credential/config handling, prompts, tool authority, resource loading, or user-visible behavior without understanding the existing policy.
 
-Preparation is not release permission. When an approved task changes a remote repository, create the branch, commit, push, and open or update the pull request without another confirmation. Run the repository's documented deployment after its applicable ship gate passes. Do not create tags or releases, publish external artifacts, make production-control changes outside that deployment, or read release credentials unless the user explicitly authorizes the action. Read `references/publishing/workflow.md` before release work.
+Preparation is not release permission. When an approved task changes a remote repository, create the branch, commit, push, and open or update the pull request without another confirmation. Run the repository's own defined deployment only when applicable user or repository instructions define a ship gate and that gate passes. If no ship gate is defined, do not infer one; report the deployment as unperformed. A deployment that publishes or releases an external artifact still requires explicit authorization. Do not create tags or releases, make production-control changes outside the defined deployment, or read release credentials unless the user explicitly authorizes the action. Read `references/publishing/workflow.md` before release work.
 
 ## Resolve the current source of truth
 
@@ -133,10 +133,11 @@ Implementation: [changed files]
 Lifecycle/authority: [state, boundaries, modes, concurrency, trust]
 TUI/UX: [guards, rendering, key/focus flow, visual evidence if applicable]
 Validation: [type-check, tests/lint, runtime/package/manual checks, startup A/B if applicable]
-External mutations: [none, or exact explicitly requested release/publish actions]
+Repository delivery: [branch, commit, push, pull request, and defined deployment status]
+Explicit external actions: [none, or exact authorized tags/releases/publication/release credentials/out-of-band production control]
 Remaining gaps: [only real gaps]
 ```
 
 ## Stop rules
 
-Stop only when the abstraction is correct, implementation matches the active installed contract, the real changed path is validated, external mutations stayed within explicit authorization, and no unverified lifecycle/install/TUI assumption could change correctness.
+Stop only when the abstraction is correct, implementation matches the active installed contract, the real changed path is validated, routine branch, commit, push, and pull-request delivery stayed within the approved task, any defined deployment stayed within its applicable ship gate, release and out-of-band production actions stayed within explicit authorization, and no unverified lifecycle/install/TUI assumption could change correctness.

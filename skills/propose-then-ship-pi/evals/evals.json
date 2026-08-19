@@ -164,7 +164,7 @@
     {
       "id": "edge-personal-pr-needs-no-second-confirmation",
       "prompt": "[The approved direction is implemented in a personal GitHub repository. The user did not separately say to commit, push, or open the PR.]",
-      "expected_output": "Commits, pushes with gh-personal, and opens or updates the pull request without asking again. Task and direction approval already authorize routine repository delivery outside WorkOS; tags and external releases remain separate authorization boundaries."
+      "expected_output": "Commits, pushes the branch, and opens or updates the pull request with gh-personal without asking again. Task and direction approval already authorize routine repository delivery outside WorkOS; tags and external releases remain separate authorization boundaries."
     }
   ]
 }
