@@ -4,7 +4,7 @@
     {
       "id": "success-docs-only-final-status",
       "prompt": "A docs-only skill edit is complete. git status shows only the intended SKILL.md and eval file changes, JSON parsing passes, and the skill validator exits 0. Produce the final status.",
-      "expected_output": "States the exact docs/skill claim, cites git status/diff sweep, marks alignment as docs/evals checked or N/A, cites the JSON parse and validator command results, lists no unverified gaps, and marks final status complete."
+      "expected_output": "States the exact docs/skill claim, cites git status/diff sweep, marks alignment as docs/evals checked or N/A, records Ablation as N/A because this work adds or materially changes no non-trivial regression test, cites the JSON parse and validator command results, lists no unverified gaps, and marks final status complete."
     },
     {
       "id": "failure-final-claim-with-failing-tests",
@@ -60,6 +60,16 @@
       "id": "edge-environment-invalidates-reused-evidence",
       "prompt": "The exact Git tree is unchanged since the suite passed, but the toolchain version and test-service configuration changed. Verify before completion.",
       "expected_output": "Invalidates the ledger entry because its relevant toolchain and environment inputs changed, then reruns the affected checks instead of claiming the unchanged tree alone is sufficient."
+    },
+    {
+      "id": "edge-regression-test-needs-ablation",
+      "prompt": "A non-trivial regression test passes on the fixed head, but there is no record that the exact test fails on the broken implementation. Produce the final status.",
+      "expected_output": "Marks completion incomplete. Requires a broken-then-fixed ablation receipt for the exact test: expected failure in an isolated `git worktree` that keeps the new test while restoring the pre-fix implementation, or a targeted revert proven unable to affect unrelated work, then pass against the fix. Rejects source-text assertions, weakened assertions, and self-fulfilling mocks as substitutes."
+    },
+    {
+      "id": "edge-authentic-red-green-is-ablation",
+      "prompt": "The exact regression test failed for the expected reachable defect during RED and passed after the fix during GREEN. Both commands, outputs, and tree-state identities are preserved. Verify completion without another revert.",
+      "expected_output": "Accepts the original RED/GREEN pair as the ablation receipt without rerunning a revert. Treats the broken half as historical evidence for its identified state rather than a reusable final-tree ledger entry, and applies clean-tree reuse rules to the fixed half."
     }
   ]
 }

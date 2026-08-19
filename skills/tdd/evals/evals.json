@@ -19,7 +19,12 @@
     {
       "id": "edge-known-regression",
       "prompt": "Write a regression test first for the known DST crash, then fix it.",
-      "expected_output": "Pins the public behavior that reproduces the DST crash with a failing regression test, records RED for the expected failure, applies the smallest fix, records GREEN, and runs affected validation."
+      "expected_output": "Pins the public behavior that reproduces the DST crash with a failing regression test, records RED for the expected failure against the broken implementation, applies the smallest fix, records GREEN on the exact same test, preserves those commands, broken and fixed revisions or tree states, and results as the ablation receipt, and runs affected validation."
+    },
+    {
+      "id": "edge-regression-green-without-ablation",
+      "prompt": "The new regression test passes on the fix, but nobody ran it against the broken implementation. Finish the TDD task.",
+      "expected_output": "Does not claim completion until it runs the exact test in an isolated `git worktree` that keeps the new test while restoring the pre-fix implementation, or uses a targeted revert only when it cannot affect unrelated user work, and confirms the expected failure; then reruns it against the fix, records the pass, and only then completes. Does not substitute a source-text assertion, weaken the assertion, or replace the defect boundary with a self-fulfilling mock."
     },
     {
       "id": "edge-unknown-crash",
@@ -29,7 +34,7 @@
     {
       "id": "success-final-report",
       "prompt": "Finish the TDD change and report back.",
-      "expected_output": "Reports Behavior, Red, Green, Refactor, Validation, and Skipped with fresh command evidence and no completion claim beyond what validation proves."
+      "expected_output": "Reports Behavior, Red, Green, Ablation, Refactor, Validation, and Skipped with fresh command evidence and no completion claim beyond what validation proves."
     }
   ]
 }
