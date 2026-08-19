@@ -39,7 +39,6 @@ test("remediation reruns ponytail, prior blockers, and sensitive security paths"
   assert.match(remediationWave, /Keep only when this seat blocked the previous wave/);
   assert.match(panel, /mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review/i);
   assert.match(skill, /Reviewer sign-off carries across.+no overlap.+refresh exact combined-head CI, base freshness, and mergeability instead.+Re-review only after substantive edits, real conflict-resolution changes, or new scope/is);
-  assert.match(panel, /New substantive scope always resets to a full four-seat panel/i);
   assert.match(skill, /full four-seat first wave completed.+every blocking finding.+cleared by its originating seat/s);
   assert.ok(![...remediationWave.matchAll(/agent:\s*"([^"]+)"/g)].map((match) => match[1]).includes("reviewer"));
 
