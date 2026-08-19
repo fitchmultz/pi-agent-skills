@@ -79,7 +79,7 @@ Expected scrolling, navigation, resizing, animation, and theme changes are not f
 For each transient finding include:
 
 ```markdown
-### High — Main content flashes blank after submit
+### High: Main content flashes blank after submit
 - Repro: exact user steps
 - Expected: existing content remains visible while processing
 - Actual: main content blanks briefly after submit

@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.5.6"
+  version: "1.5.7"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -222,27 +222,31 @@ Exit codes: `0` every check completed successfully on an open PR, `1` a check fa
 - `references/greptile-loop.md` records the non-blocking Greptile policy. Never use it as a wait or merge gate.
 - Read `references/merge-gate.md` when Phase 4 exits, before merging.
 
+## Output template punctuation
+
+Use colons instead of em or en dashes as prose separators in both the Proposal contract and Ship report below. Preserve hyphens required by identifiers, paths, CLI flags, and Markdown structure.
+
 ## Proposal contract
 
 ```markdown
 ## Recommendation: [one line, the #1 item]
 
-**What it is** — [the pattern or problem, in plain terms]
-**Where** — [`path:line` evidence, the worst 2-3 sites]
-**Scale** — [how many instances, how it spread]
-**Why this is #1** — [cost of leaving it, versus the runners-up]
+**What it is:** [the pattern or problem, in plain terms]
+**Where:** [`path:line` evidence, the worst 2-3 sites]
+**Scale:** [how many instances, how it spread]
+**Why this is #1:** [cost of leaving it, versus the runners-up]
 
 ### Plan
 1. [Step with a concrete file or boundary]
 2. ...
 
-**Blast radius** — [what this touches, what could break]
-**Verification** — [how you will prove it worked]
-**Not doing** — [adjacent temptations explicitly out of scope]
+**Blast radius:** [what this touches, what could break]
+**Verification:** [how you will prove it worked]
+**Not doing:** [adjacent temptations explicitly out of scope]
 
 ### Runners-up
-2. [Item] — [one line on why it ranked lower]
-3. [Item] — [one line]
+2. [Item]: [one line on why it ranked lower]
+3. [Item]: [one line]
 ```
 
 Then ask for the direction choice with `ask_question`. The tool itself supplies the pause; when it returns a proceed choice, continue with Phase 2 in the same assistant turn.
@@ -254,9 +258,9 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 ```markdown
 ## [Shipped|Merge-ready]: [PR title] ([#N](url))
 
-**Direction taken** — [what the user approved]
-**Change** — [what actually landed, in two or three lines]
-**Head verified** — [SHA the gates below were checked against]
+**Direction taken:** [what the user approved]
+**Change:** [what actually landed, in two or three lines]
+**Head verified:** [SHA the gates below were checked against]
 
 | Gate | Result |
 | --- | --- |
@@ -268,10 +272,10 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
 | Deployment | [run or verified / not defined / not reached while merge-ready / blocked pending authorization / failed] |
 
-**Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, and a UX `N/A` belongs in the UX row]
-**Rebutted findings** — [each one, with the reasoning, or "none"]
-**Informational review notes** — [each `Findings` item classified informational, with the reason, or "none"]
-**Follow-ups** — [optional links for rebutted out-of-scope findings, or "none"]
+**Skipped or deferred validation:** [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, and a UX `N/A` belongs in the UX row]
+**Rebutted findings:** [each one, with the reasoning, or "none"]
+**Informational review notes:** [each `Findings` item classified informational, with the reason, or "none"]
+**Follow-ups:** [optional links for rebutted out-of-scope findings, or "none"]
 ```
 
 ## Gotchas

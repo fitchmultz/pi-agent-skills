@@ -91,7 +91,7 @@ If ffmpeg is unavailable, do not start recording. Continue with inspected screen
 
 ## Report format
 
-Use `templates/dogfood-report-template.md` for larger passes. At minimum include target, scope, environment, coverage, findings, exact evidence paths, untested areas, and separate confidence for steady-state layout versus motion/streaming behavior.
+Use `templates/dogfood-report-template.md` for larger passes. Use colons instead of em or en dashes as prose separators; preserve hyphens required by identifiers, paths, CLI flags, and Markdown structure. At minimum include target, scope, environment, coverage, findings, exact evidence paths, untested areas, and separate confidence for steady-state layout versus motion/streaming behavior.
 
 ## Stop rules
 

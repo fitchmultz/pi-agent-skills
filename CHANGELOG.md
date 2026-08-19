@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.12] - 2026-08-19
+
+- Use colons instead of prose dashes in proposal, ship, UX-review, dogfood report, and generated status output while preserving structural hyphens and Markdown separators.
+
 ## [0.4.11] - 2026-08-19
 
 - Keep Cloudflare control-plane and documentation work out of `agent_browser`; use the configured Cloudflare documentation and API tools or report unavailable work truthfully, while retaining direct browser QA for customer apps on custom, `pages.dev`, or `workers.dev` targets. Stop if Access, a managed or bot challenge, or Turnstile blocks the requested flow; never interact with that Cloudflare surface.
@@ -64,6 +68,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.12]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.8...v0.4.9

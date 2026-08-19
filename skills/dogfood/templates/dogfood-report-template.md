@@ -51,7 +51,7 @@
 
 <!-- Copy this block for each issue. Static issues need one inspected screenshot. Transient issues need verified video plus inspected frame evidence. -->
 
-### ISSUE-001: {Severity} — {Short title}
+### ISSUE-001 ({Severity}): {Short title}
 
 | Field | Value |
 |-------|-------|

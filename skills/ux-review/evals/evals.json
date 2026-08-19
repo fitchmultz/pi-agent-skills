@@ -60,6 +60,11 @@
       "id": "reading-surface",
       "prompt": "Review a Slack answer that posts six long messages of internal diagnostics before the requested two-line recommendation.",
       "expected_output": "Flags the wall of text, puts the concise Slack-native result first, and moves detailed evidence to a linked artifact or report."
+    },
+    {
+      "id": "reading-surface-colon-separators",
+      "prompt": "Review this settings flow and return the UX verdict with findings.",
+      "expected_output": "Uses colons between each finding surface and user consequence. Preserves required hyphens in identifiers, paths, CLI flags, Markdown list markers, and table separators."
     }
   ]
 }

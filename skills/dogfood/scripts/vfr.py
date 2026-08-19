@@ -571,7 +571,7 @@ def command_validate(args: argparse.Namespace) -> int:
     (reports / "validation.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     lines = ["# VFR Bundle Validation", "", f"Run: `{run}`", f"Mode: `{'terminal' if terminal_mode else 'browser'}`", "", f"Status: `{'PASS' if result['ok'] else 'FAIL'}`", ""]
     if issues:
-        lines += ["## Issues", ""] + [f"- `{issue['severity']}` — {issue['message']}" for issue in issues] + [""]
+        lines += ["## Issues", ""] + [f"- `{issue['severity']}`: {issue['message']}" for issue in issues] + [""]
     lines += [
         "## Counts",
         "",

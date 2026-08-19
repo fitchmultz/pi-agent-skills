@@ -159,7 +159,7 @@ note_gap() { incomplete="${incomplete}  - $1"$'\n'; }
 [ "$pr_state" = "OPEN" ] || note_gap "PR is ${pr_state}"
 
 echo
-echo "PR #${PR} — ${url}"
+echo "PR #${PR}: ${url}"
 echo "  gh:        ${GH_BIN}"
 echo "  head:      ${head}"
 echo "  state:     ${pr_state}"
