@@ -77,6 +77,8 @@ Pick the closest meaningful proof:
 
 Static review does not prove runtime behavior. Green tests do not prove unmet requirements.
 
+A non-trivial regression test added or materially changed by the work being verified counts as evidence only with a broken-then-fixed ablation receipt: run the exact test in an isolated `git worktree` that keeps the new test while restoring the pre-fix implementation, or use a targeted revert only when it cannot affect unrelated user work, and confirm the expected failure; then run it against the fix and confirm it passes. The original test-first RED/GREEN commands qualify when that exact test exercised the reachable defect. When classification is uncertain, require the receipt. Do not substitute source-text assertions, a self-fulfilling mock, or a weakened assertion for the reachable defect.
+
 ### 5. Run, inspect, or reuse current verification
 
 Keep a shared evidence ledger for deterministic machine-produced validation outputs: local commands, instrumented runtime checks, and CI results. Manual observations may be recorded for audit, but they are current-only and must not be reused across steps or agents.
@@ -87,9 +89,9 @@ Keep a shared evidence ledger for deterministic machine-produced validation outp
 
 Reviewer analysis is different. Findings, verdicts, and sign-off are review history, not reusable validation evidence. Carry that history into later briefs, but never use it to skip a required fresh reviewer pass. Deterministic checks run by a reviewer may be reused under the normal rules; the reviewer's judgment may not.
 
-For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. Do not reuse an entry produced on a dirty checkout across steps or agents: there is no cheap complete identity covering staged, unstaged, untracked, and relevant ignored inputs. Run the check again after changes settle on a clean tree before carrying it forward.
+For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. Do not reuse an entry produced on a dirty checkout across steps or agents: there is no cheap complete identity covering staged, unstaged, untracked, and relevant ignored inputs. Run the check again after changes settle on a clean tree before carrying it forward. The broken half of an ablation receipt is historical evidence for a deliberately different state, not a final-tree ledger entry. Reuse it across steps or agents only when its exact command, inspectable result, and complete captured tree or commit identity are preserved; otherwise reproduce it in an isolated `git worktree`. The fixed half still follows the clean-tree reuse rules.
 
-Reuse an entry only when all are true:
+Reuse a final-tree ledger entry only when all are true:
 
 - the checkout was clean when its code identity was recorded
 - its command or source directly proves the current claim
@@ -122,6 +124,7 @@ Use this compact shape:
 Claim: [exact claim]
 Delta sweep: [git status/diff clean / fixed items / remaining issue]
 Alignment: [N/A or contract/generated/docs checked]
+Ablation: [N/A, reference to preserved qualifying RED/GREEN evidence, broken command/state → expected failure; fixed command/state → pass, or blocked with the reason]
 Verification: [commands/checks + result; reused entries include scope identity]
 Unverified: [none or specific gaps]
 Informational review notes: [each `Findings` item classified informational, with the reason, or none]
@@ -140,6 +143,7 @@ Verification is complete only when:
 - relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
 - every actionable review finding in the claim's scope has a recorded **Fix** or **Rebut** verdict
+- every non-trivial regression test added or materially changed by the work being verified has a broken-then-fixed ablation receipt, or the inability to reproduce its broken state is accurately reported as blocking completion
 - every `Findings` item classified informational is named with the reason
 - every `reviewer-security` risk note has a recorded **Fix** or **Rebut** verdict
 - final status does not exceed evidence

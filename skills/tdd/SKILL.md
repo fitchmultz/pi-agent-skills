@@ -18,6 +18,7 @@ Ship one observable behavior at a time with a failing test that proves the next 
 - Do not refactor while RED. Get GREEN first.
 - Do not ask for approval unless the public interface, expected behavior, or behavior priority is materially ambiguous; otherwise state the assumption and start the first cycle.
 - If debugging and the cause is still unknown, use root-cause triage first unless the user explicitly asked for test-first diagnosis or a regression test.
+- A non-trivial regression test added or materially changed by this work needs an ablation receipt: the exact test fails for the expected reason against the broken implementation and passes against the fix. The original RED/GREEN commands qualify when that exact test exercised the reachable defect. When classification is uncertain, require the receipt.
 
 ## Workflow
 
@@ -49,7 +50,7 @@ Read `refactoring.md` before the cleanup pass. Remove duplication, improve names
 
 ### 6. Final validation
 
-Run the relevant narrow tests plus the project’s normal affected test/lint/type/build gate when available. Use the verification-before-completion skill before claiming completion.
+Run the relevant narrow tests plus the project’s normal affected test/lint/type/build gate when available. For each non-trivial regression test added or materially changed by this work, preserve the exact broken and fixed commands, revisions or tree states, and results as the ablation receipt. If RED was not captured before the fix, use an isolated `git worktree` that keeps the new test while restoring the pre-fix implementation; use a targeted revert only when it cannot affect unrelated user work. Never substitute a source-text assertion, weaken the assertion, or replace the real defect boundary with a self-fulfilling mock. Use the verification-before-completion skill before claiming completion.
 
 ## Stop rules
 
@@ -60,7 +61,7 @@ Stop and report the blocker only when:
 - RED fails for an unrelated cause that must be triaged first;
 - continuing would overwrite unrelated user work or require a product choice.
 
-Complete only when every requested behavior has RED/GREEN evidence, refactoring is done or intentionally skipped, and validation evidence is fresh.
+Complete only when every requested behavior has RED/GREEN evidence, every non-trivial regression test added or materially changed by this work has a broken-then-fixed ablation receipt, refactoring is done or intentionally skipped, and validation evidence is fresh.
 
 ## Output
 
@@ -68,9 +69,10 @@ Complete only when every requested behavior has RED/GREEN evidence, refactoring 
 Behavior:
 Red:
 Green:
+Ablation:
 Refactor:
 Validation:
 Skipped:
 ```
 
-Include the command and result for each Red, Green, and Validation line. Use `Skipped: N/A` only when nothing material was skipped.
+Include the command and result for each Red, Green, and Validation line. Use `Ablation: N/A` when this work adds or materially changes no non-trivial regression test; otherwise reference the qualifying `Red` and `Green` lines above or record both states, commands, and results. If the broken state cannot be reproduced, use `Ablation: blocked: [reason]` and report completion blocked. Use `Skipped: N/A` only when nothing material was skipped.
