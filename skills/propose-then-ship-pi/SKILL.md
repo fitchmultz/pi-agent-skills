@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.5.3"
+  version: "1.5.4"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -126,7 +126,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 ### Phase 4 — Review loop
 
-Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Greptile reviews automatically and remains advisory; never wait for or trigger it.
+Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Make at most one direct parent-session CI poll, and give its Bash tool call a 300-second timeout so `gh`, `jq`, and polling all share the hard wall-clock cap. On exit 2 or a tool timeout, hand the remaining wait to an asynchronous detached `watcher` instead of chaining parent polls. Continue useful work; when none remains, end the turn and let the watcher completion resume the run. Greptile reviews automatically and remains advisory; never wait for or trigger it.
 
 1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave. Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict.
 2. **Triage.** Fix every valid blocker. Fix every valid nit unless it would be a major level of effort. When in doubt, include it. Rebut invalid ones in writing with reasoning. Do not churn code to satisfy a wrong comment.
@@ -185,12 +185,29 @@ Do not defer blockers. After merge, there is no follow-up PR chain.
 
 **pr_signals.sh**: poll a PR's required CI checks until they settle. Read-only. Call it by absolute path, since the working directory is the worktree. Advisory automated reviewers such as Greptile do not affect its result.
 
-Resolve `scripts/pr_signals.sh` from this skill directory before invoking it:
+Resolve `scripts/pr_signals.sh` from this skill directory before invoking it. Its 300-second default bounds accumulated polling sleeps; the Bash tool timeout is the hard wall-clock bound around subprocesses too. Make at most one direct parent call:
 
-```bash
-GH_BIN=gh-work <skill-dir>/scripts/pr_signals.sh <PR>
-GH_BIN=gh-work MAX_WAIT_SECONDS=1800 <skill-dir>/scripts/pr_signals.sh <PR>
+```typescript
+bash({
+  command: "GH_BIN=gh-work MAX_WAIT_SECONDS=285 <skill-dir>/scripts/pr_signals.sh <PR>",
+  timeout: 300
+})
 ```
+
+On exit 2, or if that tool call reaches its timeout, launch a detached watcher instead of polling again in the parent:
+
+```typescript
+subagent({
+  agent: "watcher",
+  cwd: "<worktree>",
+  output: false,
+  context: "fresh",
+  async: true,
+  task: "Run GH_BIN=gh-work MAX_WAIT_SECONDS=1740 <skill-dir>/scripts/pr_signals.sh <PR> with a Bash tool timeout of 1800 seconds. Report the script exit code and printed head SHA when available. If the Bash tool times out first, report tool timeout with exit code unavailable and the head unavailable unless it was already printed. Report the terminal condition: pass, fail, setup problem, missing or unknown signals, closed PR, expired script budget, or tool timeout."
+})
+```
+
+Continue useful work. If none remains, end the turn; the detached completion resumes the run.
 
 Exit codes: `0` every check completed successfully on an open PR, `1` a check failed, `2` timed out with checks running, `3` setup problem, `4` settled but signals are missing or unknown, meaning zero checks reported, an unknown conclusion, or a PR that is not open. Exit 4 for zero checks is eligible for `waived-if-absent` only after canonical local validation passes on that printed head; it never hides an unknown check or closed PR. The script prints the head SHA; bind every claim to it.
 

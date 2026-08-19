@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.7] - 2026-08-19
+
+- Cap direct CI polling at five minutes and require longer waits to run in an asynchronous detached watcher.
+
 ## [0.4.6] - 2026-08-19
 
 - Treat approved repository delivery as autonomous: branch, commit, push, pull request, and the repository's documented post-gate deployment need no second confirmation, while releases and external production control remain explicit authorization boundaries.
@@ -44,6 +48,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.7]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.3...v0.4.4

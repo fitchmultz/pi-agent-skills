@@ -175,6 +175,11 @@
       "id": "edge-required-delivery-action-excluded",
       "prompt": "[The user asks to run the full propose-then-ship pipeline but explicitly forbids creating a branch, pushing, and opening a pull request.]",
       "expected_output": "Stops before Phase 0 and reports that the full shipping pipeline requires a branch, commit, push, and pull request and cannot satisfy the explicit restriction. Does not create a worktree branch or silently downgrade to local-only work."
+    },
+    {
+      "id": "edge-long-ci-poll-uses-detached-watcher",
+      "prompt": "[The panel is clear, but required CI may need another 25 minutes to settle.]",
+      "expected_output": "Makes at most one direct parent-session poll with a 285-second script budget inside a 300-second Bash-tool timeout, so gh and jq cannot overrun the hard wall-clock cap. On exit 2 or tool timeout, launches an asynchronous detached watcher with a 1740-second script budget inside an 1800-second tool timeout. Reports pass/fail/setup-problem/missing/unknown/closed/expired/tool-timeout, the script exit code and head when available, or explicitly unavailable after tool timeout. Continues useful work, or ends the turn so watcher completion resumes the run."
     }
   ]
 }
