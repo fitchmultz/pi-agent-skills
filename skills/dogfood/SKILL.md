@@ -1,7 +1,7 @@
 ---
 name: dogfood
 description: "Dogfood or exploratory-QA browser-visible products through real user flows: web apps, local URLs, visual bug hunts, jank/flicker/streaming, and terminal/TUI redraw via VFR. Do not use for backend/unit-test-only checks, code review, trivial visual tweaks, or fixing bugs unless asked."
-compatibility: "Requires a live browser automation surface. Motion capture requires Python 3.9+ and FFmpeg 5.1+ on the Pi process PATH; optional deep anomaly analysis also uses uv."
+compatibility: "Requires a live browser automation surface. Cloudflare control-plane work also requires the configured cloudflare_api_docs, cloudflare_api_search, and cloudflare_api_execute tools. Motion capture requires Python 3.9+ and FFmpeg 5.1+ on the Pi process PATH; optional deep anomaly analysis also uses uv."
 ---
 
 # Dogfood
@@ -29,7 +29,9 @@ Store generated evidence in a unique project-root `.dogfood/` run. Ensure `.giti
 
 ## Tool and safety rules
 
-- In Pi, use native `agent_browser` for browser actions. Do not shell out to `agent-browser`.
+- Never use `agent_browser` for Cloudflare's control plane, dashboard, documentation, APIs, or product properties. Use `cloudflare_api_docs` for documentation, `cloudflare_api_search` for endpoint discovery, and `cloudflare_api_execute` for authorized authenticated operations. Keep exploratory QA read-only; use a mutating API operation only with explicit user authorization and when broader production-control policy permits it. If those tools are unavailable, or the request needs dashboard-only visual QA, report the Cloudflare work as unavailable instead of falling back to a browser.
+- This guard does not apply when the target is customer code merely hosted by Cloudflare, including a customer app on its own domain or a `*.pages.dev` or `*.workers.dev` preview. Use the normal browser workflow directly against that app. Treat any flow that requires completing a Cloudflare Access, managed or bot challenge, or Turnstile interaction as a Cloudflare product property regardless of its domain. If the app redirects to one, stop and report that path as unavailable unless a caller-owned authenticated session opens directly to the app. An embedded Turnstile widget does not by itself block QA of the surrounding customer app, but do not interact with it; if it blocks the requested flow, report that path as unavailable unless a caller-owned authenticated session opens directly to the customer app after the challenge.
+- In Pi, use native `agent_browser` for permitted browser actions. Never shell out to `agent-browser`.
 - Use `open` → `snapshot -i` → visible refs or semantic actions → fresh snapshot after navigation, scrolling, or rerender.
 - Use exact user paths when provided. Otherwise use absolute paths under the target project’s `.dogfood/` directory.
 - Treat artifact paths as provisional until `details.artifactVerification` confirms them. Prefer exact `details.nextActions` payloads over guessed recovery commands.

@@ -7,6 +7,8 @@ description: One safe Pi-native workflow for recording, verifying, and inspectin
 
 Use this reference for flicker, streaming, animation, loading, first-paint, resize, and other motion defects. The agent must inspect derived images itself. The user is not the review surface.
 
+Do not start this workflow for the Cloudflare targets guarded by the main dogfood skill. That guard routes them to the configured Cloudflare tools, reports unavailable operations truthfully, and still permits direct capture of customer apps merely hosted by Cloudflare.
+
 ## Non-negotiable contract
 
 1. Preflight ffmpeg before starting any recording.

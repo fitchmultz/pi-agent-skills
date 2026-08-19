@@ -273,7 +273,6 @@ def command_init(args: argparse.Namespace) -> int:
         f"python={platform.python_version()}",
         f"uv={command_available('uv')}",
         f"ffmpeg={command_available('ffmpeg')}",
-        f"agent_browser={command_available('agent-browser')}",
         f"ttyd={command_available('ttyd')}",
     ]
     (run / "meta.txt").write_text("\n".join(meta_lines) + "\n", encoding="utf-8")
@@ -635,8 +634,8 @@ def build_parser() -> argparse.ArgumentParser:
             "  scripts/vfr.py action RUN click \"Submit\" --note \"start checkout\"\n"
             "  scripts/vfr.py contact-sheet RUN\n"
             "  scripts/vfr.py validate RUN\n"
-            "  scripts/vfr.py terminal-capture-js | agent-browser eval --stdin\n"
-            "  scripts/vfr.py observer-js | agent-browser eval --stdin\n\n"
+            "  scripts/vfr.py terminal-capture-js  # pass output to native agent_browser eval stdin\n"
+            "  scripts/vfr.py observer-js  # pass output to native agent_browser eval stdin\n\n"
             "exit codes: 0 success, 2 validation/doctor failure or missing observer asset"
         ),
     )
