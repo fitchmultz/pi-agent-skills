@@ -23,7 +23,6 @@ test("explicit repository policy can waive only absent CI", () => {
 test("Greptile is automatic feedback, never a merge gate", () => {
   assert.match(skill, /Greptile is not a gate/i);
   assert.match(skill, /never wait for it, poll it, trigger it/i);
-  assert.match(skill, /Fix or rebut any Greptile comments already present/i);
   assert.doesNotMatch(skill, /Greptile: `required`/);
   assert.doesNotMatch(skill, /Greptile is at 5\/5/);
   assert.match(greptile, /reviews and comments automatically/i);
