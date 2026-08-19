@@ -71,7 +71,7 @@ A `workos` owner means `gh-work`. Anything else means `gh-personal`. Verify the 
 
 ### Phase 0 — Worktree
 
-Create the worktree before any recon, and work there for the rest of the run. Run this from the user's current checkout and read the printed values:
+Create the worktree before any recon, and work there for the rest of the run. This pipeline requires a branch, commit, push, and pull request: if the user explicitly excludes any of them, stop before Phase 0 and report that the full shipping pipeline cannot satisfy the restriction. Run this from the user's current checkout and read the printed values:
 
 ```bash
 REPO=$(basename "$(git rev-parse --show-toplevel)")
@@ -121,7 +121,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 2. Read the repo's own conventions and follow them.
 3. Implement the approved plan, plus blockers and nits that are not a major level of effort.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
-5. Commit with a message describing why, push the branch, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Task and direction approval authorize branch creation, commits, pushes, and PR creation in both WorkOS and personal repositories unless the user explicitly excluded one of those delivery actions; do not ask again solely because the repository is outside WorkOS. That approval does not authorize tags, releases, external artifact publication, release credential reads, or production-control changes outside the repository's defined deployment.
+5. Commit with a message describing why, push the branch, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Task and direction approval authorize branch creation, commits, pushes, and PR creation in both WorkOS and personal repositories unless the user explicitly excluded one of those delivery actions; an exclusion stops this pipeline before that action rather than silently downgrading delivery. Do not ask again solely because the repository is outside WorkOS. That approval does not authorize tags, releases, external artifact publication, release credential reads, or production-control changes outside the repository's defined deployment.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
 
 ### Phase 4 — Review loop
@@ -158,7 +158,8 @@ Leave the loop only when all of these hold against the current head SHA:
 - Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
 - No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
-- The head contains the current base tip and the PR is mergeable with no conflicts. Before merge, the repository's deployment path is classified: any merge-triggered artifact publication, external release, or out-of-band production control already has explicit authorization. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
+- Before merge, the repository's deployment path is classified: any merge-triggered artifact publication, external release, or production control outside the defined deployment already has explicit authorization.
+- The head contains the current base tip and the PR is mergeable with no conflicts. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
 - Zero unresolved blocking feedback from humans or required reviewers, and every Greptile comment already present when checked has a recorded Fix or Rebut verdict. Greptile acknowledgment, thread resolution, and re-review are not required.
 - Any linked Linear issue is current.
 
@@ -244,7 +245,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 | Feedback | [blocking human or required-reviewer feedback addressed] |
 | Linear | [issue and state, or "none"] |
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
-| Deployment | [run or verified / `N/A` / not reached while merge-ready / blocked pending authorization / failed] |
+| Deployment | [run or verified / not defined / not reached while merge-ready / blocked pending authorization / failed] |
 
 **Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, not here]
 **Rebutted findings** — [each one, with the reasoning, or "none"]
@@ -264,7 +265,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 ## Stop rules
 
-Stop and hand back when: the direction gate has not been answered; a review finding reveals the approved plan is wrong; a Phase 4 loop hits its cap; a required panel seat is unavailable; CI fails for reasons outside this PR's scope; the required GitHub alias is unavailable; or merging would require weakening a gate.
+Stop and hand back when: the user excludes a branch, commit, push, or pull-request action required by this pipeline; the direction gate has not been answered; a review finding reveals the approved plan is wrong; a Phase 4 loop hits its cap; a required panel seat is unavailable; CI fails for reasons outside this PR's scope; the required GitHub alias is unavailable; merging would require weakening a gate; or merge would trigger an external artifact release or production control outside the defined deployment that lacks explicit authorization. For an authorization stop, ask for that authorization before merge.
 
 Stop before Phase 0 when the target repository is the home dotfiles checkout, where `$HOME` is the repository root. Worktree and branch operations there are governed by separate standing prohibitions. Report the conflict and ask how to proceed.
 

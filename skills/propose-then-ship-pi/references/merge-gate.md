@@ -1,6 +1,6 @@
 # Merge Gate
 
-Read when Phase 4 exits. The standing authorization quoted in SKILL.md Phase 5 covers the merge; only the user's wait-for-approval override blocks it, and under that override you stop at Merge-ready instead of entering this gate. Replace `<gh>` with the alias you resolved from the remote owner.
+Read when Phase 4 exits. The standing authorization quoted in SKILL.md Phase 5 covers the merge unless the user invoked the wait-for-approval override or the deployment preflight below finds an external release or production-control action that still needs explicit authorization. Under the wait override, stop at Merge-ready instead of entering this gate. Replace `<gh>` with the alias you resolved from the remote owner.
 
 ## Base freshness
 
@@ -46,7 +46,7 @@ Bind the merge to the SHA you verified, so a push that lands between the check a
 
 1. Confirm the merge actually landed: `<gh> pr view <PR> --json state,mergedAt,mergeCommit`.
 2. Run a bounded smoke check relevant to the change before claiming the end state is good.
-3. Run or verify the repository's own defined deployment when applicable user or repository instructions define one and the Phase 4 exit conditions have passed. Record `N/A` when no deployment is defined. If the deployment publishes or releases an external artifact, or requires production control outside the defined deployment, stop for explicit authorization instead of treating merge permission as release permission.
+3. Run or verify the repository's own defined deployment when applicable user or repository instructions define one and the Phase 4 exit conditions have passed. Record the result using the Ship report states: run or verified, not defined, not reached while merge-ready, blocked pending authorization, or failed. If the deployment publishes or releases an external artifact, or requires production control outside the defined deployment, stop for explicit authorization instead of treating merge permission as release permission.
 4. Clean up only after the confirmed merge, smoke check, and applicable deployment handling. Check for uncommitted work first with `git -C <worktree> status --short`, and never remove a worktree that still holds changes. Capture the current branch from the worktree because its directory can retain an older provisional slug after a branch rename. Bind both branch deletions to the verified SHA so work pushed or committed during the smoke window is preserved instead of force-deleted.
 
 ```bash
