@@ -315,6 +315,11 @@
       "id": "active-session-replacement-persistence",
       "prompt": "Switch Pi sessions while the first of two sequential sibling tool calls is active, and keep the outgoing session history valid.",
       "expected_output": "Reads current replacement, tree-navigation, and sequential tool-loop implementation; explains that Pi 0.84 aborts and persists the active call but emits no result for later unstarted sequential siblings, so a forced mid-turn switch cannot guarantee balanced history. Waits for AgentSession.waitForIdle() before switching when balanced call/result history is required; otherwise documents the known unmatched sibling, avoids synthetic abort or tool-result writes, uses only the fresh replacement context after the switch, and validates the outgoing JSONL against the chosen policy."
+    },
+    {
+      "id": "approved-task-routine-repository-delivery",
+      "prompt": "The extension change and validation are complete. The task was approved, but I did not separately say commit, push, open a PR, or run the repository's documented deployment.",
+      "expected_output": "Creates the branch, commits, pushes, opens or updates the pull request, and runs the repository's documented deployment after its ship gate without another confirmation. It still stops before tags, GitHub releases, external artifact publication, production-control changes outside that deployment, or release credential reads unless those actions were explicitly authorized."
     }
   ]
 }

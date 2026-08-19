@@ -4,10 +4,11 @@ Use for Pi package preparation, release, publish, install, or update verificatio
 
 ## Authorization boundary
 
-Preparation is not permission to mutate external state.
+Preparation is not permission to release or publish external artifacts.
 
-- Without an explicit release/publish request, stop after local validation, dry-run packaging, and a release-ready report.
-- Commit, tag, push, GitHub Release creation, npm publish, deployment, and credential reads each require user authorization that covers that action.
+- Without an explicit release/publish request, stop after local validation, dry-run packaging, and normal branch, commit, push, and pull-request delivery.
+- After the task is approved, routine branch creation, commits, pushes, and pull-request updates require no separate confirmation. The repository's documented deployment is pre-authorized after its applicable ship gate passes.
+- Tags, GitHub Release creation, npm publish, external artifact release, production-control changes outside the repository's documented deployment, and release credential reads each require user authorization that covers that action.
 - Audits are read-only. Delete or rewrite local files only when the requested preparation scope authorizes working-tree edits; otherwise report cleanup findings.
 - Stop before an ambiguous branch, tag, registry scope, package name, version, account, or repository.
 - Use the shell-preloaded `NPM_TOKEN`; if it is missing, source `~/.secrets` only inside the isolated publish subshell. Never use `set -a`, and never expose the temporary auth config to npm lifecycle scripts.
@@ -189,7 +190,7 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
 7. Verify expected resources through their real surface: RPC `get_commands`, `pi --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`, command/tool execution, resource listing/config, or TUI inspection as applicable. `pi config -l` starts in project overrides; Tab switches global/project scopes.
 
-8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, and stop unless external mutation was explicitly requested.
+8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, deliver any requested repository changes through a branch and pull request, and stop before tags, releases, publication, or release credential reads unless those actions were explicitly requested.
 
 ## Explicit release flow
 

@@ -160,6 +160,11 @@
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
       "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
       "expected_output": "Launches the configured first-wave panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
+    },
+    {
+      "id": "edge-personal-pr-needs-no-second-confirmation",
+      "prompt": "[The approved direction is implemented in a personal GitHub repository. The user did not separately say to commit, push, or open the PR.]",
+      "expected_output": "Commits, pushes with gh-personal, and opens or updates the pull request without asking again. Task and direction approval already authorize routine repository delivery outside WorkOS; tags and external releases remain separate authorization boundaries."
     }
   ]
 }

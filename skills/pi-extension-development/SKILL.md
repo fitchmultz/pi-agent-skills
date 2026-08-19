@@ -3,7 +3,7 @@ name: pi-extension-development
 description: "Pi extension/package runtime and bundled-resource install/discovery: tools, commands/events, providers, TUI, SDK/RPC, release/publish, debugging, and performance. Do not use for Pi core, Agent Skill content authoring, prompt-only work, Crabbox/cbx, platform matrices, dependency-contract research, or non-Pi publishing."
 compatibility: Pi 0.84.0+; Python 3.9+ for the bundled resolver.
 metadata:
-  version: "1.12.0"
+  version: "1.12.1"
   last-verified-pi: "0.84.0"
 ---
 
@@ -31,7 +31,7 @@ Pi extensions and packages are full-trust executable code. Review scripts, depen
 
 Project trust is an input-loading gate, not a sandbox or per-tool permission system. Do not change trust/approval, credential/config handling, prompts, tool authority, resource loading, or user-visible behavior without understanding the existing policy.
 
-Preparation is not release permission. Do not commit, tag, push, create a release, publish, deploy, or read credentials unless the user explicitly requested that external mutation. Read `references/publishing/workflow.md` before release work.
+Preparation is not release permission. When an approved task changes a remote repository, create the branch, commit, push, and open or update the pull request without another confirmation. Run the repository's documented deployment after its applicable ship gate passes. Do not create tags or releases, publish external artifacts, make production-control changes outside that deployment, or read release credentials unless the user explicitly authorizes the action. Read `references/publishing/workflow.md` before release work.
 
 ## Resolve the current source of truth
 

@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.5.2"
+  version: "1.5.3"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -121,7 +121,7 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 2. Read the repo's own conventions and follow them.
 3. Implement the approved plan, plus blockers and nits that are not a major level of effort.
 4. Validate at the scope of your change: the tests that exercise it, lint and build on what you touched. Fix what you broke. Do not duplicate a full remote matrix locally when CI exists. When CI is absent under `waived-if-absent`, its replacement is the repository's canonical local validation on the exact head before merge.
-5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Outside a WorkOS repository, opening the PR is an external write. A request for the full arc or a named invocation of this skill, followed by direction approval, already confirms PR creation; otherwise confirm it first.
+5. Commit with a message describing why, then open the PR with `<gh-alias> pr create`. If it opens as a draft, mark it ready with `<gh-alias> pr ready <PR>` once implementation and local validation are complete. Task and direction approval authorize branch creation, commits, pushes, and PR creation in both WorkOS and personal repositories; do not ask again solely because the repository is outside WorkOS.
 6. When the work maps to a Linear issue, move it to review and attach the PR link.
 
 ### Phase 4 — Review loop
