@@ -7,7 +7,7 @@ Use for Pi package preparation, release, publish, install, or update verificatio
 Preparation is not permission to release or publish external artifacts.
 
 - Without an explicit release/publish request, stop after local validation, dry-run packaging, and normal delivery of any repository changes made by the task.
-- After the task is approved, routine branch creation, commits, pushes, and pull-request updates require no separate confirmation. Run the repository's own defined deployment only when applicable user or repository instructions define a ship gate and that gate passes. If no ship gate is defined, do not infer one; report deployment as unperformed.
+- After the task is approved, routine branch creation, commits, pushes, and pull-request updates require no separate confirmation unless the user explicitly excluded one of those actions. Deployment follows the defined-gate and explicit-release boundary in `SKILL.md`.
 - Tags, GitHub Release creation, npm publish, external artifact release, any defined deployment that publishes or releases an external artifact, production-control changes outside the repository's defined deployment, and release credential reads each require user authorization that covers that action.
 - Audits are read-only. Delete or rewrite local files only when the requested preparation scope authorizes working-tree edits; otherwise report cleanup findings.
 - Stop before an ambiguous branch, tag, registry scope, package name, version, account, or repository.
@@ -190,7 +190,7 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
 7. Verify expected resources through their real surface: RPC `get_commands`, `pi --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`, command/tool execution, resource listing/config, or TUI inspection as applicable. `pi config -l` starts in project overrides; Tab switches global/project scopes.
 
-8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, deliver the task's repository changes through a branch and pull request, and stop before tags, releases, publication, or release credential reads unless those actions were explicitly requested.
+8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, deliver the task's repository changes through a branch and pull request unless the user explicitly excluded that delivery, and stop before tags, releases, publication, or release credential reads unless those actions were explicitly authorized.
 
 ## Explicit release flow
 
