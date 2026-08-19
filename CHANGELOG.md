@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.9] - 2026-08-19
+
+- Require every actionable review finding to receive a `Fix` or `Rebut` verdict before completion; effort alone never permits deferral, an optional follow-up never clears a finding by itself, any fixed or rebutted security-seat finding requires that seat's clearance or withdrawal, informational classifications stay auditable, and small defects encountered directly along the implementation path remain in scope.
+
 ## [0.4.8] - 2026-08-19
 
 - Add an explicit bundled UX review merge gate for every user-visible pull request, with a reasoned `N/A` only when the diff is proven unable to affect user-visible behavior.
@@ -52,6 +56,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.9]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.5...v0.4.6

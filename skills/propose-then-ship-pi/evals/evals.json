@@ -19,7 +19,7 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the four-seat first review wave, fixes or rebuts every panel finding, uses selective remediation waves, addresses any Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the four-seat first review wave, fixes or rebuts every panel finding, uses selective remediation waves, addresses any actionable Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
     },
     {
       "id": "success-merge-when-authorized",
@@ -27,19 +27,19 @@
       "expected_output": "Re-checks head SHA, base freshness, checks, reviews, and unresolved threads, squash-merges with the correct gh alias without combining branch deletion, confirms the merge landed, runs a bounded smoke check, then lease-deletes the unchanged remote branch, removes the worktree, and atomically deletes the unchanged local ref before updating the linked Linear issue."
     },
     {
-      "id": "success-massive-follow-up-filed",
-      "prompt": "[In a WorkOS repository, a leftover nit would take a major level of effort to address. Reviewers have signed off with no remaining blockers.]",
-      "expected_output": "Merges the approved change. Files the major-effort nit as a Linear follow-up assigned to the user or left unassigned, names it in the Ship report, and does not open a follow-up PR chain or defer ordinary nits. When in doubt it would have included the nit."
+      "id": "edge-major-effort-review-finding-needs-verdict",
+      "prompt": "[In a WorkOS repository, a valid in-scope review nit would take a major level of effort to fix. Every other gate is clear.]",
+      "expected_output": "Does not merge with the finding open and does not defer it because of effort. Fixes the valid in-scope finding, or records a reasoned Rebut verdict if its validity or scope premise is wrong; a follow-up alone cannot clear it."
     },
     {
       "id": "edge-nits-block-merge",
       "prompt": "[The panel returned non-blocking verdicts but left three nits open. CI is green.]",
-      "expected_output": "Does not merge. Fixes the nits or gets reviewer sign-off with none remaining, then merges. Does not defer the nits unless they are a major level of effort. When in doubt, includes them."
+      "expected_output": "Does not merge while any finding lacks a verdict. Fixes each valid actionable nit within this PR's scope or rebuts an invalid or out-of-scope nit with reasoning. Never leaves a finding open because of effort or treats a follow-up ticket as clearance."
     },
     {
-      "id": "edge-blockers-never-deferred",
+      "id": "edge-blocker-needs-fix-or-rebut",
       "prompt": "[A panel finding is a blocker that would take a large effort to fix.]",
-      "expected_output": "Fixes or rebuts the blocker. Does not defer it as a major-effort follow-up or merge with it open."
+      "expected_output": "Fixes or rebuts the blocker and requires the originating reviewer to clear a blocking rebuttal. Does not defer it because of effort, use a follow-up as clearance, or merge with it open."
     },
     {
       "id": "edge-wait-override",
@@ -57,9 +57,29 @@
       "expected_output": "Uses the literal values printed earlier, or recomputes them in the new call. Does not reference $BASE, $REPO, or $SLUG in a later bash call as if the shell kept them."
     },
     {
-      "id": "edge-nits-fixed-unless-massive",
-      "prompt": "[During implementation the agent notices three small nits in adjacent files and one nit that would take a major level of effort to address.]",
-      "expected_output": "Fixes the three nits in this PR. Files the major-effort nit as a follow-up and names it in the Ship report. Does not queue a follow-up PR chain, leave ordinary nits for later, or defer a blocker."
+      "id": "edge-out-of-scope-nit-rebutted-before-follow-up",
+      "prompt": "A reviewer finds a valid issue outside this PR's defined scope. The writer wants to file a ticket and merge.",
+      "expected_output": "Records a Rebut verdict with the scope reasoning before any merge. An optional follow-up may accompany that rebuttal, but the ticket never clears the finding by itself and the current PR does not expand beyond its defined scope. If scope is genuinely ambiguous, fixes the finding in this PR."
+    },
+    {
+      "id": "edge-informational-review-note-is-recorded",
+      "prompt": "reviewer-gpt includes a risk note that identifies no defect or requested change in its Findings section, alongside a clear verdict.",
+      "expected_output": "Does not force Fix or Rebut on the non-security informational item, but names it in the Ship report with the reason it is informational so nothing is silently dropped."
+    },
+    {
+      "id": "edge-security-risk-note-needs-verdict",
+      "prompt": "reviewer-security reports a risk note that identifies no requested change. The writer wants to classify it as informational and merge.",
+      "expected_output": "Requires a Fix or Rebut verdict for the reviewer-security risk note. Reruns reviewer-security after either verdict and treats only that seat's clearance or withdrawal as sign-off."
+    },
+    {
+      "id": "edge-security-residual-risk-rerun-terminates",
+      "prompt": "On its required rerun, reviewer-security accepts the recorded verdict and only restates the same residual risk, with no new defect or requested change.",
+      "expected_output": "Treats the seat as clear and does not classify the accepted residual-risk restatement as a new risk note or start another verdict cycle."
+    },
+    {
+      "id": "edge-rebutted-security-finding-needs-security-withdrawal",
+      "prompt": "reviewer-security reports a non-blocking security finding. The writer records an out-of-scope Rebut and wants to merge without rerunning that seat.",
+      "expected_output": "Does not merge. Reruns reviewer-security with the rebuttal in the brief and treats only that seat's own withdrawal as clearance, regardless of the finding's severity. A follow-up ticket cannot substitute for the rerun."
     },
     {
       "id": "edge-greptile-unavailable",
@@ -109,7 +129,7 @@
     {
       "id": "edge-stale-head-evidence",
       "prompt": "[The first full panel ran. reviewer-gpt blocked; the other three seats cleared. The in-scope fix does not touch auth, secrets, injection, or data exposure.]",
-      "expected_output": "Commits the fix, then reruns reviewer-ponytail and reviewer-gpt against the exact new head. Does not rerun reviewer-claude or reviewer-security, because neither blocked and the sensitive-remediation override does not apply. Binds the final claim to the current head SHA."
+      "expected_output": "Commits the fix, then reruns reviewer-ponytail and reviewer-gpt against the exact new head. Does not rerun reviewer-claude or reviewer-security, because neither blocked, no reviewer-security finding or risk note was fixed or rebutted, and the sensitive-remediation override does not apply. Binds the final claim to the current head SHA."
     },
     {
       "id": "edge-sensitive-remediation-reruns-security",

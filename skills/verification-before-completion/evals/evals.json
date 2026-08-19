@@ -42,9 +42,19 @@
       "expected_output": "Reuses only still-valid deterministic validation outputs. Treats the earlier findings as review history, reruns every required reviewer against the updated diff in fresh context, and does not let the earlier verdict or sign-off satisfy the current-head review gate."
     },
     {
-      "id": "edge-nits-executed-unless-massive",
-      "prompt": "Verification is otherwise green, but two small nits and one nit that would take a major level of effort remain. Produce the final status.",
-      "expected_output": "Fixes or requires the two nits before complete. Files the major-effort nit as a follow-up, names it in Unverified or Final status, and does not claim complete while ordinary nits remain. Never defers a blocker. When in doubt, includes the nit."
+      "id": "edge-major-effort-nit-needs-verdict",
+      "prompt": "Verification is otherwise green, but two small review nits and one valid in-scope nit that would take a major level of effort remain. Produce the final status.",
+      "expected_output": "Does not claim complete until every finding has a Fix or Rebut verdict. Fixes the valid in-scope findings regardless of effort; a follow-up cannot clear one. A reasoned out-of-scope Rebut may have an optional follow-up."
+    },
+    {
+      "id": "edge-informational-review-note-is-recorded",
+      "prompt": "reviewer-gpt includes a risk note that identifies no defect or requested change in its Findings section. All actionable findings are resolved.",
+      "expected_output": "May classify the non-security item as informational instead of forcing Fix or Rebut, but names it with the reason in Informational review notes before claiming complete."
+    },
+    {
+      "id": "edge-security-risk-note-needs-verdict",
+      "prompt": "reviewer-security reports a risk note that identifies no requested change. All other review items are resolved.",
+      "expected_output": "Does not classify the security risk note as informational. Requires a Fix or Rebut verdict and does not claim complete without the caller policy's required security-seat clearance or withdrawal."
     },
     {
       "id": "edge-environment-invalidates-reused-evidence",

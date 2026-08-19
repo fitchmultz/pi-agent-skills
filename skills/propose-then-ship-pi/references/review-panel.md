@@ -9,7 +9,7 @@ The first substantive head for each scope gets four fresh-context reviewers in o
 | `reviewer-gpt` | subagent, fresh | first wave; later only when it blocked the previous wave | Correctness, maintainability, validation gaps. |
 | `reviewer-ponytail` | subagent, fresh | every wave with a new head | Over-engineering and slop without changing intended behavior. |
 | `reviewer-claude` | subagent, fresh | first wave; later only when it blocked the previous wave | Cross-family structural review against the thermo-nuclear rubric. |
-| `reviewer-security` | subagent, fresh | first wave; later when it blocked or remediation touches auth, secrets, injection, or data exposure | Security and data safety against an explicit trust-boundary rubric. |
+| `reviewer-security` | subagent, fresh | first wave; later when it blocked, remediation touches auth, secrets, injection, or data exposure, or any finding or risk note from that seat is fixed or rebutted | Security and data safety against an explicit trust-boundary rubric. |
 | `deslop` | parent, edits | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
 | `ux-review` | parent, read-only | user-visible changes | End-to-end usability, recovery, truthful outcomes, and regressions. |
@@ -21,9 +21,9 @@ The implementing agent remains the sole writer and owns the PR through merge. Pa
 ## Wave rules
 
 1. **First wave.** The first substantive head for a PR, and every new substantive scope, launches all four seats together. The panel is fresh-context, async, and bound to the committed head SHA.
-2. **Remediation wave.** A fix within the same approved scope reruns `reviewer-ponytail` plus only the seats that blocked the immediately preceding wave. A seat that clears drops from the next wave unless it blocks again.
+2. **Remediation wave.** A fix within the same approved scope reruns `reviewer-ponytail` plus only the seats that blocked the immediately preceding wave, subject to the security exceptions below. A seat that clears drops from the next wave unless it blocks again.
 3. **Sensitive remediation.** Any remediation touching auth, secrets, injection, or data-exposure paths also reruns `reviewer-security`, even when it previously cleared.
-4. **Blocking rebuttal.** When the head is unchanged and the response is only a rebuttal, rerun the blocking seat with that rebuttal. Do not invent a remediation wave or rerun `reviewer-ponytail` solely for an unchanged head.
+4. **Security responses and other rebuttals.** Rerun `reviewer-security` after any finding or risk note from that seat is fixed or rebutted, regardless of severity or whether the head changed. When the head is unchanged and the only response to another blocking finding is a rebuttal, rerun that blocking seat. Do not invent a remediation wave or rerun `reviewer-ponytail` solely for an unchanged head.
 5. **Extensive remediation.** The owning agent may rerun the full panel or add reviewers when a fix is broad enough that the selective wave would miss meaningful risk.
 6. **Base changes.** A mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review. Substantive conflict-resolution changes reopen review. When several cleared PRs become a new combined stack, review that combined tree once as a new first wave instead of re-paneling each component PR.
 
@@ -61,7 +61,7 @@ subagent({
     { agent: "reviewer-gpt",      cwd: "<worktree>", output: false, task: "Re-review the remediated diff and prior blocking finding at <head-sha> ..." },
     // Keep only when this seat blocked the previous wave.
     { agent: "reviewer-claude",   cwd: "<worktree>", output: false, task: "Re-review the remediated diff and prior blocking finding at <head-sha> ..." },
-    // Keep when this seat blocked, or when remediation touches auth, secrets, injection, or data exposure.
+    // Keep when this seat blocked, remediation touches auth, secrets, injection, or data exposure, or any finding or risk note from this seat is fixed or rebutted.
     { agent: "reviewer-security", cwd: "<worktree>", output: false, task: "Re-review the remediated diff and relevant security paths at <head-sha> ..." }
   ],
   concurrency: 4,
@@ -89,4 +89,4 @@ cd <worktree> && git diff "origin/<base>...HEAD" --name-only -z | xargs -0 wc -l
 
 ## Sign-off bar
 
-An async reviewer that times out is not sign-off. Resume it, rerun it, or split it, then wait for a real verdict. A rebutted blocking finding clears only when that reviewer withdraws it on a rerun with the rebuttal in the brief. A wave clears only when every seat scheduled for that exact head returns a non-blocking verdict. Remaining blockers and nits are a triage state: every blocker is cleared by its originating seat, and every nit is fixed, rebutted, or filed as a major-effort follow-up. Do not rerun a non-blocking seat solely because it listed nits the writer then fixed. Non-blocking seats omitted from a later remediation wave retain their earlier clearance by policy; do not turn every fix or mechanical rebase into a full-panel cascade. New substantive scope always resets to a full four-seat panel.
+An async reviewer that times out is not sign-off. Resume it, rerun it, or split it, then wait for a real verdict. A rebutted blocking finding clears only when that reviewer withdraws it on a rerun with the rebuttal in the brief. Any fixed `reviewer-security` finding or risk note requires that seat to clear the fix on rerun, and any rebutted item from that seat requires its withdrawal, regardless of severity. A rerun that accepts the prior verdict and only restates the same residual risk with no new defect or requested change is clearance, not a new verdict cycle. For a valid out-of-scope security note, withdrawal accepts that the note does not gate this PR; it does not declare the underlying issue invalid. A wave clears only when every seat scheduled for that exact head returns a non-blocking verdict. Remaining findings are a triage state: every blocker is cleared by its originating seat, and every actionable finding is fixed or rebutted. A follow-up may accompany an out-of-scope rebuttal but never clears the finding by itself. Except for the `reviewer-security` rule above, do not rerun a non-blocking seat solely because it listed findings the writer then fixed. Non-blocking seats omitted from a later remediation wave retain their earlier clearance by policy; do not turn every fix or mechanical rebase into a full-panel cascade. New substantive scope always resets to a full four-seat panel.

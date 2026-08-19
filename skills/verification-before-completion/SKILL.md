@@ -124,6 +124,7 @@ Delta sweep: [git status/diff clean / fixed items / remaining issue]
 Alignment: [N/A or contract/generated/docs checked]
 Verification: [commands/checks + result; reused entries include scope identity]
 Unverified: [none or specific gaps]
+Informational review notes: [each `Findings` item classified informational, with the reason, or none]
 Final status: [complete / incomplete / blocked, matching evidence]
 ```
 
@@ -138,10 +139,11 @@ Verification is complete only when:
 - authority/mirror surfaces are aligned, ruled out, or reported as blocked
 - relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
-- remaining blockers in the claim's scope were fixed or rebutted
-- remaining nits were fixed or rebutted, unless they are a major level of effort
+- every actionable review finding in the claim's scope has a recorded **Fix** or **Rebut** verdict
+- every `Findings` item classified informational is named with the reason
+- every `reviewer-security` risk note has a recorded **Fix** or **Rebut** verdict
 - final status does not exceed evidence
 
-Never defer a blocker. Defer a nit only if fixing it would be a major level of effort. When in doubt, include it. File that follow-up and name it in `Unverified` or `Final status`. Do not claim complete while blockers or ordinary nits remain.
+An actionable finding identifies a defect, regression, policy violation, or concrete change to the current diff at any severity; pure context, praise, and risk notes that identify no defect or change are informational. Name each item from a reviewer's `Findings` section that is classified informational, with the reason, in `Informational review notes`. Every `reviewer-security` risk note requires a **Fix** or **Rebut** verdict even when it requests no change. Never defer an actionable finding. Fix it or rebut it with reasoning. A follow-up may accompany a rebutted out-of-scope finding but cannot clear the finding by itself. Do not claim complete while any actionable finding lacks a **Fix** or **Rebut** verdict.
 
 Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
