@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Use for the propose-then-ship pipeline in pi: scan a repo, propose a ranked #1 recommendation, stop for the user's direction, then implement in a worktree and drive the PR through subagent review and CI to merge. Do not use for plain research, an already-decided change, or an existing PR."
 compatibility: "pi harness with the subagent tool and configured reviewer agents. Needs git worktree support and the gh-work or gh-personal CLI alias. Bundled scripts need bash and jq."
 metadata:
-  version: "1.5.4"
+  version: "1.5.5"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi. Pi runtime, agent registry, and gate behavior verified against the live session in August 2026."
 ---
@@ -20,7 +20,7 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - The proposal ranks candidates and leads with one #1 recommendation plus a concrete plan.
 - Implementation happens in the dedicated worktree on its own branch, scoped to the approved direction plus blocker and nit fixes.
 - Every blocker is fixed or rebutted before completion. Every nit is too unless fixing it would be a major level of effort: file that follow-up and name it in the Ship report. When in doubt, include the nit in this PR. None are silently dropped.
-- Merge-ready is proven on the current combined head: CI, base freshness, and mergeability, plus reviewer sign-off for its reviewed content under the mechanical-sync rule below. Merge only after every blocker is cleared and every remaining nit is fixed, rebutted, or filed as a major-effort follow-up.
+- Merge-ready is proven on the current combined head: CI, base freshness, mergeability, reviewer sign-off for its reviewed content under the mechanical-sync rule below, and an explicit UX-impact verdict.
 - The PR is squash-merged under the user's standing authorization, unless they said to wait.
 
 ## Use when
@@ -44,9 +44,10 @@ Turn one open-ended request into a merged PR across a single human decision poin
 - **Ship at ponytail-ultra standards.** The diff is the minimum that satisfies the approved direction plus required blocker and nit fixes: reuse what the repo already has, prefer stdlib and platform features over new code, and add no speculative abstractions, dependencies, or scaffolding.
 - **Repo conventions beat this skill.** Read the target repo's `AGENTS.md` hierarchy, `CLAUDE.md`, and `CONTRIBUTING.md` before coding, and follow them where they conflict with these defaults.
 - **Never weaken a gate to pass it.** No disabled checks, loosened assertions, `--no-verify`, edited CI config, or force-push over a running CI. An explicit absent-CI policy changes whether missing checks block; it never excuses a failing check.
+- **User-visible changes require UX review.** Follow the bundled `../ux-review/SKILL.md` in the parent session. A UX regression, material finding, or `blocked on evidence` verdict blocks merge. Record `N/A` only when the actual diff is proven unable to affect user-visible behavior, with the concrete reason.
 - **Use review waves, not rerun-all churn.** Every PR's first substantive change gets one fresh-context async exact-head panel with `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security`. Later remediation on the same scope reruns only `reviewer-ponytail` plus the seats that blocked the previous wave; also rerun `reviewer-security` when remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Extensive remediation may justify voluntarily rerunning the full panel or adding reviewers.
 - **Keep one writer accountable.** The implementing agent owns the PR through review, fixes, CI, and merge. Reviewers stay read-only; do not split writer and captain roles or hand the PR off mid-loop.
-- **Do not re-panel mechanical base syncs.** Reviewer sign-off carries across a purely mechanical rebase or merge of the current base with no overlap, conflict resolution, or reviewed-content/behavior change; refresh exact combined-head CI, base freshness, and mergeability instead. Re-review only after substantive edits, real conflict-resolution changes, or new scope.
+- **Do not re-panel mechanical base syncs.** Reviewer sign-off carries across a purely mechanical rebase or merge of the current base with no overlap, conflict resolution, or reviewed-content change; the UX verdict also carries when user-visible behavior is unchanged; refresh exact combined-head CI, base freshness, and mergeability instead. Re-review only after substantive edits, real conflict-resolution changes, or new scope.
 - **Every review-panel finding gets a verdict, not silence.** Fix every blocker. Fix every nit, or rebut it. Defer a nit only if it would be a major level of effort.
 - **Report instead of spinning.** Every loop in Phase 4 has a cap. On cap, hand back state and the blocker.
 
@@ -126,19 +127,20 @@ A proceed result returned by `ask_question` is the user's pick, even though the 
 
 ### Phase 4 — Review loop
 
-Cap at **10 cycles**. Steps 1 through 4 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Make at most one direct parent-session CI poll, and give its Bash tool call a 300-second timeout so `gh`, `jq`, and polling all share the hard wall-clock cap. On exit 2 or a tool timeout, hand the remaining wait to an asynchronous detached `watcher` instead of chaining parent polls. Continue useful work; when none remains, end the turn and let the watcher completion resume the run. Greptile reviews automatically and remains advisory; never wait for or trigger it.
+Cap at **10 cycles**. Steps 1 through 5 are local and settle in minutes. Let CI run in the background, but do not wait on it until the local panel is clean. Make at most one direct parent-session CI poll, and give its Bash tool call a 300-second timeout so `gh`, `jq`, and polling all share the hard wall-clock cap. On exit 2 or a tool timeout, hand the remaining wait to an asynchronous detached `watcher` instead of chaining parent polls. Continue useful work; when none remains, end the turn and let the watcher completion resume the run. Greptile reviews automatically and remains advisory; never wait for or trigger it.
 
 1. **Panel.** Launch all four reviewers below in one fresh-context async `subagent` call for the first substantive head. On later remediation waves, launch `reviewer-ponytail` plus only the seats that blocked the previous wave, and add `reviewer-security` whenever the remediation touches auth, secrets, injection, or data exposure. New substantive scope starts a new full panel. Every launched reviewer performs a fresh analysis of the exact current head; ledger reuse never replaces a reviewer pass required in that wave. Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict.
 2. **Triage.** Fix every valid blocker. Fix every valid nit unless it would be a major level of effort. When in doubt, include it. Rebut invalid ones in writing with reasoning. Do not churn code to satisfy a wrong comment.
 3. **Deslop.** Follow the bundled `../deslop/SKILL.md` in the parent session, against the same base, after the fixes land.
-4. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
-5. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
-6. **Advisory automation and threads.** Never wait for, poll, trigger, score, or require Greptile. Fix or rebut each Greptile comment already visible when the PR is checked, but do not wait for acknowledgment, resolution, or re-review. Its absence, latency, status, score, and reviewed head never block or reset readiness. Sweep blocking feedback from humans and required reviewers.
-7. **Launch only the next required wave** after remediation: `reviewer-ponytail` plus the seats that blocked the previous wave, with the security override above. An unchanged-head rebuttal reruns only the blocking seat with that rebuttal. A mechanical rebase or merge of unchanged content does not trigger re-review. New substantive scope restarts the full four-seat panel. Reuse still-valid deterministic checks, not reviewer judgment.
+4. **UX gate.** Decide from the actual diff whether the PR can affect user-visible behavior. After all current changes are committed, follow the bundled `../ux-review/SKILL.md` in the parent session as a read-only review of the exact head; a dirty checkout cannot receive a verdict. Fix every UX regression or material finding, commit the fix, and rerun the affected journey and UX review on the new head. `blocked on evidence` is not clearance. Record `N/A` only when the diff is proven unable to affect user-visible behavior, with the concrete reason.
+5. **Evidence gate.** Follow the bundled `../verification-before-completion/SKILL.md` in the parent session against the exact claim you are about to make. Claims about passing tests need current inspectable evidence, not memory; reuse only ledger entries whose scope remains unchanged.
+6. **Push and watch CI.** When checks exist, every required check must pass regardless of policy. When none are reported, `required` is a blocker; `waived-if-absent` requires the repository's canonical local validation on the exact head and the waiver source in the report. Fix failures within this PR's scope. If a merge-blocking failure looks unrelated, check whether the branch is behind base and merge latest first; another PR may have already fixed it.
+7. **Advisory automation and threads.** Never wait for, poll, trigger, score, or require Greptile. Fix or rebut each Greptile comment already visible when the PR is checked, but do not wait for acknowledgment, resolution, or re-review. Its absence, latency, status, score, and reviewed head never block or reset readiness. Sweep blocking feedback from humans and required reviewers.
+8. **Launch only the next required wave** after remediation: `reviewer-ponytail` plus the seats that blocked the previous wave, with the security override above. An unchanged-head rebuttal reruns only the blocking seat with that rebuttal. A mechanical rebase or merge of unchanged content does not trigger re-review. New substantive scope restarts the full four-seat panel. Reuse still-valid deterministic checks, not reviewer judgment. Rerun UX review whenever remediation changes user-visible behavior after the prior UX verdict.
 
 #### Review panel
 
-The first substantive head gets `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security` together as fresh-context subagents. Remediation waves use the selective rerun rule above. `deslop` and `verification-before-completion` still run in the parent. Regular `reviewer` is never a panel member and never a deslop proxy. `references/review-panel.md` carries the exact invocation forms, wave rules, brief contents, and sign-off bar; read it before the first launch.
+The first substantive head gets `reviewer-gpt`, `reviewer-ponytail`, `reviewer-claude`, and `reviewer-security` together as fresh-context subagents. Remediation waves use the selective rerun rule above. `deslop`, `ux-review`, and `verification-before-completion` run in the parent. Regular `reviewer` is never a panel member and never a deslop proxy. `references/review-panel.md` carries the exact invocation forms, wave rules, brief contents, and sign-off bar; read it before the first launch.
 
 #### Triage verdicts
 
@@ -158,6 +160,7 @@ Leave the loop only when all of these hold against the current head SHA:
 - Every later remediation wave is clear on its exact head from `reviewer-ponytail`, every seat that blocked the previous wave, and `reviewer-security` whenever the remediation touched auth, secrets, injection, or data exposure.
 - No new substantive scope or substantive conflict resolution landed without reopening review; mechanical base syncs alone do not invalidate panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
+- UX impact has an explicit current verdict: changes that can affect users have a clear bundled UX review with no regression, material finding, or `blocked on evidence` verdict; `N/A` records why the diff is proven unable to affect user-visible behavior.
 - Before merge, the repository's deployment path is classified: any merge-triggered artifact publication, external release, or production control outside the defined deployment already has explicit authorization.
 - The head contains the current base tip and the PR is mergeable with no conflicts. CI checks are green when present. With zero checks, `waived-if-absent` also requires canonical local validation on the exact head and a cited waiver source; under `required`, missing checks remain unavailable and blocking.
 - Zero unresolved blocking feedback from humans or required reviewers, and every Greptile comment already present when checked has a recorded Fix or Rebut verdict. Greptile acknowledgment, thread resolution, and re-review are not required.
@@ -260,11 +263,12 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 | Panel | [waves run and seats in each, findings fixed, findings rebutted] |
 | CI | [green and what ran / waived-if-absent, policy source, and exact-head local validation] |
 | Feedback | [blocking human or required-reviewer feedback addressed] |
+| UX | [bundled UX review verdict for changes that can affect users / `N/A` with proof of no user-visible impact] |
 | Linear | [issue and state, or "none"] |
 | Merge | [squash-merged and smoke-checked / merge-ready, awaiting your go] |
 | Deployment | [run or verified / not defined / not reached while merge-ready / blocked pending authorization / failed] |
 
-**Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, not here]
+**Skipped or deferred validation** — [each policy-required pass not run, with the reason, or "none"; seats omitted by remediation-wave policy belong in the Panel row, and a UX `N/A` belongs in the UX row]
 **Rebutted findings** — [each one, with the reasoning, or "none"]
 **Follow-ups** — [major-effort nits filed, with links, or "none"]
 ```

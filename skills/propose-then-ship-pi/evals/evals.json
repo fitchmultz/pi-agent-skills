@@ -180,6 +180,26 @@
       "id": "edge-long-ci-poll-uses-detached-watcher",
       "prompt": "[The panel is clear, but required CI may need another 25 minutes to settle.]",
       "expected_output": "Makes at most one direct parent-session poll with a 285-second script budget inside a 300-second Bash-tool timeout, so gh and jq cannot overrun the hard wall-clock cap. On exit 2 or tool timeout, launches an asynchronous detached watcher with a 1740-second script budget inside an 1800-second tool timeout. Reports pass/fail/setup-problem/missing/unknown/closed/expired/tool-timeout, the script exit code and head when available, or explicitly unavailable after tool timeout. Continues useful work, or ends the turn so watcher completion resumes the run."
+    },
+    {
+      "id": "edge-user-visible-pr-needs-ux-review",
+      "prompt": "[The four-seat panel and CI are clear, but the PR changes a user-visible workflow and no UX review has run.]",
+      "expected_output": "Does not merge. Runs the bundled ux-review in the parent session against the exact head, fixes any UX regression or material finding, reruns affected journeys after fixes, and records the current UX verdict in the Ship report."
+    },
+    {
+      "id": "edge-no-user-impact-ux-gate-is-explicit-na",
+      "prompt": "[The four-seat panel and CI are clear. The actual diff is proven unable to affect user-visible behavior.]",
+      "expected_output": "Records the UX gate as N/A with the concrete proof of no user-visible impact, rather than relying on a backend-only label, silently omitting the gate, or manufacturing a UX review; then proceeds when every other gate passes."
+    },
+    {
+      "id": "edge-ux-review-blocked-on-evidence",
+      "prompt": "[The UX review returns blocked on evidence with no listed regression or material finding.]",
+      "expected_output": "Does not merge. Treats blocked on evidence as non-clearance, gathers the missing evidence, and reruns UX review on the exact committed head."
+    },
+    {
+      "id": "edge-mechanical-sync-carries-ux-verdict",
+      "prompt": "[A cleared PR receives a conflict-free mechanical base merge that changes neither reviewed content nor user-visible behavior.]",
+      "expected_output": "Carries the existing panel clearance and UX verdict across the mechanical sync. Refreshes CI, base freshness, and mergeability on the new head without rerunning UX solely because the SHA changed."
     }
   ]
 }
