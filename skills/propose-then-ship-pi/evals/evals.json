@@ -160,6 +160,21 @@
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
       "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
       "expected_output": "Launches the configured first-wave panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
+    },
+    {
+      "id": "edge-personal-pr-needs-no-second-confirmation",
+      "prompt": "[The approved direction is implemented in a personal GitHub repository. The user did not separately say to commit, push, or open the PR.]",
+      "expected_output": "Commits, pushes the branch, and opens or updates the pull request with gh-personal without asking again. Task and direction approval already authorize routine repository delivery outside WorkOS; tags and external releases remain separate authorization boundaries."
+    },
+    {
+      "id": "edge-merge-triggered-publication-needs-preauthorization",
+      "prompt": "[Every code gate is clear, but merging triggers a workflow that publishes an external artifact. Publication has not been explicitly authorized.]",
+      "expected_output": "Does not merge. Classifies the merge-triggered deployment before merge and obtains explicit publication authorization first; never merges and asks only after the workflow has already started."
+    },
+    {
+      "id": "edge-required-delivery-action-excluded",
+      "prompt": "[The user asks to run the full propose-then-ship pipeline but explicitly forbids creating a branch, pushing, and opening a pull request.]",
+      "expected_output": "Stops before Phase 0 and reports that the full shipping pipeline requires a branch, commit, push, and pull request and cannot satisfy the explicit restriction. Does not create a worktree branch or silently downgrade to local-only work."
     }
   ]
 }
