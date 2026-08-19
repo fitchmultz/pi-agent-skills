@@ -65,6 +65,11 @@
       "id": "edge-cloudflare-tools-unavailable-no-browser-fallback",
       "prompt": "Dogfood the Cloudflare API documentation site, but the configured cloudflare_api tools are unavailable and an authenticated browser session exists.",
       "expected_output": "Reports the Cloudflare work as unavailable through the permitted tools. Does not open Cloudflare documentation, APIs, dashboard, or another product property in agent_browser and does not treat the authenticated session as a fallback."
+    },
+    {
+      "id": "success-colon-report-headings",
+      "prompt": "Write the final dogfood report for this larger pass.",
+      "expected_output": "Uses `ISSUE-001 ({Severity}): {Short title}` for issue headings and colons in the report's issue lines while preserving the ISSUE-001 identifier, paths, CLI flags, Markdown tables, and list markers. Does not use em or en dashes as prose separators."
     }
   ]
 }

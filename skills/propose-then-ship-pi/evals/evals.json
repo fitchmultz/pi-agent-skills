@@ -220,6 +220,11 @@
       "id": "edge-mechanical-sync-carries-ux-verdict",
       "prompt": "[A cleared PR receives a conflict-free mechanical base merge that changes neither reviewed content nor user-visible behavior.]",
       "expected_output": "Carries the existing panel clearance and UX verdict across the mechanical sync. Refreshes CI, base freshness, and mergeability on the new head without rerunning UX solely because the SHA changed."
+    },
+    {
+      "id": "success-colon-output-templates",
+      "prompt": "Produce the proposal and ship report for this change.",
+      "expected_output": "Uses colons for prose label and item separators in the proposal and ship report. Preserves structural hyphens in identifiers, paths, CLI flags, Markdown list markers, and table separators."
     }
   ]
 }

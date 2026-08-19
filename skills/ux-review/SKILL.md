@@ -140,14 +140,14 @@ Do not approve merely because tests pass, the happy path works, or errors are lo
 
 ## Output contract
 
-Keep the review suitable for the same reading surface you are protecting.
+Keep the review suitable for the same reading surface you are protecting. Use colons instead of em or en dashes as prose separators; preserve hyphens required by identifiers, paths, CLI flags, and Markdown structure.
 
 ```md
 Verdict: [approve | request changes | blocked on evidence]
 Journey checked: [goal → interaction/work → feedback/receipt → outcome]
 
 Findings:
-- [blocker|high|medium] `path:line` or design surface — [user consequence]. Evidence: [fact]. Smallest fix: [change]. Acceptance: [check].
+- [blocker|high|medium] `path:line` or design surface: [user consequence]. Evidence: [fact]. Smallest fix: [change]. Acceptance: [check].
 
 Evidence gaps: [none or specific gaps]
 ```
