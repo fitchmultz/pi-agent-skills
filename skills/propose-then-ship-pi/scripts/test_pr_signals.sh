@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Mocked check of every pr_signals.sh exit path. No network, no gh, no PR.
 set -uo pipefail
+export BASH_ENV=/dev/null
 
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TARGET="$HERE/pr_signals.sh"
@@ -29,7 +30,25 @@ esac
 MOCK
 chmod +x "$TMP/gh"
 
+cat >"$TMP/sleep" <<'MOCK'
+#!/usr/bin/env bash
+printf '%s\n' "$1" >>"$MOCK_SLEEP_LOG"
+MOCK
+chmod +x "$TMP/sleep"
+
 fails=0
+default_log="$TMP/default-wait"
+env -u MAX_WAIT_SECONDS PATH="$TMP:$PATH" GH_BIN="$TMP/gh" POLL_INTERVAL_SECONDS=101 \
+  MOCK_CASE=running MOCK_SLEEP_LOG="$default_log" "$TARGET" 1 >/dev/null 2>&1
+default_exit=$?
+default_wait=$(awk '{ total += $1 } END { print total + 0 }' "$default_log")
+if [ "$default_exit" -eq 2 ] && [ "$default_wait" -eq 300 ]; then
+  printf 'ok   %-28s %s\n' "default parent wait budget" "exit=2 after 300s budget"
+else
+  printf 'FAIL %-28s %s\n' "default parent wait budget" "exit=$default_exit budget=${default_wait}s"
+  fails=$((fails + 1))
+fi
+
 expect() { # expect <label> <want-exit> <env-assignments...>
   local label=$1 want=$2
   shift 2
@@ -77,6 +96,7 @@ expect_msg() { # expect_msg <label> <substring> <env-assignments...>
 }
 
 expect_msg "closed pr reports hang"  "never finished" MOCK_CASE=closed_run
+expect_msg "timeout reports head"      "deadbeef" MAX_WAIT_SECONDS=0 MOCK_CASE=running
 
 echo
 if [ "$fails" -eq 0 ]; then

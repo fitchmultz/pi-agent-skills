@@ -7,7 +7,7 @@
 set -uo pipefail
 
 GH_BIN="${GH_BIN:-}"
-MAX_WAIT="${MAX_WAIT_SECONDS:-900}"
+MAX_WAIT="${MAX_WAIT_SECONDS:-300}"
 INTERVAL="${POLL_INTERVAL_SECONDS:-15}"
 
 usage() {
@@ -22,7 +22,7 @@ Env:
   GH_BIN                 required. The gh alias for this repository, gh-work or
                          gh-personal. There is no default: a bare gh can be
                          authenticated as the wrong account.
-  MAX_WAIT_SECONDS       total wait budget in seconds (default 900)
+  MAX_WAIT_SECONDS       accumulated sleep budget in seconds (default 300)
   POLL_INTERVAL_SECONDS  seconds between polls (default 15, minimum 1)
 
 Exit codes:
@@ -129,7 +129,8 @@ while :; do
   fi
 
   if [ "$elapsed" -ge "$MAX_WAIT" ]; then
-    echo "pr_signals: timed out after ${elapsed}s with ${pending}/${total} check(s) still running" >&2
+    timeout_head=$(jq -r '.headRefOid // "unknown"' <<<"$view")
+    echo "pr_signals: timed out on ${timeout_head} after ${elapsed}s with ${pending}/${total} check(s) still running" >&2
     jq -r "$NORMALIZE"' | .[] | "  \(.state)\t\(.name)"' <<<"$view" >&2
     # A confirmed failure outranks the timeout: exit 1 so the caller acts on it.
     [ "$failed" -gt 0 ] && exit 1
