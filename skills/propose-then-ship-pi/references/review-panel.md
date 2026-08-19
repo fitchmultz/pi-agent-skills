@@ -2,7 +2,7 @@
 
 Read before Phase 4. Exact invocation forms and the sign-off bar for the pi reviewer panel.
 
-The first substantive head for each scope gets four fresh-context reviewers in one async exact-head panel. Later remediation waves are selective. Two passes still run in the parent session. Reviewers are read-only with respect to product code.
+The first substantive head for each scope gets four fresh-context reviewers in one async exact-head panel. Later remediation waves are selective. Deslop and verification always run in the parent session; the bundled UX review also runs there for every user-visible PR. Reviewers are read-only with respect to product code.
 
 | Pass | Where | Required | Looks for |
 | --- | --- | --- | --- |
@@ -12,10 +12,11 @@ The first substantive head for each scope gets four fresh-context reviewers in o
 | `reviewer-security` | subagent, fresh | first wave; later when it blocked or remediation touches auth, secrets, injection, or data exposure | Security and data safety against an explicit trust-boundary rubric. |
 | `deslop` | parent, edits | always | AI narration, debug leftovers, spurious defensiveness, style mismatch. |
 | `verification-before-completion` | parent, verifies | always | Whether the "it is green" claim survives current evidence. |
+| `ux-review` | parent, read-only | user-visible changes | End-to-end usability, recovery, truthful outcomes, and regressions. |
 
 Regular `reviewer` is never a panel member and never substitutes for deslop. Deslop runs in the parent only; do not launch `reviewer` with the deslop skill as a proxy. Confirm the registry once per run with `subagent({ action: "list" })` and use the effective names it returns for the four panel agents above. A missing or disabled named seat stops the run; never skip it or substitute another reviewer. A Review grouping that also lists regular `reviewer` does not add it to this panel.
 
-The implementing agent remains the sole writer and owns the PR through merge. Panel agents inspect and report; they do not modify product code or hand ownership between writer and captain roles.
+The implementing agent remains the sole writer and owns the PR through merge. Panel agents inspect and report; they do not modify product code or hand ownership between writer and captain roles. `ux-review` is a conditional parent gate, not a fifth panel seat.
 
 ## Wave rules
 
