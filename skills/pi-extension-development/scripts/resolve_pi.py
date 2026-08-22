@@ -81,14 +81,7 @@ def package_at(path: Path) -> Optional[Dict[str, Any]]:
     )
 
 
-def find_package(executable: Optional[Path], override: Optional[str]) -> Tuple[Path, Dict[str, Any], str]:
-    if override:
-        candidate = Path(override).expanduser().resolve()
-        package = package_at(candidate)
-        if not package:
-            fail(f"PI_PACKAGE_DIR does not contain a verified {PACKAGE_NAME}: {candidate}")
-        return candidate, package, "PI_PACKAGE_DIR"
-
+def find_package(executable: Path) -> Tuple[Path, Dict[str, Any], str]:
     real = executable.resolve(strict=True)
     for candidate in real.parents:
         package = package_at(candidate)
@@ -115,16 +108,20 @@ def main() -> None:
     args = parser.parse_args()
 
     invoked = None
-    override = os.environ.get("PI_PACKAGE_DIR") if not args.pi else None
     try:
+        override = os.environ.get("PI_PACKAGE_DIR") if not args.pi else None
         if override:
-            root, package, package_resolution = find_package(None, override)
+            candidate = Path(override).expanduser().resolve()
+            package = package_at(candidate)
+            if not package:
+                fail(f"PI_PACKAGE_DIR does not contain a verified {PACKAGE_NAME}: {candidate}")
+            root, package, package_resolution = candidate, package, "PI_PACKAGE_DIR"
             real = None
             launcher_resolution = "skipped-PI_PACKAGE_DIR"
         else:
             invoked = command_path(args.pi)
             executable, launcher_resolution = unwrap_shim(invoked)
-            root, package, package_resolution = find_package(executable, None)
+            root, package, package_resolution = find_package(executable)
             real = executable.resolve(strict=True)
     except OSError as error:
         fail(str(error))

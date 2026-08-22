@@ -76,6 +76,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.14]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.10...v0.4.11
