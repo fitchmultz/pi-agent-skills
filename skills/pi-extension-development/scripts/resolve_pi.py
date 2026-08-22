@@ -81,8 +81,7 @@ def package_at(path: Path) -> Optional[Dict[str, Any]]:
     )
 
 
-def find_package(executable: Path) -> Tuple[Path, Dict[str, Any], str]:
-    override = os.environ.get("PI_PACKAGE_DIR")
+def find_package(executable: Optional[Path], override: Optional[str]) -> Tuple[Path, Dict[str, Any], str]:
     if override:
         candidate = Path(override).expanduser().resolve()
         package = package_at(candidate)
@@ -115,15 +114,17 @@ def main() -> None:
     parser.add_argument("--json", action="store_true", help="print resolution details as JSON")
     args = parser.parse_args()
 
-    invoked = command_path(args.pi)
+    invoked = None
+    override = os.environ.get("PI_PACKAGE_DIR") if not args.pi else None
     try:
-        if os.environ.get("PI_PACKAGE_DIR"):
-            root, package, package_resolution = find_package(invoked)
+        if override:
+            root, package, package_resolution = find_package(None, override)
             real = None
             launcher_resolution = "skipped-PI_PACKAGE_DIR"
         else:
+            invoked = command_path(args.pi)
             executable, launcher_resolution = unwrap_shim(invoked)
-            root, package, package_resolution = find_package(executable)
+            root, package, package_resolution = find_package(executable, None)
             real = executable.resolve(strict=True)
     except OSError as error:
         fail(str(error))
@@ -132,7 +133,7 @@ def main() -> None:
         print(
             json.dumps(
                 {
-                    "piBin": str(invoked),
+                    "piBin": str(invoked) if invoked else None,
                     "piExecutable": str(real) if real else None,
                     "packageResolution": package_resolution,
                     "packageRoot": str(root),

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.14] - 2026-08-22
+
+- Make the pi-extension-development resolver honor `PI_PACKAGE_DIR` before launcher resolution so the override works without `pi` on PATH, have an explicit `--pi` ignore the override, and add behavioral tests for the resolution paths.
+
 ## [0.4.13] - 2026-08-19
 
 - Put system and harness instructions first, let current live-user direction override global defaults where permitted, make active global agent policy authoritative over repository guidance, and apply compatible repository rules in preference to skill defaults.
