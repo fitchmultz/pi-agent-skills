@@ -27,14 +27,21 @@ test("pi extension guidance tracks the Pi 0.84 contract", () => {
     .map((file) => readFileSync(file, "utf8"))
     .join("\n");
 
-  assert.match(skill, /version: "1\.12\.2"/);
-  assert.match(skill, /last-verified-pi: "0\.84\.0"/);
+  assert.match(skill, /version: "1\.13\.0"/);
+  assert.match(skill, /last-verified-pi: "0\.84\.2"/);
   assert.doesNotMatch(text, /\b0\.83(?:\.0)?\b/);
   assert.doesNotMatch(text, /context\.store\.(?:read|write)\(/);
   assert.match(skill, /ModelsRequestTransforms/);
   assert.match(hazards, /ModelsStreamTransforms.*no longer exists/);
   assert.match(skill, /ProviderHeaders.*string \| null/);
   assert.match(skill, /message_update.*delta-only/);
+  assert.match(skill, /tree navigation instead rejects while a response is still streaming/);
+  assert.match(skill, /block: true, terminate: true/);
+  assert.match(skill, /expandPromptTemplates/);
+  assert.match(skill, /defaultTools/);
+  assert.match(hazards, /cumulative provider-reported `usage`/);
+  assert.match(hazards, /exposeSessionEnvironment: false/);
+  assert.match(runtime, /block: true, terminate: true/);
   assert.match(skill, /ModelsRefreshResult/);
   assert.match(skill, /context\.stored.*context\.publish/);
   assert.match(skill, /JsonlSessionRepo.*InMemorySessionRepo/);
@@ -48,7 +55,7 @@ test("pi extension guidance tracks the Pi 0.84 contract", () => {
   assert.match(skill, /ctx\.scopedModels/);
   assert.match(tui, /\{ expanded, outputPad \}/);
   assert.match(runtime, /RPC bash runs extension `user_bash` handlers before execution/);
-  assert.match(skill, /does not synthesize results for unstarted siblings in a sequential tool batch/);
+  assert.match(skill, /Neither path synthesizes results for unstarted siblings in a sequential tool batch/);
   assert.match(hazards, /unstarted siblings in a sequential tool batch can remain unmatched/);
   assert.match(runtime, /leaves later unstarted sibling calls without results/);
   assert.match(lifecycle, /Unstarted siblings in a sequential tool batch can remain unmatched/);

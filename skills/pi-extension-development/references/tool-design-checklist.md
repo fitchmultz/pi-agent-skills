@@ -42,13 +42,14 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 - During factory load, session-bound actions are avoided; registration APIs and registered default-only `getFlag()` reads are safe, while `pi.exec()` is reserved for essential startup work.
 - Session-bound action methods run from `session_start`, commands, tools, or events.
 - Dynamic `pi.registerTool()` after startup is intentional and does not require `/reload`.
+- The `defaultTools` setting (0.84.2) changes the startup built-in tool selection globally or per project while preserving extension/SDK custom tools; validate conditional registration against a configured default set.
 
 ## Execution behavior
 
 - `execute(toolCallId, params, signal, onUpdate, ctx)` signature matches current types.
 - Long work observes `signal` and uses `onUpdate` when progress matters.
 - Errors that should be model-visible failures are thrown, not returned as ad hoc flags.
-- `terminate: true` is used only for final structured-output behavior when every finalized sibling in the batch may skip the follow-up LLM turn.
+- Result-level `terminate: true` is used only for final structured-output behavior when every finalized sibling in the batch may skip the follow-up LLM turn. Blocked `tool_call` handlers can also return `{ block: true, terminate: true }` (0.84.1); termination applies only to blocked calls, and the follow-up turn is skipped only when every finalized batch result terminates.
 - Tools stay parallel by default. `tool_call` preflight is sequential, but sibling results are unavailable there; result events may interleave by completion while final tool-result messages use assistant source order.
 - Shared non-file state has an explicit concurrency plan. `executionMode: "sequential"` is batch-wide: one sequential sibling makes Pi execute every call in that assistant response in source order.
 - Independent resources use keyed queues instead of batch-wide serialization when possible.
@@ -59,7 +60,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 
 - Prefer `create*ToolDefinition()` for extension tool overrides.
 - Prefer `create*Tool()` for SDK custom tools or when adapting an `AgentTool`.
-- Bash overrides that use `createBashToolDefinition`/`createBashTool` inherit session env injection (`PI_SESSION_ID`, `PI_SESSION_FILE`, `PI_PROVIDER`, `PI_MODEL`, `PI_REASONING_LEVEL`) unless custom operations replace the env entirely.
+- Bash overrides that use `createBashToolDefinition`/`createBashTool` inherit session env injection (`PI_SESSION_ID`, `PI_SESSION_FILE`, `PI_PROVIDER`, `PI_MODEL`, `PI_REASONING_LEVEL`) unless `exposeSessionEnvironment: false` disables it or custom operations replace the env entirely; user-entered `!`/`!!` commands never receive these variables.
 - Use built-in operation interfaces (`ReadOperations`, `BashOperations`, etc.) or `spawnHook` for remotes, sandboxes, and wrappers.
 - Use `createLocalBashOperations()` instead of reimplementing local shell/process-tree behavior.
 - Built-in result/details shape is preserved.

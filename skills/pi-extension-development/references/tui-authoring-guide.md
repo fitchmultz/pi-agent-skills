@@ -35,6 +35,7 @@ Pick the smallest good UI surface:
 - Components with text cursors should implement `Focusable` and emit `CURSOR_MARKER`; containers with child `Input`/`Editor` must propagate focus.
 - `showHardwareCursor`, `setShowHardwareCursor(true)`, or `PI_HARDWARE_CURSOR=1` can help terminals that need a visible cursor for IME candidate positioning.
 - Use `PI_TUI_WRITE_LOG=/tmp/tui-ansi.log` for raw ANSI stream debugging.
+- `PI_TUI_ESC_TIMEOUT` tunes lone-Escape detection on high-latency SSH links where split `Alt+Enter` misparses (0.84.2). `--use-theme <name[/name]>` (0.84.2) overrides the per-run theme without saved settings for renderer validation. Built-in fullscreen transcript search (`Ctrl+Shift+F`, 0.84.2) and unbound half/full-page scroll actions (0.84.1/0.84.2) exist; keep custom shortcuts clear of them.
 
 ## Overlay rules
 
