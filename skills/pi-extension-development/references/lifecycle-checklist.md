@@ -57,7 +57,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - Same-directory session switches may reuse imported modules while still creating fresh extension instances and lifecycle events; per-session mutable state resets from `session_start`, not top-level module initialization.
 - `withSession` callbacks use only the fresh replacement context.
 - Old `ctx`, session-bound `pi` methods, and captured `SessionManager` objects are not used after replacement.
-- If committed session replacement or tree navigation begins during an active response, Pi owns aborting and persisting active work. Unstarted siblings in a sequential tool batch can remain unmatched after abort; workflows that require balanced call/result history wait for final idle before switching, while forced mid-turn switches document the limitation instead of appending synthetic results.
+- If committed session replacement or the interactive `/tree` command begins during an active response, Pi owns aborting and persisting active work; programmatic `navigateTree()` (extension `ctx.navigateTree`, RPC, print mode) instead rejects while a run is active. Unstarted siblings in a sequential tool batch can remain unmatched after abort; workflows that require balanced call/result history wait for final idle before switching, while forced mid-turn switches document the limitation instead of appending synthetic results.
 - Session replacement into another cwd can trigger project trust again; do not assume trust-gated project resources are loaded until trust resolves, and use `ctx.isProjectTrusted()` when later behavior depends on effective trust.
 - SDK/RPC hosts use `runtime.setRebindSession(...)` as the single binder when extensions/session plumbing must be rebound; they do not also bind manually after successful replacement, and cancellation skips rebind.
 - SDK hosts use `runtime.setBeforeSessionInvalidate(...)` for synchronous UI teardown before old contexts become stale.
@@ -69,7 +69,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - TUI-only UI checks `ctx.mode === "tui"`.
 - Dialog-capable flows check `ctx.hasUI`.
-- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output.
+- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events, each carrying the latest cumulative `usage` since 0.84.2, until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output.
 - Remote clients treat listed `SessionMetadata` as durable discovery only and read runtime phase/model/thinking/attachment/lock state from acquired `SessionSnapshot` values.
 - Print/JSON behavior is explicit.
 - Non-interactive automation policy is explicit and not accidentally blocked by UI-only assumptions.

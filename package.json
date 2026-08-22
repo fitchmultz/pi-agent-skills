@@ -1,6 +1,6 @@
 {
   "name": "@fitch/pi-agent-skills",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "private": true,
   "description": "Source-managed Pi skills for reusable agent workflows.",
   "type": "module",
@@ -24,7 +24,7 @@
     "pack:check": "npm pack --dry-run"
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.84.0"
+    "@earendil-works/pi-coding-agent": "0.84.2"
   },
   "engines": {
     "node": ">=22.19.0"
