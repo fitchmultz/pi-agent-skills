@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.14] - 2026-08-22
+
+- Make the pi-extension-development resolver honor `PI_PACKAGE_DIR` before launcher resolution so the override works without `pi` on PATH, have an explicit `--pi` ignore the override, and add behavioral tests for the resolution paths.
+
 ## [0.4.13] - 2026-08-19
 
 - Put system and harness instructions first, let current live-user direction override global defaults where permitted, make active global agent policy authoritative over repository guidance, and apply compatible repository rules in preference to skill defaults.
@@ -72,6 +76,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.14]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.10...v0.4.11

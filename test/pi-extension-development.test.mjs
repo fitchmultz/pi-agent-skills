@@ -27,7 +27,7 @@ test("pi extension guidance tracks the Pi 0.84 contract", () => {
     .map((file) => readFileSync(file, "utf8"))
     .join("\n");
 
-  assert.match(skill, /version: "1\.12\.1"/);
+  assert.match(skill, /version: "1\.12\.2"/);
   assert.match(skill, /last-verified-pi: "0\.84\.0"/);
   assert.doesNotMatch(text, /\b0\.83(?:\.0)?\b/);
   assert.doesNotMatch(text, /context\.store\.(?:read|write)\(/);

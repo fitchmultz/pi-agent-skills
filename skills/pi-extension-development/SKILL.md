@@ -3,7 +3,7 @@ name: pi-extension-development
 description: "Pi extension/package runtime and bundled-resource install/discovery: tools, commands/events, providers, TUI, SDK/RPC, release/publish, debugging, and performance. Do not use for Pi core, Agent Skill content authoring, prompt-only work, Crabbox/cbx, platform matrices, dependency-contract research, or non-Pi publishing."
 compatibility: Pi 0.84.0+; Python 3.9+ for the bundled resolver.
 metadata:
-  version: "1.12.1"
+  version: "1.12.2"
   last-verified-pi: "0.84.0"
 ---
 
@@ -42,7 +42,7 @@ python3 scripts/resolve_pi.py --json
 pi --version
 ```
 
-Resolve the script path from this skill directory rather than the caller's cwd. The helper mirrors Pi's precedence: a set `PI_PACKAGE_DIR` must verify first; otherwise it unwraps mise/asdf shims and resolves executable ancestry or standard npm launcher layouts. A `PI_PACKAGE_DIR` override bypasses launcher resolution, so `piExecutable` is `null`; verify the runnable `pi` separately. Otherwise, if `piExecutable` lies outside `packageRoot`, verify both paths belong to the same build before trusting docs/types. Pass `--pi PATH` only when deliberately inspecting another executable.
+Resolve the script path from this skill directory rather than the caller's cwd. The helper mirrors Pi's precedence: a set `PI_PACKAGE_DIR` must verify first, without requiring `pi` on PATH; otherwise it unwraps mise/asdf shims and resolves executable ancestry or standard npm launcher layouts. A `PI_PACKAGE_DIR` override bypasses launcher resolution, so `piBin` and `piExecutable` are `null`; verify the runnable `pi` separately. An explicit `--pi PATH` deliberately inspects that executable and ignores the override.
 
 When install/runtime behavior matters, compare `type -a pi`, `pi --version`, `command -v node`, and `node --version` in clean shells inside and outside the target project. A mise/asdf-owned global npm Pi can shadow the stable install while both share `~/.pi/agent` unless `PI_CODING_AGENT_DIR` differs. Report duplicates first. Only with explicit authorization, uninstall the stale copy through its exact runtime prefix, such as `npm --prefix <runtime-prefix> uninstall -g @earendil-works/pi-coding-agent`; never use a plain global uninstall. Reshim/rehash and reverify from the project.
 

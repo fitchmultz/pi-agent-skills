@@ -82,14 +82,6 @@ def package_at(path: Path) -> Optional[Dict[str, Any]]:
 
 
 def find_package(executable: Path) -> Tuple[Path, Dict[str, Any], str]:
-    override = os.environ.get("PI_PACKAGE_DIR")
-    if override:
-        candidate = Path(override).expanduser().resolve()
-        package = package_at(candidate)
-        if not package:
-            fail(f"PI_PACKAGE_DIR does not contain a verified {PACKAGE_NAME}: {candidate}")
-        return candidate, package, "PI_PACKAGE_DIR"
-
     real = executable.resolve(strict=True)
     for candidate in real.parents:
         package = package_at(candidate)
@@ -115,13 +107,19 @@ def main() -> None:
     parser.add_argument("--json", action="store_true", help="print resolution details as JSON")
     args = parser.parse_args()
 
-    invoked = command_path(args.pi)
+    invoked = None
     try:
-        if os.environ.get("PI_PACKAGE_DIR"):
-            root, package, package_resolution = find_package(invoked)
+        override = os.environ.get("PI_PACKAGE_DIR") if not args.pi else None
+        if override:
+            candidate = Path(override).expanduser().resolve()
+            package = package_at(candidate)
+            if not package:
+                fail(f"PI_PACKAGE_DIR does not contain a verified {PACKAGE_NAME}: {candidate}")
+            root, package, package_resolution = candidate, package, "PI_PACKAGE_DIR"
             real = None
             launcher_resolution = "skipped-PI_PACKAGE_DIR"
         else:
+            invoked = command_path(args.pi)
             executable, launcher_resolution = unwrap_shim(invoked)
             root, package, package_resolution = find_package(executable)
             real = executable.resolve(strict=True)
@@ -132,7 +130,7 @@ def main() -> None:
         print(
             json.dumps(
                 {
-                    "piBin": str(invoked),
+                    "piBin": str(invoked) if invoked else None,
                     "piExecutable": str(real) if real else None,
                     "packageResolution": package_resolution,
                     "packageRoot": str(root),
