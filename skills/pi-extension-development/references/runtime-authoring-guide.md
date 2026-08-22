@@ -186,7 +186,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Runtime third-party dependencies belong in `dependencies`, even if they are heavy sandbox/client SDKs required by the feature.
 - Do not rely on devDependencies at runtime.
 - Imported pi core packages belong in optional `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`. Exact Pi baseline pins belong only in `devDependencies` when the repo uses them for validation.
-- Pi 0.84.0 bundles TypeBox 1.3.7. Use its supported `typebox` APIs and validate against the active package instead of pinning an older peer or adding a compatibility shim.
+- Pi 0.84.2 bundles TypeBox 1.3.7. Use its supported `typebox` APIs and validate against the active package instead of pinning an older peer or adding a compatibility shim.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
 - `npmCommand` may route installs through wrappers/package managers such as `mise`, `asdf`, `bun`, or `pnpm`; do not assume bare `npm`.
 - Project package settings and missing project package installs participate only after project trust. Package commands accept `--approve` / `--no-approve` for one-command trust behavior, and global `defaultProjectTrust` controls unresolved fallback behavior.

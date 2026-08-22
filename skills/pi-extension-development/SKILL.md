@@ -116,7 +116,7 @@ Use runtime code only when the outcome needs runtime behavior.
 
 Read only when applicable:
 
-- `references/current-version-hazards.md` — Pi 0.84.0 migrations and stale docs/examples before copying affected snippets.
+- `references/current-version-hazards.md` — Pi 0.84.2 migrations and stale docs/examples before copying affected snippets.
 - `references/runtime-authoring-guide.md` — runtime authority, trust, load order, lifecycle, events, packages, RPC, performance, and validation.
 - `references/tui-authoring-guide.md` — terminal UI, overlays, widgets, editors, shortcuts, autocomplete, renderers, and mode fallbacks.
 - `references/provider-model-guide.md` — providers, auth, model catalogs/compatibility, ModelRuntime, or SDK model/auth migration.

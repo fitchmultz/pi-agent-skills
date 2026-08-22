@@ -1,9 +1,9 @@
 # Changelog
 
-
 ## [0.4.15] - 2026-08-22
 
 - Sync the pi-extension-development skill to installed Pi 0.84.2: correct tree-navigation abort semantics across every file (replacement and interactive /tree abort; programmatic navigateTree rejects while a run is active), document the 0.84.2 cumulative usage field on delta-only message_update, cover the 0.84.1/0.84.2 contracts (blocked tool_call terminate, expandPromptTemplates, triggerTurn:false, Agent.reset idle rejection, defaultTools, pi auth check, qwen-token-plan-individual, bash exposeSessionEnvironment, AI_AGENT markers, --use-theme, PI_TUI_ESC_TIMEOUT, fullscreen search), add the six missing docs to the per-surface source lists, and bump the skill to 1.13.0 verified against 0.84.2.
+
 ## [0.4.14] - 2026-08-22
 
 - Make the pi-extension-development resolver honor `PI_PACKAGE_DIR` before launcher resolution so the override works without `pi` on PATH, have an explicit `--pi` ignore the override, and add behavioral tests for the resolution paths.
@@ -80,6 +80,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.4.15]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.11...v0.4.12
