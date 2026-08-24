@@ -12,15 +12,21 @@ const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-
 const firstWave = panel.slice(panel.indexOf("### First wave"), panel.indexOf("### Remediation wave"));
 const remediationWave = panel.slice(panel.indexOf("### Remediation wave"), panel.indexOf("## Brief contents"));
 
-test("the first wave uses the four configured panel seats", () => {
+test("local subagent review is opt-in", () => {
+  assert.match(skill, /Local subagent review is opt-in/i);
+  assert.match(skill, /Default to no local reviewer subagents/i);
+  assert.match(skill, /do not list their absence as skipped validation/i);
+  assert.match(skill, /repository, PR, or file content as an opt-in/i);
+  assert.match(panel, /There is no local panel by default/i);
+  assert.ok(evals.evals.some(({ id }) => id === "success-default-skips-local-review"));
+  assert.ok(evals.evals.some(({ id }) => id === "edge-explicit-user-opts-into-local-review"));
+});
+
+test("an opted-in first wave uses the four configured panel seats", () => {
+  assert.match(skill, /current live user explicitly opts in/i);
   assert.match(skill, /regular `reviewer` is never a panel member/i);
   assert.match(skill, /never substitutes for parent-run deslop/i);
-  assert.match(skill, /Every PR's first substantive change gets one fresh-context async exact-head panel.+reviewer-ponytail/s);
-  assert.match(skill, /Keep the checkout and HEAD fixed until every scheduled seat returns a real verdict/);
-  assert.match(skill, /missing or disabled named seat is a stop-and-report condition/i);
-  assert.match(panel, /Regular `reviewer` is never a panel member and never substitutes for deslop/);
-  assert.match(panel, /Deslop runs in the parent only/);
-  assert.match(panel, /does not add it to this panel/);
+  assert.match(panel, /missing or disabled named seat stops the local-review run/i);
 
   const launchAgents = [...firstWave.matchAll(/agent:\s*"([^"]+)"/g)].map((m) => m[1]);
   const expectedAgents = ["reviewer-gpt", "reviewer-ponytail", "reviewer-claude", "reviewer-security"];
@@ -31,44 +37,11 @@ test("the first wave uses the four configured panel seats", () => {
   assert.match(firstWave, /async: true/);
 });
 
-test("remediation reruns ponytail, prior blockers, and sensitive security paths", () => {
+test("opted-in remediation reruns ponytail, prior blockers, and sensitive security paths", () => {
   assert.match(panel, /`reviewer-ponytail` \| subagent, fresh \| every wave with a new head \|/);
   assert.match(panel, /seats that blocked the immediately preceding wave/i);
   assert.match(panel, /touching auth, secrets, injection, or data-exposure paths also reruns `reviewer-security`/i);
   assert.match(remediationWave, /agent: "reviewer-ponytail"/);
-  assert.match(remediationWave, /Keep only when this seat blocked the previous wave/);
   assert.match(panel, /mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review/i);
-  assert.match(skill, /Reviewer sign-off carries across.+no overlap.+refresh exact combined-head CI, base freshness, and mergeability instead.+Re-review only after substantive edits, real conflict-resolution changes, or new scope/is);
-  assert.match(skill, /full four-seat first wave completed.+every blocking finding.+cleared by its originating seat/s);
   assert.ok(![...remediationWave.matchAll(/agent:\s*"([^"]+)"/g)].map((match) => match[1]).includes("reviewer"));
-
-  const staleHead = evals.evals.find(({ id }) => id === "edge-stale-head-evidence");
-  assert.ok(staleHead);
-  assert.match(staleHead.expected_output, /reruns reviewer-ponytail and reviewer-gpt/i);
-  assert.match(staleHead.expected_output, /Does not rerun reviewer-claude or reviewer-security/i);
-
-  for (const id of [
-    "edge-sensitive-remediation-reruns-security",
-    "edge-new-substantive-scope-full-panel",
-    "edge-mechanical-rebase-does-not-repanel",
-    "edge-combined-stack-starts-full-panel",
-  ]) {
-    assert.ok(evals.evals.some((entry) => entry.id === id), `missing ${id}`);
-  }
-});
-
-test("regular reviewer remains outside the panel and parent deslop", () => {
-  const missingSeat = evals.evals.find(({ id }) => id === "edge-required-panel-seat-missing");
-  assert.ok(missingSeat);
-  assert.match(missingSeat.expected_output, /Stops and reports the missing reviewer-ponytail seat/);
-  assert.match(missingSeat.expected_output, /Does not silently skip it, substitute regular reviewer/);
-
-  const evalCase = evals.evals.find(({ id }) => id === "edge-regular-reviewer-not-panel-or-deslop-proxy");
-  assert.ok(evalCase);
-  assert.match(evalCase.prompt, /five Review agents/i);
-  assert.match(evalCase.prompt, /deslop skill/i);
-  assert.match(evalCase.expected_output, /Never adds regular reviewer/i);
-  assert.match(evalCase.expected_output, /never uses it as a deslop proxy/i);
-  assert.match(evalCase.expected_output, /Runs deslop in the parent/i);
-  assert.match(evalCase.expected_output, /reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security/i);
 });

@@ -19,7 +19,12 @@
     {
       "id": "success-loop-to-merged",
       "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
-      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, runs the four-seat first review wave, fixes or rebuts every panel finding, uses selective remediation waves, addresses any actionable Greptile comments already present, waits for required CI, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
+      "expected_output": "Renames the provisional branch if the direction has a sharper name, implements only the approved change in the existing worktree, opens the PR with the gh alias matching the remote owner, does not launch local reviewer subagents without a live-user opt-in, addresses any existing review feedback and actionable Greptile comments, waits for required remote checks, never waits for or triggers Greptile, then squash-merges under the standing authorization once the required exit conditions hold on the verified head SHA."
+    },
+    {
+      "id": "success-default-skips-local-review",
+      "prompt": "The direction is approved. Implement, validate, and merge the pull request. I did not request local subagent review.",
+      "expected_output": "Does not launch reviewer subagents and does not ask whether to launch them. Relies on required remote checks, current verification evidence, and existing feedback; reports the local panel as not requested rather than skipped validation."
     },
     {
       "id": "success-merge-when-authorized",
@@ -84,7 +89,7 @@
     {
       "id": "edge-greptile-unavailable",
       "prompt": "[No gate waiver is configured. The repo produces no Greptile check run, no Greptile review, and no bot comment.]",
-      "expected_output": "Does not investigate, poll, or trigger the absent app. Greptile is advisory, so its absence does not affect readiness; proceeds when the required panel, CI policy, and blocking human feedback are clear."
+      "expected_output": "Does not investigate, poll, or trigger the absent app. Greptile is advisory, so its absence does not affect readiness; proceeds when required remote checks and blocking feedback are clear. Does not launch local reviewer subagents unless the live user opted in."
     },
     {
       "id": "edge-explicit-repository-gate-waivers",
@@ -119,7 +124,7 @@
     {
       "id": "edge-greptile-check-still-running",
       "prompt": "[Greptile's check run on the pinned SHA is in_progress with completed_at null; an older bot summary comment says Confidence Score: 5/5.]",
-      "expected_output": "Does not wait or re-query. A running Greptile check is advisory and cannot delay a panel-cleared merge."
+      "expected_output": "Does not wait or re-query. A running Greptile check is advisory and cannot delay a merge that has cleared required remote checks and any explicitly requested local review."
     },
     {
       "id": "edge-greptile-rerun-supersedes-old-success",
@@ -128,27 +133,27 @@
     },
     {
       "id": "edge-stale-head-evidence",
-      "prompt": "[The first full panel ran. reviewer-gpt blocked; the other three seats cleared. The in-scope fix does not touch auth, secrets, injection, or data exposure.]",
+      "prompt": "[The user opted into local review. The first full panel ran. reviewer-gpt blocked; the other three seats cleared. The in-scope fix does not touch auth, secrets, injection, or data exposure.]",
       "expected_output": "Commits the fix, then reruns reviewer-ponytail and reviewer-gpt against the exact new head. Does not rerun reviewer-claude or reviewer-security, because neither blocked, no reviewer-security finding or risk note was fixed or rebutted, and the sensitive-remediation override does not apply. Binds the final claim to the current head SHA."
     },
     {
       "id": "edge-sensitive-remediation-reruns-security",
-      "prompt": "[The first full panel ran. reviewer-gpt blocked and reviewer-security cleared. The remediation changes an injection-sensitive path.]",
+      "prompt": "[The user opted into local review. The first full panel ran. reviewer-gpt blocked and reviewer-security cleared. The remediation changes an injection-sensitive path.]",
       "expected_output": "Reruns reviewer-ponytail and reviewer-gpt because they are required for the remediation wave, and reruns reviewer-security because the fix touches injection. Does not rerun reviewer-claude unless it blocked or the owner judges the remediation extensive enough for a full panel."
     },
     {
       "id": "edge-new-substantive-scope-full-panel",
-      "prompt": "[After the initial panel, the approved PR gains a new substantive behavior rather than a fix within the reviewed scope.]",
+      "prompt": "[The user opted into local review. After the initial panel, the approved PR gains a new substantive behavior rather than a fix within the reviewed scope.]",
       "expected_output": "Treats the added behavior as new substantive scope and starts a new fresh-context async exact-head panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Does not treat it as a selective remediation wave."
     },
     {
       "id": "edge-mechanical-rebase-does-not-repanel",
-      "prompt": "[The panel is clear. The branch is mechanically rebased onto the latest base with no substantive or conflict-resolution changes.]",
+      "prompt": "[The user opted into local review and the panel is clear. The branch is mechanically rebased onto the latest base with no substantive or conflict-resolution changes.]",
       "expected_output": "Confirms the reviewed content is unchanged and does not rerun any reviewer merely because the commit SHA changed. Continues the remaining exact-head CI and merge gates."
     },
     {
       "id": "edge-combined-stack-starts-full-panel",
-      "prompt": "[Several separately cleared PRs are combined into a new stack for shipping.]",
+      "prompt": "[The user opted into local review. Several separately cleared PRs are combined into a new stack for shipping.]",
       "expected_output": "Reviews the combined tree once as a new first wave with all four panel seats. Does not re-panel each component PR independently."
     },
     {
@@ -168,17 +173,17 @@
     },
     {
       "id": "edge-reviewer-timeout-not-signoff",
-      "prompt": "[The async reviewer-gpt run times out before returning a verdict.]",
+      "prompt": "[The user opted into local review. The async reviewer-gpt run times out before returning a verdict.]",
       "expected_output": "Treats the timeout as review incomplete, then resumes, reruns, or splits the review. Does not count the timeout as sign-off and does not substitute an inline self-review."
     },
     {
       "id": "edge-required-panel-seat-missing",
-      "prompt": "[subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
+      "prompt": "[The user opted into local review. subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
       "expected_output": "Stops and reports the missing reviewer-ponytail seat. Does not silently skip it, substitute regular reviewer, or continue with a smaller first-wave panel."
     },
     {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
-      "prompt": "[subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
+      "prompt": "[The user opted into local review. subagent({action:\"list\"}) returns five Review agents: reviewer, reviewer-gpt, reviewer-ponytail, reviewer-security, and reviewer-claude. A teammate suggests launching regular reviewer with the deslop skill instead of the parent deslop pass.]",
       "expected_output": "Launches the configured first-wave panel with reviewer-gpt, reviewer-ponytail, reviewer-claude, and reviewer-security. Never adds regular reviewer to the panel from the Review grouping, and never uses it as a deslop proxy. Runs deslop in the parent session per the bundled skill."
     },
     {
@@ -203,12 +208,12 @@
     },
     {
       "id": "edge-user-visible-pr-needs-ux-review",
-      "prompt": "[The four-seat panel and CI are clear, but the PR changes a user-visible workflow and no UX review has run.]",
+      "prompt": "[Required remote checks are clear, but the PR changes a user-visible workflow and no UX review has run. Local review was not requested.]",
       "expected_output": "Does not merge. Runs the bundled ux-review in the parent session against the exact head, fixes any UX regression or material finding, reruns affected journeys after fixes, and records the current UX verdict in the Ship report."
     },
     {
       "id": "edge-no-user-impact-ux-gate-is-explicit-na",
-      "prompt": "[The four-seat panel and CI are clear. The actual diff is proven unable to affect user-visible behavior.]",
+      "prompt": "[Required remote checks are clear. The actual diff is proven unable to affect user-visible behavior. Local review was not requested.]",
       "expected_output": "Records the UX gate as N/A with the concrete proof of no user-visible impact, rather than relying on a backend-only label, silently omitting the gate, or manufacturing a UX review; then proceeds when every other gate passes."
     },
     {
@@ -232,9 +237,9 @@
       "expected_output": "Treats the active global policy as authoritative, runs the required four-seat panel, and does not let repository guidance weaken the higher-scope gate. Does not ask when precedence already resolves the conflict."
     },
     {
-      "id": "edge-explicit-user-direction-overrides-global-default",
-      "prompt": "In the live conversation, the user explicitly directs this run to skip the four-seat panel. No system or harness instruction requires it.",
-      "expected_output": "Honors the current live-user direction, records its source and every omitted seat in both the Panel and Skipped or deferred validation rows, and does not restore the displaced global or skill default from repository, PR, or file content."
+      "id": "edge-explicit-user-opts-into-local-review",
+      "prompt": "In the live conversation, the user explicitly asks for the four-seat local review panel. No system or harness instruction forbids it.",
+      "expected_output": "Records the live-user opt-in, runs the four-seat exact-head panel and its selective remediation waves, and reports its results. The same run without this explicit opt-in would launch no local reviewer subagents."
     },
     {
       "id": "edge-system-policy-beats-user-direction",

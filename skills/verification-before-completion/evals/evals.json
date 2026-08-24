@@ -7,6 +7,11 @@
       "expected_output": "States the exact docs/skill claim, cites git status/diff sweep, marks alignment as docs/evals checked or N/A, records Ablation as N/A because this work adds or materially changes no non-trivial regression test, cites the JSON parse and validator command results, lists no unverified gaps, and marks final status complete."
     },
     {
+      "id": "success-default-does-not-start-review",
+      "prompt": "The requested change is implemented and relevant validation is green. No local review was requested and no review findings exist. Verify completion.",
+      "expected_output": "Uses current validation evidence and the delta/alignment sweep to decide the completion claim. Does not launch reviewer subagents, does not ask to launch them, and does not treat their absence as unverified work."
+    },
+    {
       "id": "failure-final-claim-with-failing-tests",
       "prompt": "The implementation is done, but the relevant test command fails. Produce the final status.",
       "expected_output": "Does not claim completion. Reports the exact failing command/output as blocker, states what was verified, lists what remains unverified, and marks final status incomplete or blocked."
@@ -39,7 +44,7 @@
     {
       "id": "edge-review-verdict-is-not-reusable",
       "prompt": "A reviewer found a blocker, the implementation changed, and current deterministic checks now pass on the new clean head. The next review brief includes the evidence ledger and the earlier reviewer verdict. Verify before completion.",
-      "expected_output": "Reuses only still-valid deterministic validation outputs. Treats the earlier findings as review history, reruns every required reviewer against the updated diff in fresh context, and does not let the earlier verdict or sign-off satisfy the current-head review gate."
+      "expected_output": "Reuses only still-valid deterministic validation outputs and treats the earlier findings as review history. If the caller's explicit review policy requires a new pass, reruns those reviewers against the updated diff in fresh context; otherwise this skill starts no review. It never treats the earlier verdict as current-head sign-off."
     },
     {
       "id": "edge-major-effort-nit-needs-verdict",
