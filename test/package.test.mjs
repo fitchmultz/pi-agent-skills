@@ -32,7 +32,7 @@ test("package exposes the source-managed skills", () => {
   const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
   assert.deepEqual(manifest.pi.skills, ["./skills"]);
   assert.equal(manifest.private, true);
-  assert.equal(manifest.version, "0.4.15");
+  assert.equal(manifest.version, "0.4.16");
   assert.equal(manifest.devDependencies["@earendil-works/pi-coding-agent"], "0.84.2");
   assert.deepEqual(readdirSync(skillsDir).sort(), expectedSkills);
 });

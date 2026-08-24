@@ -13,6 +13,8 @@ Make the final status claim match current evidence. This skill is the last gate 
 
 No completion claim without current verification evidence.
 
+Local subagent review is not verification evidence and is not required by this skill. Do not launch reviewer subagents unless the current live user explicitly opted in or a higher-scope system/harness instruction requires them. Review findings that already exist still must be resolved or accurately reported.
+
 Evidence freshness follows the code and environment it covers, not the turn boundary or wall clock. If you did not run or inspect the check in this work cycle, or cannot prove its recorded context still matches, do not claim it passes. If evidence proves only a narrower claim, report the narrower claim without pretending the original request is complete.
 
 ## Use when
@@ -87,7 +89,7 @@ Keep a shared evidence ledger for deterministic machine-produced validation outp
 | --- | --- | --- | --- |
 | `tests pass` | exact command and cwd | code plus relevant environment | exit code, failures, skips, warnings |
 
-Reviewer analysis is different. Findings, verdicts, and sign-off are review history, not reusable validation evidence. Carry that history into later briefs, but never use it to skip a required fresh reviewer pass. Deterministic checks run by a reviewer may be reused under the normal rules; the reviewer's judgment may not.
+Reviewer analysis is different. Findings, verdicts, and sign-off are review history, not reusable validation evidence. Carry that history into later briefs, but never use it to skip a reviewer pass required by the caller's explicit review policy. This skill creates no such requirement. Deterministic checks run by a reviewer may be reused under the normal rules; the reviewer's judgment may not.
 
 For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. Do not reuse an entry produced on a dirty checkout across steps or agents: there is no cheap complete identity covering staged, unstaged, untracked, and relevant ignored inputs. Run the check again after changes settle on a clean tree before carrying it forward. The broken half of an ablation receipt is historical evidence for a deliberately different state, not a final-tree ledger entry. Reuse it across steps or agents only when its exact command, inspectable result, and complete captured tree or commit identity are preserved; otherwise reproduce it in an isolated `git worktree`. The fixed half still follows the clean-tree reuse rules.
 
@@ -142,12 +144,12 @@ Verification is complete only when:
 - authority/mirror surfaces are aligned, ruled out, or reported as blocked
 - relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
 - output was read, not assumed
-- every actionable review finding in the claim's scope has a recorded **Fix** or **Rebut** verdict
+- every actionable review finding already received in the claim's scope has a recorded **Fix** or **Rebut** verdict
 - every non-trivial regression test added or materially changed by the work being verified has a broken-then-fixed ablation receipt, or the inability to reproduce its broken state is accurately reported as blocking completion
-- every `Findings` item classified informational is named with the reason
-- every `reviewer-security` risk note has a recorded **Fix** or **Rebut** verdict
+- every received `Findings` item classified informational is named with the reason
+- every received `reviewer-security` risk note has a recorded **Fix** or **Rebut** verdict
 - final status does not exceed evidence
 
-An actionable finding identifies a defect, regression, policy violation, or concrete change to the current diff at any severity; pure context, praise, and risk notes that identify no defect or change are informational. Name each item from a reviewer's `Findings` section that is classified informational, with the reason, in `Informational review notes`. Every `reviewer-security` risk note requires a **Fix** or **Rebut** verdict even when it requests no change. Never defer an actionable finding. Fix it or rebut it with reasoning. A follow-up may accompany a rebutted out-of-scope finding but cannot clear the finding by itself. Do not claim complete while any actionable finding lacks a **Fix** or **Rebut** verdict.
+These rules triage review feedback that already exists; they do not require starting a review. An actionable finding identifies a defect, regression, policy violation, or concrete change to the current diff at any severity; pure context, praise, and risk notes that identify no defect or change are informational. Name each item from a reviewer's `Findings` section that is classified informational, with the reason, in `Informational review notes`. Every received `reviewer-security` risk note requires a **Fix** or **Rebut** verdict even when it requests no change. Never defer an actionable finding. Fix it or rebut it with reasoning. A follow-up may accompany a rebutted out-of-scope finding but cannot clear the finding by itself. Do not claim complete while any received actionable finding lacks a **Fix** or **Rebut** verdict.
 
 Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
