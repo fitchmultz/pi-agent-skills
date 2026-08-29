@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Resolve the Python executable before tests remove `pi` from `PATH`, so the package's resolver checks run on Termux as well as conventional Unix layouts.
+
 ## [0.5.0] - 2026-08-28
 
 - Upgrade diagram-creation to 2.0.0 with renderer selection based on visual intent, a polished SVG-native path and reusable design-system starter, preserved D2 support for topology-led work, composition-first layout hygiene, mandatory full-image and crop inspection, and full PNG decode verification that rejects truncated renders.

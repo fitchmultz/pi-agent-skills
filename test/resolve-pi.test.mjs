@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -12,8 +12,13 @@ const overridePackage = realpathSync(path.join(root, "node_modules", "@earendil-
 const systemPath = ["/usr/local/bin", "/usr/bin", "/bin"].join(path.delimiter);
 
 function resolvePi(args, env, pathValue) {
+  const python = process.env.PYTHON ?? process.env.PATH
+    ?.split(path.delimiter)
+    .map((directory) => path.join(directory, process.platform === "win32" ? "python.exe" : "python3"))
+    .find(existsSync);
+  assert.ok(python, "python3 is required for resolve_pi.py tests");
   const fullEnv = { ...process.env, ...env, PATH: pathValue };
-  return spawnSync("python3", [script, "--json", ...args], { encoding: "utf8", env: fullEnv });
+  return spawnSync(python, [script, "--json", ...args], { encoding: "utf8", env: fullEnv });
 }
 
 const skip = process.platform === "win32";
