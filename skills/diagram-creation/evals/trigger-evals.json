@@ -12,7 +12,12 @@
   {
     "query": "Create an editable D2 sequence diagram and export PNG and SVG files.",
     "should_trigger": true,
-    "reason": "Precise request matching the authoring and rendering workflow."
+    "reason": "Precise request for the skill's D2 authoring and rendering mode."
+  },
+  {
+    "query": "Give me a visually striking modern system map with editable SVG source.",
+    "should_trigger": true,
+    "reason": "Direct request for the skill's polished SVG-native technical diagram mode."
   },
   {
     "query": "Show the before and after architecture for this migration.",
@@ -47,6 +52,6 @@
   {
     "query": "Clean up this logo and export a transparent PNG.",
     "should_trigger": false,
-    "reason": "Image editing and graphic design are outside this skill."
+    "reason": "Image editing and logo design are outside this skill."
   }
 ]

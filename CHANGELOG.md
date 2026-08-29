@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2026-08-28
+
+- Upgrade diagram-creation to 2.0.0 with renderer selection based on visual intent, a polished SVG-native path and reusable design-system starter, preserved D2 support for topology-led work, composition-first layout hygiene, mandatory full-image and crop inspection, and full PNG decode verification that rejects truncated renders.
+
 ## [0.4.16] - 2026-08-24
 
 - Make local subagent review opt-in in propose-then-ship and verification-before-completion. By default they rely on required remote checks, current validation evidence, and existing feedback; the four-seat panel remains available only after explicit live-user opt-in or a higher-scope system/harness requirement.
@@ -84,6 +88,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.5.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.16...v0.5.0
 [0.4.16]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.13...v0.4.14

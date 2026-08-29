@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Modern technical diagram starter</title>
+  <desc id="desc">A polished dark system map demonstrating typography, zones, cards, status chips, icons, and routed connectors.</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#060A12"/>
+      <stop offset="0.52" stop-color="#0B1120"/>
+      <stop offset="1" stop-color="#080C16"/>
+    </linearGradient>
+    <radialGradient id="blueBloom" cx="0.18" cy="0.18" r="0.8">
+      <stop stop-color="#2563EB" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#2563EB" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violetBloom" cx="0.82" cy="0.36" r="0.7">
+      <stop stop-color="#8B5CF6" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#172238" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#0E1525" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="focus" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#172554" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#312E81" stop-opacity="0.58"/>
+    </linearGradient>
+    <pattern id="dotGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.2" fill="#94A3B8" fill-opacity="0.11"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#02040A" flood-opacity="0.54"/>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#60A5FA"/>
+    </marker>
+    <marker id="arrowViolet" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#C084FC"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, ui-sans-serif, Arial, sans-serif; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .eyebrow { font: 700 11px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 2px; }
+      .zone-title { font: 700 13px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 1.8px; fill: #CBD5E1; }
+      .card-title { font: 650 22px Inter, ui-sans-serif, Arial, sans-serif; fill: #F8FAFC; }
+      .card-copy { font: 450 14px Inter, ui-sans-serif, Arial, sans-serif; fill: #91A0B8; }
+      .status { font: 700 10px "JetBrains Mono", ui-monospace, monospace; letter-spacing: 1.2px; }
+      .connector { fill: none; stroke-width: 3; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#canvas)"/>
+  <rect width="1600" height="1000" fill="url(#blueBloom)"/>
+  <rect width="1600" height="1000" fill="url(#violetBloom)"/>
+  <rect width="1600" height="1000" fill="url(#dotGrid)"/>
+
+  <g class="sans">
+    <g transform="translate(64 50)">
+      <rect width="184" height="34" rx="17" fill="#111A2A" stroke="#293750"/>
+      <circle cx="18" cy="17" r="5" fill="#22D3EE" filter="url(#glow)"/>
+      <text x="34" y="22" class="eyebrow" fill="#B9C7DD">SYSTEM MAP</text>
+    </g>
+    <text x="64" y="142" font-size="50" font-weight="720" letter-spacing="-1.8" fill="#F8FAFC">Modern diagram starter</text>
+    <text x="64" y="180" font-size="18" font-weight="450" fill="#91A0B8">Reuse the visual system. Replace the composition with the story the diagram needs.</text>
+    <g transform="translate(1320 72)">
+      <text class="eyebrow" fill="#64748B">VISUAL SYSTEM</text>
+      <text y="32" font-size="22" font-weight="650" fill="#DCE6F5">SVG native</text>
+    </g>
+  </g>
+
+  <!-- Zone surfaces establish hierarchy without boxing every label. -->
+  <g>
+    <rect x="64" y="238" width="360" height="694" rx="30" fill="#0D1423" fill-opacity="0.72" stroke="#243148"/>
+    <rect x="452" y="238" width="696" height="694" rx="30" fill="#0D1423" fill-opacity="0.78" stroke="#2B3850"/>
+    <rect x="1176" y="238" width="360" height="694" rx="30" fill="#0D1423" fill-opacity="0.72" stroke="#243148"/>
+    <g class="zone-title">
+      <text x="92" y="278">01 / INGRESS</text>
+      <text x="480" y="278">02 / CONTROL + RUNTIME</text>
+      <text x="1204" y="278">03 / OUTCOMES</text>
+    </g>
+  </g>
+
+  <!-- Draw connectors before cards so lines never cross text. Use solid strokes on zero-height paths. -->
+  <g opacity="0.94">
+    <path d="M384 418C454 418 478 408 548 408" class="connector" stroke="#60A5FA" marker-end="url(#arrowBlue)"/>
+    <path d="M384 678C458 678 478 520 548 520" class="connector" stroke="#60A5FA" marker-end="url(#arrowBlue)"/>
+    <path d="M1052 430C1114 430 1128 418 1204 418" class="connector" stroke="#C084FC" marker-end="url(#arrowViolet)"/>
+    <path d="M1052 542C1118 542 1138 688 1204 688" class="connector" stroke="#C084FC" marker-end="url(#arrowViolet)"/>
+    <path d="M690 614V700" class="connector" stroke="#22D3EE" stroke-dasharray="5 10" marker-end="url(#arrowBlue)"/>
+    <path d="M906 614V700" class="connector" stroke="#A78BFA" stroke-dasharray="5 10" marker-end="url(#arrowViolet)"/>
+  </g>
+
+  <!-- Ingress cards -->
+  <g filter="url(#shadow)" class="sans">
+    <g transform="translate(92 324)">
+      <rect width="292" height="188" rx="24" fill="url(#glass)" stroke="#2A3851"/>
+      <rect width="5" height="188" rx="2.5" fill="#60A5FA"/>
+      <rect x="24" y="24" width="48" height="48" rx="14" fill="#60A5FA" fill-opacity="0.12" stroke="#60A5FA" stroke-opacity="0.5"/>
+      <rect x="36" y="37" width="24" height="17" rx="2" fill="none" stroke="#93C5FD" stroke-width="2"/>
+      <path d="M43 60h10" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+      <text x="24" y="104" class="card-title">Primary surface</text>
+      <text x="24" y="132" class="card-copy">One obvious entry point with</text>
+      <text x="24" y="153" class="card-copy">a concise role description.</text>
+      <g transform="translate(194 24)">
+        <rect width="74" height="26" rx="13" fill="#172554" stroke="#3B82F6" stroke-opacity="0.55"/>
+        <text x="37" y="17" text-anchor="middle" class="status" fill="#93C5FD">ACTIVE</text>
+      </g>
+    </g>
+    <g transform="translate(92 584)">
+      <rect width="292" height="188" rx="24" fill="url(#glass)" stroke="#2A3851"/>
+      <rect width="5" height="188" rx="2.5" fill="#F59E0B"/>
+      <rect x="24" y="24" width="48" height="48" rx="14" fill="#F59E0B" fill-opacity="0.11" stroke="#F59E0B" stroke-opacity="0.5"/>
+      <path d="M36 54h24M40 42h16M43 66h10" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round"/>
+      <text x="24" y="104" class="card-title">Secondary path</text>
+      <text x="24" y="132" class="card-copy">Supporting traffic stays distinct</text>
+      <text x="24" y="153" class="card-copy">from the primary reading lane.</text>
+      <g transform="translate(184 24)">
+        <rect width="84" height="26" rx="13" fill="#312E1B" stroke="#F59E0B" stroke-opacity="0.52"/>
+        <text x="42" y="17" text-anchor="middle" class="status" fill="#FCD34D">OPTIONAL</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Focus card and supporting modules -->
+  <g filter="url(#shadow)" class="sans">
+    <g transform="translate(548 324)">
+      <rect width="504" height="290" rx="28" fill="url(#focus)" stroke="#6D7DFF" stroke-opacity="0.62"/>
+      <rect x="1" y="1" width="502" height="70" rx="27" fill="#FFFFFF" fill-opacity="0.025"/>
+      <circle cx="54" cy="56" r="24" fill="#60A5FA" fill-opacity="0.16" stroke="#60A5FA" stroke-opacity="0.55"/>
+      <path d="m54 40 5 11 11 5-11 5-5 11-5-11-11-5 11-5Z" fill="#BFDBFE"/>
+      <text x="92" y="57" class="eyebrow" fill="#AFC6FF">PRIMARY SUBJECT</text>
+      <text x="36" y="126" font-size="34" font-weight="700" letter-spacing="-0.8" fill="#F8FAFC">Session control plane</text>
+      <text x="36" y="164" class="card-copy" font-size="16">Give the core idea more scale, contrast, and breathing room</text>
+      <text x="36" y="188" class="card-copy" font-size="16">than its supporting modules. Hierarchy should be unmistakable.</text>
+      <g transform="translate(36 224)">
+        <rect width="142" height="34" rx="17" fill="#0C1425" stroke="#38517A"/>
+        <circle cx="18" cy="17" r="5" fill="#22D3EE"/>
+        <text x="32" y="22" class="status" fill="#B6EAF4">DURABLE</text>
+      </g>
+      <g transform="translate(194 224)">
+        <rect width="158" height="34" rx="17" fill="#0C1425" stroke="#51426F"/>
+        <circle cx="18" cy="17" r="5" fill="#C084FC"/>
+        <text x="32" y="22" class="status" fill="#E9D5FF">OBSERVABLE</text>
+      </g>
+    </g>
+    <g transform="translate(548 700)">
+      <rect width="288" height="168" rx="23" fill="url(#glass)" stroke="#285064"/>
+      <circle cx="38" cy="40" r="16" fill="#22D3EE" fill-opacity="0.14"/>
+      <path d="M30 40h16M38 32v16" stroke="#67E8F9" stroke-width="2" stroke-linecap="round"/>
+      <text x="66" y="46" class="eyebrow" fill="#67E8F9">STATE</text>
+      <text x="24" y="94" class="card-title" font-size="20">Durable record</text>
+      <text x="24" y="122" class="card-copy">Short, factual support copy.</text>
+    </g>
+    <g transform="translate(860 700)">
+      <rect width="288" height="168" rx="23" fill="url(#glass)" stroke="#51426F"/>
+      <circle cx="38" cy="40" r="16" fill="#A78BFA" fill-opacity="0.15"/>
+      <path d="M29 44c8-18 18-17 22-14-8 1-13 6-15 16" fill="none" stroke="#D8B4FE" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="50" cy="30" r="2.8" fill="#D8B4FE"/>
+      <text x="66" y="46" class="eyebrow" fill="#D8B4FE">RUNTIME</text>
+      <text x="24" y="94" class="card-title" font-size="20">Execution lane</text>
+      <text x="24" y="122" class="card-copy">Keep role and status scannable.</text>
+    </g>
+  </g>
+
+  <!-- Outcome cards -->
+  <g filter="url(#shadow)" class="sans">
+    <g transform="translate(1204 324)">
+      <rect width="304" height="188" rx="24" fill="url(#glass)" stroke="#4A3563"/>
+      <rect width="5" height="188" rx="2.5" fill="#C084FC"/>
+      <circle cx="48" cy="48" r="22" fill="#C084FC" fill-opacity="0.13" stroke="#C084FC" stroke-opacity="0.48"/>
+      <path d="M38 49l7 7 13-16" fill="none" stroke="#E9D5FF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="24" y="104" class="card-title">Publication</text>
+      <text x="24" y="132" class="card-copy">Terminal output with a visibly</text>
+      <text x="24" y="153" class="card-copy">resolved success state.</text>
+    </g>
+    <g transform="translate(1204 594)">
+      <rect width="304" height="188" rx="24" fill="url(#glass)" stroke="#5B432A"/>
+      <rect width="5" height="188" rx="2.5" fill="#F59E0B"/>
+      <circle cx="48" cy="48" r="22" fill="#F59E0B" fill-opacity="0.12" stroke="#F59E0B" stroke-opacity="0.48"/>
+      <path d="M48 36v14M48 59v1" stroke="#FCD34D" stroke-width="3" stroke-linecap="round"/>
+      <text x="24" y="104" class="card-title">Recovery</text>
+      <text x="24" y="132" class="card-copy">Failure and retry remain explicit,</text>
+      <text x="24" y="153" class="card-copy">not hidden behind color alone.</text>
+    </g>
+  </g>
+
+  <g class="mono" font-size="11" font-weight="600" letter-spacing="1.3" fill="#52627A">
+    <text x="64" y="970">TOKENIZED COLOR / PURPOSEFUL DEPTH / SOLID CONNECTOR STROKES / EDITABLE VECTOR SOURCE</text>
+    <text x="1536" y="970" text-anchor="end">1600 × 1000</text>
+  </g>
+</svg>
