@@ -43,8 +43,8 @@ lexical_absolute_path() {
   local component
   local count
   local result=""
-  local -a components
-  local -a stack
+  local -a components=()
+  local -a stack=()
   [[ "$candidate" == /* ]] || candidate="$PWD/$candidate"
   IFS='/' read -r -a components <<<"$candidate"
   for component in "${components[@]}"; do
@@ -248,8 +248,11 @@ output_base=${output_base%.png}
 [[ -n "$output_base" ]] || fail "output base must not be empty"
 command -v d2 >/dev/null 2>&1 || fail "d2 is required; on macOS run: brew install d2"
 command -v rsvg-convert >/dev/null 2>&1 || fail "rsvg-convert is required; on macOS run: brew install librsvg"
-command -v file >/dev/null 2>&1 || fail "file is required"
 command -v node >/dev/null 2>&1 || fail "node is required"
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+png_verifier="$script_dir/verify_png.mjs"
+[[ -f "$png_verifier" ]] || fail "PNG verifier is missing: $png_verifier"
 
 svg_output="$output_base.svg"
 png_output="$output_base.png"
@@ -378,9 +381,8 @@ if grep -q '<foreignObject' "$tmp_dir/render.svg"; then
 fi
 rsvg-convert --zoom "$zoom" "$tmp_dir/render.svg" -o "$tmp_dir/render.png"
 
-png_dimensions=$(LC_ALL=C file "$tmp_dir/render.png" | sed -nE 's/.*PNG image data, ([0-9]+) x ([0-9]+),.*/\1 \2/p')
-[[ -n "$png_dimensions" ]] || fail "could not read rendered PNG dimensions"
-read -r png_width png_height <<<"$png_dimensions"
+png_verification=$(node "$png_verifier" "$tmp_dir/render.png") || fail "rendered PNG failed full decode verification"
+read -r png_width png_height _ <<<"$png_verification"
 
 crop_count=0
 if ((review_images == 1)); then
@@ -429,6 +431,9 @@ if ((review_images == 1)); then
         "$tmp_dir/render.svg" -o "$review_stage/$crop_name"
     done
   done
+
+  node "$png_verifier" "$review_stage"/*.png >/dev/null \
+    || fail "one or more review images failed full decode verification"
 fi
 
 reserve_temp_directory publish_dir "$output_dir/.diagram-publish.XXXXXX" || fail "cannot reserve an output staging directory"

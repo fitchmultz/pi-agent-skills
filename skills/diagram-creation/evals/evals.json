@@ -4,49 +4,61 @@
     {
       "id": "request-defined-multiple-views",
       "prompt": "Inspect this repository and render one image of the current event architecture and one image of the proposed sequence. I did not specify a visual style.",
-      "expected_output": "Uses verified repository behavior, creates the two requested views with separate D2 sources, does not force unrelated panels into either view, defaults only the unspecified visual styling, exports PNG and SVG, inspects the complete and native-resolution PNGs, removes discarded candidates, and reports all final artifact paths.",
+      "expected_output": "Uses verified repository behavior, creates the two requested views without forcing unrelated panels into either, selects composition and renderer per view, defaults only unspecified styling, exports editable source and PNG/SVG as appropriate, fully decodes every raster, actually inspects the complete images, exact-width previews, and all native crops, removes rejected candidates, and reports final artifact paths.",
       "files": []
     },
     {
       "id": "request-defined-state-diagram",
       "prompt": "Render an editable state-transition diagram from these design facts: admission creates queued; queued starts running; running ends succeeded or failed; cancellation may move queued or running to cancelled; only failed may retry to queued. I have no visual style preference.",
-      "expected_output": "Chooses a state-transition structure from the request without adding architecture or sequence panels, verifies each state and transition against the document, labels conditions and terminal outcomes, uses the default visual styling only where unspecified, exports D2, SVG, and PNG, and visually inspects the render.",
+      "expected_output": "Chooses a transition-led structure without adding architecture or sequence panels, verifies every state and transition, labels conditions and terminal outcomes, selects D2 when automatic graph layout helps, applies a polished default only where unspecified, exports editable source and rendered assets, and visually inspects every required review image.",
       "files": []
     },
     {
       "id": "user-style-override",
       "prompt": "Create a light monochrome dependency diagram with a hand-drawn feel. Give me editable source and a PNG.",
-      "expected_output": "Honors the explicit light monochrome sketch direction instead of the default dark style, keeps labels legible, emits editable D2 and rendered PNG/SVG, and visually inspects the result.",
+      "expected_output": "Honors the explicit light monochrome sketch direction instead of the modern dark default, chooses a renderer that preserves editable source, keeps labels legible at destination width, exports PNG and scalable/editable source, fully decodes the rasters, and visually inspects the result.",
+      "files": []
+    },
+    {
+      "id": "professional-signal-sequence",
+      "prompt": "Create a visually striking, presentation-ready sequence diagram for this request lifecycle. I want it to feel like a modern product visual, not a generic engineering render: Client submits; Gateway persists and accepts; Runtime admits; Agent runs and emits activity; Runtime checkpoints; Gateway publishes.",
+      "expected_output": "Chooses SVG-native because bespoke visual hierarchy and art direction are explicit, uses at most four or five participant columns with clear role labels, phase bands or equivalent temporal grouping, dedicated event lanes, purposeful depth, restrained accents, inline vector icons rather than emoji, and solid or user-space-gradient connector strokes. It renders with the SVG script, fully decodes every PNG, actually views the full image, destination preview, and every crop, fixes visual defects, and returns editable SVG plus PNG.",
+      "files": []
+    },
+    {
+      "id": "professional-storyboard",
+      "prompt": "Turn this six-stage lifecycle into a polished editorial storyboard for a product README. Make it modern and visually memorable, with a light visual direction and clear stage numbers.",
+      "expected_output": "Uses SVG-native editorial composition instead of a generic equal-box graph, creates a clear numbered reading path, varies hierarchy and emphasis, uses generous whitespace, concise copy, restrained color fields, and consistent inline vector icons. It verifies the 980px or requested-width composition, inspects every native crop and the full image, and returns editable SVG plus PNG.",
       "files": []
     },
     {
       "id": "destination-width-traceability",
       "prompt": "Create a source-backed runtime topology for a README that displays images at 900px. It must show two entry paths converging on one worker, identity and storage boundaries, and durable publication.",
-      "expected_output": "Builds a traceability checklist from inspected source, keeps every entry-to-publication and boundary relationship connected, uses local lanes or labeled boundary ports instead of connectors through component, group, or boundary text, uses the renderer's built-in review output to inspect an exact 900px preview and every overlapping native-resolution crop, removes the review directory, reflows rather than merely shrinking text, and exports aligned D2, SVG, and PNG artifacts.",
+      "expected_output": "Builds a traceability checklist from inspected source, writes a 900px composition contract, keeps every entry-to-publication and boundary relationship connected, uses local lanes or labeled boundary ports instead of connectors through content, fully decodes the output, actually inspects the complete image, exact 900px preview, and every crop, reflows rather than shrinking material text, and exports aligned editable and rendered artifacts.",
       "files": []
     },
     {
       "id": "independent-effects-and-branch-order",
       "prompt": "Diagram these source-backed facts: a checkpoint gate is followed by independently retried text and file effects; text retries use deterministic request IDs; file retries persist and reconcile externally allocated file IDs; on success delivery precedes terminal state; on failure terminal state precedes notification.",
-      "expected_output": "Verifies the ordering against source material, draws text and file effects as separate paths from the shared gate with no accidental branch-to-branch sequence, draws distinct success and failure orders, labels retry identity accurately per effect, and confirms the rendered layout does not visually imply blocking that the source does not have.",
+      "expected_output": "Verifies ordering, draws text and file effects as separate paths from the gate with no accidental branch-to-branch sequence, draws distinct success and failure orders, labels retry identity per effect, preserves the relationships through each reflow, and confirms by inspecting rendered images that layout does not imply false blocking.",
       "files": []
     },
     {
       "id": "shared-resource-owner-boundaries",
       "prompt": "Render a 900px topology and lifecycle from these facts: an ingress runtime owns a STATE binding; a sandbox runtime owns a SESSION binding; both bindings address one shared external bucket; task traffic uses a separate service binding; success delivery happens before completion while failure state happens before notification.",
-      "expected_output": "Keeps each binding inside its owning runtime and the shared bucket outside both, gives task and state traffic separate lanes, preserves every required relationship, draws success and failure as independent order-sensitive branches, positions or shortens group titles so no connector crosses component, group, or boundary text, inspects the built-in 900px previews and native crop sets for both outputs, removes temporary review directories, and exports aligned D2, SVG, and PNG artifacts.",
+      "expected_output": "Keeps each binding inside its owning runtime and the shared bucket outside both, gives task and state traffic separate lanes, preserves all required relationships, draws success and failure as independent order-sensitive branches, ensures no connector crosses a component, icon, chip, group, or boundary title, fully decodes all rasters, and actually inspects both 900px previews, full images, and every crop.",
       "files": []
     },
     {
       "id": "success-built-in-review-images",
       "prompt": "Render this architecture diagram and visually verify it. I did not specify an embed width.",
-      "expected_output": "Uses the renderer's built-in 980px preview and overlapping native-resolution crops, inspects the complete image and every review image, removes the temporary review directory afterward, and reports only the final D2, SVG, and PNG artifacts.",
+      "expected_output": "Uses the selected renderer's built-in 980px preview and overlapping native-resolution crops, relies on full-decode verification for every PNG, actually opens the complete image and every review image, fixes visible issues rather than accepting command success, removes the review directory, and reports only final editable and rendered artifacts.",
       "files": []
     },
     {
       "id": "render-tool-failure",
-      "prompt": "Render this D2 file to PNG and SVG on a machine where rsvg-convert is missing and package installation is prohibited.",
-      "expected_output": "Validates what it can, does not alter project manifests or bypass package policy, reports the exact missing command and recovery step, and does not claim PNG success.",
+      "prompt": "Render this editable diagram to PNG on a machine where rsvg-convert is missing and package installation is prohibited.",
+      "expected_output": "Validates what it can, does not alter project manifests or bypass package policy, reports the exact missing command and recovery step, and does not claim PNG, full-decode, or visual-inspection success.",
       "files": []
     }
   ]

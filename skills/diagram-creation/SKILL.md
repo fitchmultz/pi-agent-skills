@@ -1,9 +1,8 @@
 ---
 name: diagram-creation
-description: "Create and render technical diagrams as editable D2 plus PNG/SVG: architecture, sequence, data-flow, dependency, lifecycle, and before/after visuals. Use when a user asks for a diagram or rendered system/process image. Do not use for statistical charts, slide decks, image editing, or product screenshots."
-compatibility: Requires Bash, Node.js, standard Unix utilities, D2, and librsvg (`rsvg-convert`). Tested on macOS; use WSL or another POSIX shell on Windows.
+description: "Create and render polished technical diagrams as editable SVG or D2 plus PNG/SVG: architecture, sequence, data-flow, dependency, lifecycle, and before/after visuals. Use when a user asks for a diagram or rendered system/process image. Do not use for statistical charts, slide decks, image editing, or product screenshots."
 metadata:
-  version: "1.3.0"
+  version: "2.0.0"
   owner: "local"
   status: "active"
 ---
@@ -12,136 +11,168 @@ metadata:
 
 ## Goal
 
-Turn the user's source material into the requested technical diagram, preserve editable D2 source, render SVG and PNG outputs, and visually verify the result. User requirements determine the diagram's content and composition; defaults fill only unspecified visual details.
+Turn source material into a truthful, editable, visually polished technical diagram. Choose composition and renderer from the visual question instead of forcing every request through one layout engine. Layout hygiene is the first quality gate; art direction raises a structurally sound diagram to the requested visual bar.
 
 ## Success criteria
 
 - The diagram answers the requested visual question and reflects inspected source material rather than assumptions.
-- Its structure, abstraction level, layout, and number of outputs fit the request instead of a bundled template.
+- Diagram grammar, abstraction, composition, renderer, and number of outputs fit the request instead of a bundled template.
 - Every primary path and material boundary relationship remains traceable from source to outcome.
-- Parallel work, conditional branches, and state transitions are not accidentally presented as a single sequence.
-- D2 validates, SVG and PNG render, and the PNG is inspected as a whole, through overlapping native-resolution crops, and at the intended display width (980px by default).
+- Parallel work, conditions, and state transitions are not accidentally presented as one sequence.
+- Hierarchy, typography, spacing, routing, contrast, and depth feel intentional at the destination size. A request for professional, modern, polished, presentation-ready, or visually striking work must not receive a default box-and-arrow render.
+- Every final PNG, destination-width preview, and overlapping native-resolution crop passes full decode verification and is actually opened and visually inspected. File headers, dimensions, or a successful render command are not visual inspection.
 - No connector obscures component, group, or boundary text in any selected render.
-- Final `.d2`, `.svg`, and `.png` paths are delivered, while discarded render candidates are removed.
+- Final editable source and raster/vector exports are delivered; temporary review images and rejected candidates are removed.
 
 ## Use when
 
 - Creating or updating architecture, sequence, flow, dependency, lifecycle, state, topology, or before/after technical diagrams.
 - Turning source code, docs, logs, traces, or a design discussion into a rendered system/process image.
-- A user asks for an editable diagram source plus image exports.
+- A user asks for an editable technical diagram plus image exports.
 
 ## Do not use when
 
 - The requested artifact is a statistical/data chart, slide deck, freeform illustration, logo, screenshot, or browser-product recording.
-- The user only wants a prose explanation and no visual artifact.
+- The user only wants prose and no visual artifact.
 - A required proprietary design file must be edited in its native application.
 
 ## Setup
 
-Check tools before authoring:
+Check only the tools required by the selected mode:
 
 ```bash
-command -v d2
 command -v rsvg-convert
+command -v node
+command -v d2 # D2 mode only
 ```
 
-On macOS, install missing tools with:
+On macOS, install missing renderers with `brew install librsvg d2`. Follow the environment's package-install policy elsewhere. Do not add diagram tooling to a project's dependency manifest unless requested.
 
-```bash
-brew install d2 librsvg
-```
+## Decision sequence
 
-Follow the environment's package-install policy elsewhere. Do not add diagram tooling to a project's dependency manifest unless requested.
+Decide in this order:
+
+1. **Semantic model:** verified entities, order, ownership, conditions, terminal states, concurrency, and required relationships.
+2. **Composition contract:** reading direction, aspect ratio, zones or phases, primary subject, connector lanes, and destination size.
+3. **Renderer:** SVG-native or D2, based on the control the composition and visual bar require.
+4. **Art direction:** light or dark, typography, palette, depth, icon language, and emphasis.
+5. **Render integrity and visual QA:** full decode, actual image inspection, correction, and deterministic final render.
+
+Do not choose colors or effects before the semantic model and composition work.
+
+## Choose the visual grammar
+
+- **Temporal interaction:** use a signal sequence with no more than four or five participant columns horizontally. Use phase bands and compact event labels when they clarify the story.
+- **Lifecycle or narrative:** use an editorial storyboard with numbered stages, varied card emphasis, and an obvious reading path.
+- **Architecture or ownership zones:** use a system map with restrained surfaces, clear boundaries, a dominant subject, and dedicated connector lanes.
+- **Dense dependency, topology, or data flow:** prefer D2 when automatic graph layout materially improves structure or continued graph editing is the priority.
+- **State machine:** let transitions dominate. Avoid surrounding architecture unless requested.
+
+These are routing patterns, not fixed templates. All can be light, dark, compact, expansive, formal, or expressive according to the request.
+
+## Choose the renderer
+
+### SVG-native
+
+Use editable SVG as the canonical source when any of these are true:
+
+- The user asks for professional, modern, polished, visually striking, editorial, cinematic, product-quality, or presentation-ready output.
+- Precise hierarchy, bespoke composition, visual rhythm, iconography, layered depth, or tightly controlled routing matters more than automatic layout.
+- The view is a storyboard, signal sequence, or zone-based system map that benefits from explicit coordinates.
+
+Read `references/svg-native.md` before authoring. `assets/modern-svg-starter.svg` is an optional design-token and component starter, never a required composition. Render with `scripts/render_svg.sh`.
+
+### D2
+
+Use D2 when the user explicitly requests D2, the graph is dense or topology-led, automatic layout is a material advantage, or rapid structural editing matters more than bespoke art direction. Read the D2 sections of `references/style-guide.md`. Render with `scripts/render_diagram.sh`.
+
+D2's default render can be clean and professional, but do not claim it meets a bespoke visual-art-direction request unless the actual result does. If a requested visual bar exposes a D2 ceiling and the user did not require D2, switch to SVG-native.
 
 ## Workflow
 
-1. Inspect the real source material and trace the relevant behavior end to end. Record exact ordering, ownership, conditions, terminal outcomes, and retry or idempotency mechanisms. Separate verified current behavior, proposals, unknowns, and conditions.
-2. Identify the visual question, intended reader, destination, expected display width, and explicit constraints from the request. Ask only when ambiguity would materially change truth or deliverables.
-3. Choose the diagram structure, abstraction level, layout, and number of outputs from the request and source material. Templates and examples are optional starting points, never required forms.
-4. List the essential paths and boundary relationships the diagram must preserve. Use this traceability checklist after every structural reflow; never cure a crossing by silently deleting a required connection.
-5. Author concise D2 labels and semantic relationships. Treat every directed edge as a causal or ordering claim. Fork independent work explicitly, split branches whose ordering differs, and use shapes and colors for meaning rather than decoration.
-6. Render with `scripts/render_diagram.sh`. It creates the final SVG/PNG plus a temporary review directory containing a 980px preview and overlapping native-resolution crops. Pass `--preview-width` when the destination width is known. User-requested theme and layout choices override defaults.
-7. For every output, inspect the complete PNG, the generated native crops, and the generated destination-width preview. Native resolution alone is not evidence that a diagram will be readable in documentation, a pull request, or chat.
-8. Check hierarchy, contrast, clipped or overlapping text, connector paths, whitespace, semantic shape use, and whether every required story is traceable without narration. A connector crossing component, group, or boundary text is a blocking defect.
-9. Fix layout structurally: wrap labels, shorten edge prose, reduce high-column grids, stack phases, or add clearly labeled boundary ports and convergence nodes. Preserve the traceability checklist and rerender after each structural change.
-10. Remove failed prototypes and every printed review directory after inspection. Revalidate the selected source and rerender to a temporary location with `--no-review-images`. Require a byte match when the renderer is deterministic; otherwise replace the selected outputs with the fresh render and verify them again. Report only final artifact paths.
+1. Inspect the real source material and trace relevant behavior end to end. Record exact ordering, ownership, conditions, terminal outcomes, retry identity, and unknowns. Separate verified current behavior from proposals.
+2. Identify the visual question, reader, destination, expected display width, and explicit style constraints. Ask only when ambiguity would materially change truth or deliverables.
+3. Choose the visual grammar and write a composition contract before authoring. Include aspect ratio, reading order, zones or phases, dominant subject, connector lanes, and a typography floor at destination width.
+4. List essential paths and boundary relationships. Re-run this traceability checklist after every structural reflow; never cure a crossing by deleting a required connection.
+5. Select SVG-native or D2 using the criteria above. Explicit user choices override defaults.
+6. Author concise labels and semantic relationships. Treat each directed edge as a causal or ordering claim. Fork independent work explicitly and distinguish conditions, current/proposed state, and success/failure behavior.
+7. Render with the mode's bundled script. Pass `--preview-width` when the destination width is known. Both renderers create a destination-width preview and overlapping native crops, and fully decode every PNG before reporting success.
+8. Actually open the complete PNG, every native crop, and the exact-width preview. The preview is the composition and hierarchy gate; the full image and crops are the typography, connector, and rendering-integrity gate.
+9. Fix layout defects structurally before adding polish. Reflow, wrap, resize, reduce columns, stack phases, reserve connector lanes, or use labeled boundary ports. Then tune typography, color, depth, icons, and effects.
+10. Repeat render and image inspection until every output passes. Do not stop at syntactically valid source or a successful command.
+11. Remove failed prototypes and review directories. Re-render the selected source to a temporary location without review images. Require a byte match when deterministic; otherwise replace the selected output with the fresh render and inspect it again.
 
-## Default visual style
+## Default visual direction
 
-Apply these only when the user leaves styling unspecified:
+Apply only when the user leaves styling unspecified:
 
-- Theme: D2 Dark Mauve `200`.
-- Layout engine: `elk`; canvas padding: `40`.
-- Canvas: dark, clean, non-sketch, with no decorative icons unless requested.
-- Color: restrained semantic roles with sufficient contrast; do not encode status by color alone.
-- Text: plain quoted D2 labels with explicit `\n` line breaks where useful.
+- Use a modern product-documentation aesthetic with strong hierarchy, restrained color, generous spacing, and crisp routing.
+- Choose light editorial styling for narrative clarity or dark glass/blueprint styling for system depth, based on the content and destination.
+- Prefer Inter or a system sans for display/body text and JetBrains Mono or a system mono for eyebrows, phases, statuses, and micro-labels.
+- Use two to four semantic accents consistently. Use status labels or shapes in addition to color.
+- Use subtle gradients, grid texture, bloom, shadow, and glow only when they reinforce hierarchy or grouping.
+- Use simple inline vector icons with a consistent stroke/fill language. Do not use emoji as technical iconography.
+- Vary scale and emphasis. Avoid a canvas where every item is an equal rounded rectangle with a bright outline.
 
-A default style never determines diagram type, panel count, reading order, or content. Read `references/style-guide.md` when tuning a dense layout, comparison, or user-directed variation.
+In D2 mode with no style direction, use Dark Mauve theme `200`, ELK, and 40px padding as a reliable structural baseline. Inspect the result rather than treating these values as proof of quality.
 
-## Adaptation rules
+## Non-negotiable layout hygiene
 
-- Use one output or several according to what communicates the request clearly. Do not combine or split views by default.
-- Judge dimensions, density, and aspect ratio against the intended destination and the generated exact-width preview; use the built-in 980px default only when the destination is unspecified.
-- Prefer concise noun labels for entities and short action phrases for relationships, while preserving conditions needed for correctness. Add explicit line breaks to control node width; move explanatory prose off crowded edges.
-- Use containers for real ownership, trust, or process boundaries. Do not place external actors inside a runtime boundary merely to simplify layout.
-- Use clearly labeled boundary ports or local relay nodes when a long cross-container connector would pass through interior components. Ports clarify ingress, storage, identity, and publication relationships without inventing a new service.
-- Show independent post-gate work as separate outgoing paths with no branch-to-branch edge. When success and failure perform state changes and delivery in different orders, draw separate ordered branches.
-- Preserve effect-specific retry identity. Do not collapse deterministic request IDs, persisted external IDs, dedupe keys, and reconciliation into one generic “idempotent” label when the distinction matters.
-- Use queue, database, document, and other semantic shapes only when they describe the represented concept.
-- Clearly distinguish current, proposed, disabled, legacy, optional, and failure behavior whenever those states matter.
+- One obvious entry point and reading order.
+- No connector through any label, icon, status chip, card, or boundary title.
+- Connectors are designed with node placement, not routed as an afterthought.
+- Independent paths remain visibly independent; spatial stacking must not imply false order.
+- External actors and shared resources stay outside boundaries that do not own them.
+- No unexplained dead space, accidental ribbon aspect ratio, clipped outer labels, or text below the destination-size readability floor.
+- No art effect may mask a structural defect.
 
-## Gotchas
+Read `references/style-guide.md` when source-backed traceability, dense routing, D2 authoring, or a difficult structural reflow needs more detail.
 
-- D2's direct PNG path uses Playwright and can fail while downloading its driver. The bundled renderer deliberately emits SVG first and converts it with `rsvg-convert`.
-- D2 asset bundling can fetch remote resources. The bundled renderer disables bundling and rejects external SVG references; use D2 shapes or embedded data URIs instead of remote assets.
-- Markdown D2 labels use SVG `foreignObject`, which `rsvg-convert` drops. The renderer fails closed when it finds one; use plain text labels.
-- D2 0.7.1 does not support `shape: note`. Use a `document` shape or a plainly labeled container/node for notes.
-- Layout behavior depends on the D2 version and engine. In D2 0.7.1 with ELK, a nested `direction` may be ignored when the root has a different direction. Treat the rendered image as proof; use a grid, a compatible top-level layout, or another engine when needed.
-- Disconnected top-level objects may produce surprising whitespace or reading order. Use a grid or invisible edges only when the render needs an explicit relationship.
-- A wide native render can look excellent while becoming unreadable when embedded. Inspect an exact destination-width preview before accepting the composition.
-- Long connectors commonly route through labels when they target deep nested nodes. Prefer short local connectors, aligned lanes, boundary ports, and explicit convergence nodes over cosmetic edge tweaks.
-- Container and group titles count as labels. If a connector enters through a title, move the title with `label.near`, move the port, or split the traffic into aligned lanes.
-- Deleting connectors can make a render cleaner while making the topology false or untraceable. Re-run every primary path and boundary relationship after a reflow.
-- Vertical placement implies order even without an edge. Use explicit fork labels and spatial separation when work is concurrent or independently retried.
-- In sequence diagrams, group labels draw on the leftmost lifeline and can collide with it. Use an empty group label plus a note on an appropriate actor when that renders more clearly.
-- Delivery and state labels must include their conditions. Do not present state-dependent behavior as unconditional.
-- The renderer caps review output at 100 crops. Increase `--crop-size` for unusually large diagrams rather than creating an unbounded review set.
-- A valid render can still be misleading. Image inspection and factual review are required.
+## Important rendering gotchas
 
-## Available scripts
+- A PNG can have a readable header and still be truncated. The bundled renderers fully validate chunk CRCs and inflate image data for the final PNG, preview, and every crop.
+- SVG gradients default to `objectBoundingBox`. A horizontal or vertical zero-area path can lose its gradient stroke. Use a solid stroke or `gradientUnits="userSpaceOnUse"` with explicit coordinates for such connectors.
+- Draw connectors behind nodes in SVG so lines and arrowheads cannot obscure text. Keep arrow markers solid even when nearby fills use gradients.
+- D2 with ELK can turn nested cross-container edges into extreme width or height. Use local edges, aligned lanes, labeled boundary ports, explicit grids, or another composition.
+- D2 grid placement can be column-major under `grid-columns`; verify declaration order or use explicit `grid-rows` when reading order matters.
+- D2 semantic queue or cylinder shapes can pinch long labels. Use them only for short labels; a rounded rectangle with a role label is often clearer.
+- Outer container labels and sequence group labels can collide with edges or lifelines. Use internal headline nodes, move labels, or change composition.
+- D2 Markdown labels create SVG `foreignObject`, which librsvg drops. Use plain text labels.
+- A wide native image may look good while becoming unreadable when embedded. The exact-width preview decides whether the composition passes.
 
-- `scripts/render_diagram.sh [options] INPUT.d2 [OUTPUT_BASE]` validates and renders `.svg` and `.png` without mutating the source. By default it also prints a temporary review directory with `preview-980.png` and overlapping native-resolution crops. Use `--preview-width`, `--crop-size`, `--crop-overlap`, `--review-dir`, or `--no-review-images` as needed. Publication uses same-filesystem atomic links; an interrupted or contested publish fails closed and reports retained staging/backup directories for recovery.
-- `references/style-guide.md` contains the default palette, layout guidance, D2 patterns, and visual review checklist.
+## Available resources
+
+- `scripts/render_svg.sh [options] INPUT.svg [OUTPUT.png]` validates portable SVG, renders PNG, fully decodes all rasters, and creates temporary review images. The input SVG remains canonical editable source.
+- `scripts/render_diagram.sh [options] INPUT.d2 [OUTPUT_BASE]` validates D2, renders SVG/PNG, fully decodes all rasters, and creates temporary review images.
+- `scripts/verify_png.mjs IMAGE.png [...]` verifies PNG structure, chunk CRCs, complete IDAT inflation, scanline sizes, and dimensions.
+- `references/style-guide.md` contains shared layout, traceability, D2 patterns, and visual review guidance.
+- `references/svg-native.md` contains the modern SVG design system, composition patterns, and renderer-specific invariants.
+- `assets/modern-svg-starter.svg` provides optional reusable tokens and components for SVG-native work.
 
 ## Validation
 
+SVG-native:
+
 ```bash
-d2 validate path/to/diagram.d2
-# Omit --preview-width to use the built-in 980px default.
-/path/to/diagram-creation/scripts/render_diagram.sh --preview-width 900 \
-  path/to/diagram.d2 path/to/output/diagram
-file path/to/output/diagram.svg path/to/output/diagram.png
-
-# Inspect every image in the review directory printed above, then remove it.
-rm -rf <printed-review-directory>
-
-# When the renderer is deterministic, prove selected renders match the source.
-tmp_dir=$(mktemp -d)
-/path/to/diagram-creation/scripts/render_diagram.sh --no-review-images \
-  path/to/diagram.d2 "$tmp_dir/diagram"
-cmp path/to/output/diagram.svg "$tmp_dir/diagram.svg"
-cmp path/to/output/diagram.png "$tmp_dir/diagram.png"
-rm -rf "$tmp_dir"
+/path/to/diagram-creation/scripts/render_svg.sh --preview-width 900 \
+  path/to/diagram.svg path/to/diagram.png
 ```
 
-Inspect the destination-width preview, complete PNG, and native-resolution details. Trace every required path again after the final layout change. If the source claims current behavior, compare labels and arrows against the inspected code, docs, logs, or traces before delivery.
+D2:
+
+```bash
+d2 validate path/to/diagram.d2
+/path/to/diagram-creation/scripts/render_diagram.sh --preview-width 900 \
+  path/to/diagram.d2 path/to/diagram
+```
+
+For either mode, open the final PNG and every file in the printed review directory. After inspection, remove the review directory. Then prove source/output alignment with a clean `--no-review-images` render to a temporary path and compare bytes when deterministic.
 
 ## Output contract
 
 Return:
 
-- PNG: rendered image for immediate viewing.
-- SVG: scalable rendered image.
-- D2: editable source.
-- Validation: D2 validation, render result, dimensions, source/render alignment, and visual inspection at native and destination widths.
-- Deviations: only user-requested variations or unresolved factual and visual limitations.
+- **SVG-native:** editable `.svg` source and rendered `.png`.
+- **D2:** editable `.d2` source plus rendered `.svg` and `.png`.
+- **Validation:** renderer result, dimensions, full-decode success, source/render alignment, and confirmation that the complete image, exact-width preview, and every native crop were visually inspected.
+- **Deviations:** only user-requested variations or unresolved factual and visual limitations.
