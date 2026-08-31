@@ -250,18 +250,17 @@ fi
 publish_tmp=$(mktemp "$output_dir/.diagram-svg-publish.XXXXXX") \
   || fail "cannot reserve an output staging file"
 install -m 0644 "$tmp_dir/render.png" "$publish_tmp"
+if ((review_images == 1)); then
+  for review_file in "$review_stage"/*; do
+    install -m 0644 "$review_file" "$review_dir/$(basename "$review_file")"
+  done
+fi
 if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then
   fail "output target changed during rendering and is no longer a regular file or absent: $output"
 fi
 node -e 'require("node:fs").renameSync(process.argv[1], process.argv[2])' "$publish_tmp" "$output"
 publish_tmp=""
-
-if ((review_images == 1)); then
-  for review_file in "$review_stage"/*; do
-    install -m 0644 "$review_file" "$review_dir/$(basename "$review_file")"
-  done
-  keep_review=1
-fi
+keep_review=$review_images
 
 aspect_ratio=$(awk -v width="$png_width" -v height="$png_height" 'BEGIN { printf "%.2f", width / height }')
 printf 'Render: SVG-native; librsvg; zoom=%s\n' "$zoom"

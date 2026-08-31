@@ -294,14 +294,27 @@ atomic_link() {
   node -e 'require("node:fs").linkSync(process.argv[1], process.argv[2])' "$1" "$2"
 }
 
+restore_output() {
+  local output=$1
+  local staged=$2
+  local backup=$3
+  local had_output=$4
+  if path_exists "$output" \
+    && [[ -f "$output" && ! -L "$output" ]] \
+    && [[ "$output" -ef "$staged" ]]; then
+    rm -f "$output" || return 1
+  fi
+  if ((had_output == 1)) \
+    && [[ -f "$backup" && ! -L "$backup" ]] \
+    && ! path_exists "$output"; then
+    atomic_link "$backup" "$output" || return 1
+  fi
+}
+
 recover_outputs() {
   set +e
-  if ((had_svg == 1)) && [[ -f "$backup_dir/render.svg" && ! -L "$backup_dir/render.svg" ]]; then
-    atomic_link "$backup_dir/render.svg" "$svg_output" >/dev/null 2>&1 || true
-  fi
-  if ((had_png == 1)) && [[ -f "$backup_dir/render.png" && ! -L "$backup_dir/render.png" ]]; then
-    atomic_link "$backup_dir/render.png" "$png_output" >/dev/null 2>&1 || true
-  fi
+  restore_output "$svg_output" "$publish_dir/render.svg" "$backup_dir/render.svg" "$had_svg" >/dev/null 2>&1 || true
+  restore_output "$png_output" "$publish_dir/render.png" "$backup_dir/render.png" "$had_png" >/dev/null 2>&1 || true
   if ((recovery_reported == 0)); then
     printf 'render_diagram.sh: publication interrupted; recovery retained at: %s and %s\n' "$backup_dir" "$publish_dir" >&2
     recovery_reported=1

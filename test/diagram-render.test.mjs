@@ -523,7 +523,7 @@ exec "$REAL_NODE" "$@"
   }
 });
 
-test("a failed second link retains recovery without deleting either version", { skip: !toolsAvailable }, () => {
+test("a failed second publication restores both prior outputs", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-transaction-test-"));
   try {
     const input = path.join(tmp, "flow.d2");
@@ -561,9 +561,23 @@ exec "$REAL_NODE" "$@"
     assert.equal(readFileSync(path.join(backup, "render.svg"), "utf8"), "old svg");
     assert.equal(readFileSync(path.join(backup, "render.png"), "utf8"), "old png");
     assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
-    assert.notEqual(readFileSync(`${output}.svg`, "utf8"), "old svg");
+    assert.equal(readFileSync(`${output}.svg`, "utf8"), "old svg");
     assert.equal(existsSync(path.join(publish, "render.svg")), true);
     assert.equal(existsSync(path.join(publish, "render.png")), true);
+
+    const absentOutput = path.join(tmp, "absent");
+    const absentResult = render(
+      ["--no-review-images", input, absentOutput],
+      {
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        BASH_ENV: "/dev/null",
+        REAL_NODE: process.execPath,
+        TEST_LINK_COUNT: path.join(tmp, "absent-link-count"),
+      },
+    );
+    assert.notEqual(absentResult.status, 0);
+    assert.equal(existsSync(`${absentOutput}.svg`), false);
+    assert.equal(existsSync(`${absentOutput}.png`), false);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
