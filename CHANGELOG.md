@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## [0.5.1] - 2026-08-30
 
+- Restore both prior D2 outputs when paired SVG/PNG publication is interrupted, or leave both absent when no prior outputs existed, while retaining recovery files if restoration cannot finish.
+- Publish SVG-native review images before replacing the final PNG, so review publication failures preserve the prior PNG and remove partial review output.
 - Resolve the Python executable before tests remove `pi` from `PATH`, so the package's resolver checks run on Termux as well as conventional Unix layouts.
 
 ## [0.5.0] - 2026-08-28
@@ -92,6 +94,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.5.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.16...v0.5.0
 [0.4.16]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.14...v0.4.15

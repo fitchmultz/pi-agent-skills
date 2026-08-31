@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, truncateSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -26,10 +26,53 @@ test("SVG renderer creates verified review images and rejects truncated PNGs", {
 
     const truncated = path.join(tmp, "truncated.png");
     writeFileSync(truncated, readFileSync(output));
-    truncateSync(truncated, readFileSync(truncated).length - 16);
+    truncateSync(truncated, readFileSync(truncated).length - 1);
     const rejected = spawnSync(process.execPath, [verifier, truncated], { encoding: "utf8" });
     assert.notEqual(rejected.status, 0);
-    assert.match(rejected.stderr, /truncated PNG chunk data/);
+    assert.match(rejected.stderr, /truncated PNG chunk (?:data|header)/);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("SVG review publication failure preserves the prior final PNG", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-svg-publication-test-"));
+  try {
+    const input = path.join(tmp, "flow.svg");
+    const output = path.join(tmp, "flow.png");
+    const review = path.join(tmp, "review");
+    const oldOutput = Buffer.from("old svg-native png\n");
+    writeFileSync(input, '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="120" height="80" fill="#111827"/></svg>');
+    writeFileSync(output, oldOutput);
+
+    const fakeBin = path.join(tmp, "bin");
+    mkdirSync(fakeBin);
+    const fakeInstall = path.join(fakeBin, "install");
+    writeFileSync(fakeInstall, `#!/usr/bin/env bash
+set -euo pipefail
+destination=\${!#}
+if [[ "$destination" == "$TEST_FAIL_REVIEW_DIR/"* ]]; then
+  : > "$TEST_INSTALL_FAILURE_MARKER"
+  exit 91
+fi
+exec "$REAL_INSTALL" "$@"
+`);
+    chmodSync(fakeInstall, 0o755);
+
+    const result = spawnSync("env", ["-u", "BASH_ENV", renderer, "--review-dir", review, input, output], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        REAL_INSTALL: spawnSync("sh", ["-c", "command -v install"], { encoding: "utf8" }).stdout.trim(),
+        TEST_FAIL_REVIEW_DIR: review,
+        TEST_INSTALL_FAILURE_MARKER: path.join(tmp, "install-failed"),
+      },
+    });
+    assert.equal(result.status, 91, `${result.stdout}\n${result.stderr}`);
+    assert.equal(existsSync(path.join(tmp, "install-failed")), true);
+    assert.deepEqual(readFileSync(output), oldOutput);
+    assert.equal(existsSync(review), false);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
