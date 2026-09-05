@@ -566,8 +566,8 @@ process.exit(result.status ?? 1);
         env: { ...process.env, BASH_ENV: "/dev/null", PATH: `${bin}:${process.env.PATH}`,
           REAL_NODE: process.execPath, RACE_ROLE: role, RACE_MARKS: tmp },
       });
-      const result = { child, exited: false, stdout: "", stderr: "" };
-      child.stdout.on("data", (data) => { result.stdout += data; });
+      const result = { child, exited: false, stderr: "" };
+      child.stdout.resume();
       child.stderr.on("data", (data) => { result.stderr += data; });
       child.on("exit", (code, signal) => { Object.assign(result, { exited: true, code, signal }); });
       result.closed = new Promise((resolve) => child.on("close", resolve));
