@@ -249,6 +249,7 @@ output_base=${output_base%.png}
 command -v d2 >/dev/null 2>&1 || fail "d2 is required; on macOS run: brew install d2"
 command -v rsvg-convert >/dev/null 2>&1 || fail "rsvg-convert is required; on macOS run: brew install librsvg"
 command -v node >/dev/null 2>&1 || fail "node is required"
+command -v python3 >/dev/null 2>&1 || fail "python3 is required for publication locking"
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 png_verifier="$script_dir/verify_png.mjs"
@@ -458,6 +459,16 @@ if ((review_images == 1)); then
     install -m 0644 "$review_file" "$review_dir/$(basename "$review_file")"
   done
 fi
+
+# Keep the sidecar inode: unlinking it would let a contender lock a different file.
+# Inherited fd 9 holds the lock until the last publication process exits.
+exec 9>>"$output_dir_abs/.$(basename "$output_base").diagram.lock"
+python3 -c 'import fcntl, sys
+try:
+    fcntl.flock(9, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    sys.exit("render_diagram.sh: another renderer is publishing this output; retry after it finishes")
+'
 
 for output in "$svg_output" "$png_output"; do
   if [[ -L "$output" ]] || [[ -e "$output" && ! -f "$output" ]]; then

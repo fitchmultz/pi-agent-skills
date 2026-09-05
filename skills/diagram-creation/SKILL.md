@@ -44,9 +44,12 @@ Check only the tools required by the selected mode:
 command -v rsvg-convert
 command -v node
 command -v d2 # D2 mode only
+command -v python3 # D2 publication locking only
 ```
 
-On macOS, install missing renderers with `brew install librsvg d2`. Follow the environment's package-install policy elsewhere. Do not add diagram tooling to a project's dependency manifest unless requested.
+On macOS, install missing renderers with `brew install librsvg d2`; install Python 3 with `brew install python` if D2 mode needs it. Follow the environment's package-install policy elsewhere. Do not add diagram tooling to a project's dependency manifest unless requested.
+
+D2 publication uses Python 3's standard-library `fcntl.flock` on macOS and Linux. A competing publisher for the same output base fails before changing either final artifact; retry after the active renderer finishes. Different output bases remain independent. The hidden `.<output-base>.diagram.lock` sidecar stays beside the outputs: do not delete or replace it while renderers may be running. The operating system releases the lock after the renderer and its publication children exit, even after SIGKILL; there is no stale PID lock to clear. SIGKILL cannot run rollback, so interrupted `.diagram-backup.*` and `.diagram-publish.*` directories retain recovery artifacts.
 
 ## Decision sequence
 
