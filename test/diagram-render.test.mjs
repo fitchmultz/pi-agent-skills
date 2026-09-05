@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { setTimeout } from "node:timers/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -520,6 +521,163 @@ exec "$REAL_NODE" "$@"
     }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+// Gate real renderers only at their filesystem operations, not at rendering stubs.
+function publicationRace(tmp) {
+  const bin = path.join(tmp, "bin");
+  mkdirSync(bin);
+  const wrapper = path.join(bin, "node");
+  writeFileSync(wrapper, `#!${process.execPath}
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const args = process.argv.slice(2);
+const role = process.env.RACE_ROLE;
+const mark = (name) => process.env.RACE_MARKS + "/" + role + "-" + name;
+if (args[0] === "-e" && /renameSync|linkSync/.test(args[1])) {
+  fs.appendFileSync(mark("operations"), JSON.stringify(args.slice(1)) + "\\n");
+  if (args[1].includes("linkSync") && args[2].includes(".diagram-publish.")) {
+    if ((role === "A" && args[3].endsWith(".svg")) || (role === "B" && args[3].endsWith(".png"))) {
+      fs.writeFileSync(mark("paused"), String(process.pid));
+      const deadline = Date.now() + 30000;
+      while (!fs.existsSync(mark("resume"))) {
+        if (Date.now() > deadline) throw new Error("publication gate timed out");
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+      }
+    }
+    if (role === "A" && args[3].endsWith(".png")) process.exit(73);
+  }
+}
+const result = spawnSync(process.env.REAL_NODE, args, { stdio: "inherit" });
+process.exit(result.status ?? 1);
+`);
+  chmodSync(wrapper, 0o755);
+  const input = path.join(tmp, "input.d2");
+  writeFileSync(input, "a -> b\n");
+  const processes = [];
+  return {
+    input,
+    mark: (name) => path.join(tmp, name),
+    start(role, output) {
+      const child = spawn(script, ["--no-review-images", input, output], {
+        cwd: tmp,
+        detached: true,
+        env: { ...process.env, BASH_ENV: "/dev/null", PATH: `${bin}:${process.env.PATH}`,
+          REAL_NODE: process.execPath, RACE_ROLE: role, RACE_MARKS: tmp },
+      });
+      const result = { child, exited: false, stderr: "" };
+      child.stdout.resume();
+      child.stderr.on("data", (data) => { result.stderr += data; });
+      child.on("exit", (code, signal) => { Object.assign(result, { exited: true, code, signal }); });
+      result.closed = new Promise((resolve) => child.on("close", resolve));
+      processes.push(result);
+      return result;
+    },
+    async cleanup() {
+      for (const { child } of processes) {
+        try { process.kill(-child.pid, "SIGKILL"); } catch (error) {
+          if (error.code !== "ESRCH") throw error;
+        }
+      }
+      await Promise.all(processes.map(({ closed }) => closed));
+      rmSync(tmp, { recursive: true, force: true });
+    },
+  };
+}
+
+async function waitForPublication(predicate, description) {
+  const deadline = Date.now() + 30000;
+  while (!predicate()) {
+    assert.ok(Date.now() < deadline, `timed out: ${description}`);
+    await setTimeout(10);
+  }
+}
+
+test("competing live publishers preserve originals through rollback and path aliases", { skip: !toolsAvailable }, async (t) => {
+  for (const alias of ["absolute", "relative", "symlink"]) {
+    await t.test(alias, async (t) => {
+      const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-live-race-"));
+      const race = publicationRace(tmp);
+      try {
+        const output = path.join(tmp, "flow");
+        writeFileSync(`${output}.svg`, "old svg");
+        writeFileSync(`${output}.png`, "old png");
+        symlinkSync(tmp, path.join(tmp, "alias"), "dir");
+        const otherOutput = alias === "relative" ? "./flow" : alias === "symlink" ? path.join(tmp, "alias", "flow") : output;
+        const a = race.start("A", output);
+        await waitForPublication(() => existsSync(race.mark("A-paused")) || a.exited, "A before its SVG link");
+        assert.equal(a.exited, false, a.stderr);
+        assert.equal(existsSync(`${output}.svg`), false);
+        assert.equal(existsSync(`${output}.png`), false);
+
+        // Another output base must remain usable while A holds its transaction.
+        const independent = render(["--no-review-images", race.input, path.join(tmp, "independent")]);
+        assert.equal(independent.status, 0, independent.stderr);
+
+        const b = race.start("B", otherOutput);
+        await waitForPublication(() => existsSync(race.mark("B-paused")) || b.exited, "B rejected or before its PNG link");
+        const bEnteredPublication = existsSync(race.mark("B-paused"));
+        if (bEnteredPublication) {
+          assert.equal(existsSync(`${output}.svg`), true);
+          assert.equal(existsSync(`${output}.png`), false);
+        }
+        writeFileSync(race.mark("A-resume"), "");
+        await a.closed;
+        // On the broken renderer this completes the exact data-loss interleaving:
+        // A restores the old PNG beside B's SVG, then B fails and removes its SVG.
+        if (bEnteredPublication) assert.equal(readFileSync(`${output}.png`, "utf8"), "old png");
+        writeFileSync(race.mark("B-resume"), "");
+        await b.closed;
+        const svg = existsSync(`${output}.svg`) ? readFileSync(`${output}.svg`, "utf8") : "missing";
+        const png = existsSync(`${output}.png`) ? readFileSync(`${output}.png`, "utf8") : "missing";
+        t.diagnostic(JSON.stringify({ alias, a: a.code, b: b.code, bEnteredPublication, svg, png }));
+        assert.equal(svg, "old svg", "concurrent failure must restore the original SVG");
+        assert.equal(png, "old png");
+        assert.notEqual(a.code, 0);
+        assert.notEqual(b.code, 0);
+        assert.match(b.stderr, /another renderer is publishing/);
+        assert.equal(existsSync(race.mark("B-operations")), false, "loser must not move or link either output");
+      } finally {
+        await race.cleanup();
+      }
+    });
+  }
+});
+
+test("publication lock survives a killed shell until its live child exits, then releases", { skip: !toolsAvailable }, async () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-lock-lifetime-"));
+  const race = publicationRace(tmp);
+  try {
+    const output = path.join(tmp, "flow");
+    writeFileSync(`${output}.svg`, "old svg");
+    writeFileSync(`${output}.png`, "old png");
+    const a = race.start("A", output);
+    await waitForPublication(() => existsSync(race.mark("A-paused")) || a.exited, "A before its SVG link");
+    assert.equal(a.exited, false, a.stderr);
+    a.child.kill("SIGKILL");
+    await waitForPublication(() => a.exited, "killed Bash owner");
+    assert.equal(a.signal, "SIGKILL");
+    const b = race.start("B", output);
+    await waitForPublication(() => b.exited || existsSync(race.mark("B-paused")), "contender while orphaned publisher is live");
+    assert.equal(b.exited, true, "must not steal the live child's lock");
+    await b.closed;
+    assert.notEqual(b.code, 0);
+    assert.match(b.stderr, /another renderer is publishing/);
+    assert.equal(existsSync(race.mark("B-operations")), false);
+    writeFileSync(race.mark("A-resume"), "");
+    await a.closed;
+
+    const retry = render(["--no-review-images", race.input, output]);
+    assert.equal(retry.status, 0, `${retry.stdout}\n${retry.stderr}`);
+    assert.match(readFileSync(`${output}.svg`, "utf8"), /<svg/);
+    assert.ok(pngDimensions(`${output}.png`).width > 0);
+    const backup = readdirSync(tmp).find((name) => name.startsWith(".diagram-backup."));
+    assert.ok(backup);
+    assert.equal(readFileSync(path.join(tmp, backup, "render.svg"), "utf8"), "old svg");
+    assert.equal(readFileSync(path.join(tmp, backup, "render.png"), "utf8"), "old png");
+  } finally {
+    await race.cleanup();
   }
 });
 

@@ -32,6 +32,6 @@ npm run smoke
 npm run pack:check
 ```
 
-Validation uses the exact Pi 0.84.0 development dependency while the installed package supports Pi 0.84.0 or later.
+Validation uses the exact Pi 0.84.2 development dependency while the installed package supports Pi 0.84.0 or later.
 
 This repository is private to npm publishing. Install it from git or a local checkout.
