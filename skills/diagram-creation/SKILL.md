@@ -2,7 +2,7 @@
 name: diagram-creation
 description: "Create and render polished technical diagrams as editable SVG or D2 plus PNG/SVG: architecture, sequence, data-flow, dependency, lifecycle, and before/after visuals. Use when a user asks for a diagram or rendered system/process image. Do not use for statistical charts, slide decks, image editing, or product screenshots."
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   owner: "local"
   status: "active"
 ---

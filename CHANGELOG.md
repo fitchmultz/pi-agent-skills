@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2026-09-05
+
+- Upgrade diagram-creation to 2.1.0. D2 rendering now requires Python 3 for native publication locking; SVG-native rendering requirements are unchanged.
+- Prevent concurrent D2 publishers from corrupting the same SVG/PNG pair. Relative and symlink-directory aliases share a persistent lock sidecar; unrelated output bases remain independent. The lock stays held while publication children run and releases when the last holder exits. SIGKILL cannot run rollback, so interrupted backup/publish directories retain recovery artifacts.
+- Verify same-output contention, alias handling, child-process lock lifetime, and byte-identical rollback with real-process regressions on macOS Bash 3 and Linux Bash 5.
+
 ## [0.5.1] - 2026-08-30
 
 - Restore both prior D2 outputs when paired SVG/PNG publication is interrupted, or leave both absent when no prior outputs existed, while retaining recovery files if restoration cannot finish.
@@ -94,6 +100,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.6.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.16...v0.5.0
 [0.4.16]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.15...v0.4.16
