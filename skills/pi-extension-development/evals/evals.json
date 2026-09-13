@@ -18,8 +18,13 @@
     },
     {
       "id": "interactive-tui-ux",
-      "prompt": "Build a pi extension command with an interactive selector and custom tool result display.",
-      "expected_output": "Reads docs/tui.md, types, and matching examples, picks the smallest good UI layer, guards TUI-only behavior, respects width/theme/keybindings/focus rules, and visually verifies rendered UX."
+      "prompt": "Build a pi extension command with an interactive selector, read/compose views, and custom tool result display. Make its keyboard hints clickable in fullscreen mode and natural on macOS.",
+      "expected_output": "Reads full docs/tui.md and verifies active exports/types/source; uses native controls and MouseRegion/Container/Box/Text rather than a framework or mouse parser. Audits every displayed actionable hint across screens and focus states, shares guarded actions with keys, labels Enter and Back by their current action, and preserves focus, drafts, and selection. Uses public keyHint/keyText or rawKeyHint with current bindings to display Option on macOS without changing canonical alt IDs/config or rewriting user/agent text; avoids internal formatter imports. Forwards native pointer routing through render wrappers and matches hit regions to formatted, wrapped, clipped, padded output. Clicks actual rendered hint cells at normal/narrow widths and compact layouts in read/compose focus; asserts visible outcomes, consequential effects, and single activation, with no actions from hidden hints, separators, or unused padding. Keeps theme/width rules, TUI guards, regular-mode keyboard fallback, and visual verification of the tool display."
+    },
+    {
+      "id": "edge-regular-tui-mouse-boundary",
+      "prompt": "My extension's hint-click test passes when it calls handleMouse directly, but clicking the hints does nothing in regular Pi mode. Make them clickable without changing Pi core.",
+      "expected_output": "Checks the active native TUI implementation and explains that regular TuiMainScreen does not capture mouse input while fullscreen TuiAltScreen provides native pointer routing. Does not add raw capture, a custom parser, or a core patch, silently force fullscreen, or claim the direct-call test proves real clicks work. Retains the regular keyboard flow, reports the native boundary, and offers fullscreen for clickable hints. Validates fullscreen through rendered terminal coordinates and native input routing, separately from regular-mode keyboard behavior."
     },
     {
       "id": "stateful-sequential-tool",
