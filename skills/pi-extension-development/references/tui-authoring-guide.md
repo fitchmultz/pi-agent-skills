@@ -60,9 +60,23 @@ Behavior:
 - `CustomEditor` constructor is `(tui, theme, keybindings, options?)`; call `super.handleInput(data)` for unhandled keys.
 - `CustomEditor.handleInput()` gives extension shortcuts and app-level actions a chance before normal editor text handling.
 - Use `pi.registerShortcut()` for extension hotkeys.
-- Use the injected `keybindings.matches(data, namespacedId)` and `getKeys(id)` for configurable actions; render hints with `keyHint()`/`keyText()` so user `keybindings.json` overrides remain authoritative.
+- Use the injected `keybindings.matches(data, namespacedId)` and `getKeys(id)` for configurable actions. Import public `keyHint()`/`keyText()` from `@earendil-works/pi-coding-agent`, or use its `rawKeyHint(keybindings.getKeys(id).join("/"), description)` to format the current bindings.
+- Native hint helpers display Alt as Option on macOS. Keep canonical `alt` binding IDs, config, and behavior unchanged; format only owned key labels, never arbitrary user/agent text. Do not add a platform mapper or deep-import internal `formatKeyText`/`keyDisplayText`; those are not public root exports.
 - Stack autocomplete with `ctx.ui.addAutocompleteProvider(factory)`, declare `triggerCharacters` for natural triggers such as `#` or `$`, and delegate to the current provider when your syntax does not match.
 - Use `ctx.ui.onTerminalInput(handler)` only for advanced global interception. It runs before focused component routing; return `{ consume: true }` to swallow input or `{ data }` to rewrite it. It is no-op outside TUI.
+
+## Actionable hints and mouse input
+
+The mouse APIs below were verified on Pi 0.85.1. Check the active package's exports before using them; the skill's minimum Pi version does not imply they are available.
+
+Regular `TuiMainScreen` does not capture mouse input; the terminal owns scrollback. Fullscreen `TuiAltScreen` supplies native pointer routing. Report this boundary and retain regular-mode keyboard flow; do not add raw mouse capture or change Pi core to manufacture support.
+
+- Every displayed actionable keyboard hint in owned UI must be clickable through that native route. Audit all screens, focus modes, and compact states, not only the reported button.
+- Labels must describe the current action: Enter may open details in read focus but send in compose focus; Back follows the actual screen. Clicks and keys must share the underlying action and guards, preserving focus, drafts, and selection unless the action itself changes them.
+- Reuse `MouseRegion`, `Container`, `Box`, and `Text` from `@earendil-works/pi-tui` and existing native controls. No new mouse parser, UI framework, or replacement editor/selector. Custom render wrappers must forward `handleMouse`, not only rendering and keyboard input.
+- Base hit regions on actual rendered spans after platform formatting, wrapping, clipping, and padding. Reuse native coordinate handling; keep any necessary inline layout small and shared by rendering and hit testing. Hidden hints, separators, and unused padding must not activate actions.
+- Activate once per left click, not on press, release, and click. Do not steal keyboard focus just to handle a hint.
+- Validate by locating visible hints in rendered output and clicking those terminal cells through the native pointer route. Assert visible changes and consequential effects, including no duplicate sends. Cover normal/narrow widths, compact layouts, read/compose focus, Back, and state preservation where present; check non-action areas too. Direct handler calls or static-string assertions alone do not prove click routing. Verify the regular-mode keyboard fallback separately.
 
 ## Widgets, footer, header, status, and working UI
 

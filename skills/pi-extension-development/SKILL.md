@@ -110,6 +110,7 @@ Use runtime code only when the outcome needs runtime behavior.
 - RPC clients should query `get_available_thinking_levels` after model changes rather than hard-code a global level set.
 - Pair `pi.appendEntry()` with `pi.registerEntryRenderer()` for durable display-only transcript state excluded from model context. Use custom messages when content should enter model context. Message renderers receive `outputPad`; apply it to horizontal spacing, while entry renderers receive only `expanded`.
 - `pi.sendUserMessage(content, { expandPromptTemplates: true })` (0.84.2) explicitly dispatches extension commands and expands skills/prompt templates; the default remains `false`. `pi.sendMessage(..., { triggerTurn: false })` records a custom message without steering an active run (fixed in 0.84.2).
+- In owned TUI, make every displayed actionable keyboard hint clickable where native mouse input is available, with labels and actions matching the current screen/focus. Audit all screens and states, not just the reported control. Follow `references/tui-authoring-guide.md` for native components, macOS Option labels, hit regions, and pointer validation.
 - Visually inspect changed TUI behavior; code review alone is not proof. Account for per-run `--use-theme` overrides, `PI_TUI_ESC_TIMEOUT` on high-latency SSH input, and built-in fullscreen search (`Ctrl+Shift+F`) when validating (0.84.2).
 
 ## Reference loading
