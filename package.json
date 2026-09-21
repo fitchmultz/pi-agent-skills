@@ -20,11 +20,12 @@
   },
   "scripts": {
     "test": "node --test",
-    "smoke": "PI_OFFLINE=1 pi --approve --no-context-files --no-prompt-templates --no-themes --no-extensions -e . --list-models __no_such_model__",
+    "smoke": "node --test test/discovery.test.mjs",
+    "check:compat": "npm test && npm run pack:check",
     "pack:check": "npm pack --dry-run"
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.84.2"
+    "@earendil-works/pi-coding-agent": "0.86.1"
   },
   "engines": {
     "node": ">=22.19.0"
