@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0] - 2026-09-22
+
+- Streamline skill selection and workflow instructions while preserving all twelve skills and their bundled scripts, references, and assets.
+- Refresh extension API guidance against official Pi 0.87.0 and the current fork, distinguish host-specific contracts, and document optional tool prerequisites.
+- Align verification and review with current authorization: reuse applicable evidence, demonstrate regression failures when practical, continue independent work, and resolve findings with fixes or evidence-backed rebuttals.
+- Add native Pi task and routing evaluations with baseline comparisons, held-out prompts, caller-policy and no-skills controls, and retained tool/image evidence. Live model runs remain separate from offline compatibility checks.
+- Report failing CI checks immediately while preserving the existing non-Greptile check selection and PR-state receipts.
+
 ## [0.6.0] - 2026-09-05
 
 - Upgrade diagram-creation to 2.1.0. D2 rendering now requires Python 3 for native publication locking; SVG-native rendering requirements are unchanged.
@@ -100,6 +108,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.7.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.4.16...v0.5.0

@@ -33,7 +33,7 @@ npm run smoke
 
 Asset/discovery validation uses the exact Pi 0.87.0 development baseline. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all twelve skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. The compatibility runner selects independent official/fork dependency graphs and verifies their resolved package identity.
 
-The advertised Pi 0.84.0 floor is separate from the current discovery baseline. The development skill's `last-verified-pi: 0.84.2` still describes its historical API-guidance review, not this asset test; a dependency bump does not re-verify every piece of that guidance. Diagram rendering tests additionally need their existing external rendering prerequisites.
+The advertised Pi 0.84.0 floor is separate from the current validation baseline; the current matrix does not requalify that historical floor. Extension API guidance was checked against official Pi 0.87.0 and `fitchmultz/pi` revision `afed789`, including emitted types and implementation. Diagram rendering tests additionally need their existing external rendering prerequisites.
 
 ## Model evaluations
 
