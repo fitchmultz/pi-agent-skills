@@ -26,7 +26,7 @@ The parent already collected git output and changed-file contents. Your prompt i
 - Apply the rubric to the provided sections. If you have repo access, expand context per the scope contract in `SKILL.md` (one hop per rubric question, never whole-repo). Without repo access, review what was provided and name any evidence gap as a question rather than guessing.
 - Stay read-only. Do not edit files. Return findings, sign-off, and remediation guidance only.
 - Output in the **priority order** in the rubric's output expectations. Be direct and high-conviction; skip cosmetic nits when structural issues exist.
-- Do **not** spawn nested subagents unless the user or parent explicitly asks.
+- Delegate substantive work when it saves time or improves quality; the original agent retains integration and delivery ownership. Use ordinary tools for routine monitoring.
 
 ## Parent orchestration (by harness)
 

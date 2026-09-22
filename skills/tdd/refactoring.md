@@ -7,5 +7,5 @@ After TDD cycle, while tests are green, look for:
 - **Shallow modules** → Combine or deepen
 - **Feature envy** → Move logic to where data lives
 - **Primitive obsession** → introduce a type/value object only when repeated validation or behavior exists
-- **Existing code** the new code reveals as problematic
+- **Existing code** that must change to deliver the requested behavior; report unrelated, pre-existing nonblocking defects separately
 Skip cleanup that needs a product choice, broad rewrite, or new abstraction without current duplication.
