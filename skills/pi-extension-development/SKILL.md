@@ -1,6 +1,6 @@
 ---
 name: pi-extension-development
-description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, generic platform testing, dependency research, and non-Pi publishing."
+description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 0.84.2+; resolve APIs against the exact host. Current source checks cover official 0.87.0 and fitchmultz/pi afed789. Python 3.9+ for the bundled resolver."
 metadata:
   version: "1.13.0"
