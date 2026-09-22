@@ -31,9 +31,9 @@ npm run check:compat
 npm run smoke
 ```
 
-Asset/discovery validation uses the exact Pi 0.87.0 development baseline. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all twelve skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. The compatibility runner selects independent official/fork dependency graphs and verifies their resolved package identity.
+Asset/discovery validation uses the exact Pi 0.87.0 development baseline. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all twelve skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on official Pi, a packed-skill smoke on the advertised minimum, and host-sensitive discovery and scripted runtime tests on the current fork.
 
-The advertised Pi 0.84.0 floor is separate from the current validation baseline; the current matrix does not requalify that historical floor. Extension API guidance was checked against official Pi 0.87.0 and `fitchmultz/pi` revision `afed789`, including emitted types and implementation. Diagram rendering tests additionally need their existing external rendering prerequisites.
+The minimum smoke uses Pi 0.84.0 and Node 22.19.0; the full suite uses Node 24. Extension API guidance was checked against official Pi 0.87.0 and `fitchmultz/pi` revision `afed789`, including emitted types and implementation. CI installs D2 and librsvg to run the diagram rendering tests.
 
 ## Model evaluations
 
@@ -43,6 +43,6 @@ Run opt-in task and routing evaluations through the actual Pi SDK and configured
 npm run eval:model -- --case clarify-and-continue
 ```
 
-See [Skill evaluations](docs/evaluations.md) for both-host comparisons, repeated and held-out cases, caller profiles, the optional GitHub workflow, and fixture limitations. The [0.7.0 results](docs/evaluation-results.md) include exact outcomes, retained failures, source identities, and evidence. No model credentials are needed for the normal test suite.
+See [Skill evaluations](docs/evaluations.md) for both-host comparisons, repeated and held-out cases, caller profiles, and fixture limitations. Live model evaluations are local and opt-in. The [0.7.0 results](docs/evaluation-results.md) include exact outcomes, retained failures, source identities, and evidence. No model credentials are needed for the normal test suite.
 
 This repository is private to npm publishing. Install it from git or a local checkout.
