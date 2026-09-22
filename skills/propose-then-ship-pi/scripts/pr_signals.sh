@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Poll a PR's CI checks until they settle.
+# Poll a PR's CI checks until one fails or all settle.
 # Read-only: never comments, pushes, resolves, or merges.
 #
-# Scope: required CI checks only. Advisory automated reviewers such as Greptile
-# never affect this script's result.
+# Scope: all reported CI checks, excluding Greptile.
 set -uo pipefail
 
 GH_BIN="${GH_BIN:-}"
@@ -14,9 +13,9 @@ usage() {
   cat <<'EOF'
 Usage: pr_signals.sh [PR_NUMBER]
 
-Polls required CI checks for PR_NUMBER (default: the PR for the current branch)
-until every check completes or the wait budget is exhausted. Advisory automated
-reviewers such as Greptile never affect ship readiness.
+Polls reported CI checks for PR_NUMBER (default: the PR for the current branch)
+until one fails, every check completes, or the wait budget is exhausted.
+Greptile checks are ignored.
 
 Env:
   GH_BIN                 required. The gh alias for this repository, gh-work or
@@ -27,7 +26,7 @@ Env:
 
 Exit codes:
   0  every check completed successfully on an open PR
-  1  at least one check failed, even if others were still running at timeout
+  1  at least one check failed (reported immediately)
   2  timed out with checks still running and none failed yet
   3  setup problem (missing dependency, bad env value, no PR, not a repo)
   4  settled, but signals are missing or unknown (no checks reported, an
@@ -128,12 +127,12 @@ while :; do
     break
   fi
 
+  [ "$failed" -gt 0 ] && break
+
   if [ "$elapsed" -ge "$MAX_WAIT" ]; then
     timeout_head=$(jq -r '.headRefOid // "unknown"' <<<"$view")
     echo "pr_signals: timed out on ${timeout_head} after ${elapsed}s with ${pending}/${total} check(s) still running" >&2
     jq -r "$NORMALIZE"' | .[] | "  \(.state)\t\(.name)"' <<<"$view" >&2
-    # A confirmed failure outranks the timeout: exit 1 so the caller acts on it.
-    [ "$failed" -gt 0 ] && exit 1
     exit 2
   fi
 
