@@ -1,146 +1,79 @@
 ---
 name: pi-extension-development
-description: "Pi extension/package runtime and bundled-resource install/discovery: tools, commands/events, providers, TUI, SDK/RPC, release/publish, debugging, and performance. Do not use for Pi core, Agent Skill content authoring, prompt-only work, Crabbox/cbx, platform matrices, dependency-contract research, or non-Pi publishing."
-compatibility: Pi 0.84.2+; Python 3.9+ for the bundled resolver.
+description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, generic platform testing, dependency research, and non-Pi publishing."
+compatibility: "Pi 0.84.2+; resolve APIs against the exact host. Current source checks cover official 0.87.0 and fitchmultz/pi afed789. Python 3.9+ for the bundled resolver."
 metadata:
   version: "1.13.0"
-  last-verified-pi: "0.84.2"
+  last-verified-pi: "0.87.0"
 ---
 
 # Pi Extension Development
 
-## Goal
+Build against the exact installed Pi contract, preserving requested power-user behavior. A matching version number does not make official Pi and a fork identical.
 
-Build, update, debug, review, and package pi extensions against the active installed Pi contract without copying stale APIs or weakening requested power-user behavior.
+## Scope and prerequisites
 
-## Trigger boundary
+Use a skill for instructions, a prompt template for user-invoked expansion, a command for explicit runtime/UI control, a tool for model-callable capability, an event for lifecycle/policy hooks, and SDK/RPC when another process owns sessions. Package the resources that need sharing; do not add runtime code for prompt-only work.
 
-Use for Pi runtime code, package resources, custom providers, SDK/RPC hosts, extension TUI, lifecycle behavior, install/update flows, and extension-specific performance.
+For skill content, Crabbox, platform matrices, or external dependency research, use `agent-skill-engineering`, `crabbox-platform-testing`, `platform-validation`, or `external-repo-integration` **if available**. These are optional companion skills, not bundled prerequisites. Otherwise use the relevant current project/vendor sources directly. Pi package install/discovery remains in this skill even when the package ships skills.
 
-Route instead to:
+`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
 
-- `agent-skill-engineering` for Agent Skill content (`SKILL.md`, evals, references, or scripts); Pi package install/discovery/runtime stays here even when the package ships skills;
-- prompt-template docs for prompt expansion with no runtime code;
-- `crabbox-platform-testing` for Crabbox/cbx setup or its local target matrix;
-- `platform-validation` for multi-environment proof;
-- `external-repo-integration` when deriving an external dependency contract is the primary task.
+## Resolve the source of truth
 
-## Authority and safety
-
-Pi extensions and packages are full-trust executable code. Review scripts, dependencies, network/file/process access, credentials, and secret logging. Preserve requested power-user capabilities such as tool overrides, remotes, sandboxes, persistent shells, dynamic tools/providers, subagents, and provider rewriting; make scope, provenance, cancellation, lifecycle, and non-interactive policy explicit.
-
-Project trust is an input-loading gate, not a sandbox or per-tool permission system. Do not change trust/approval, credential/config handling, prompts, tool authority, resource loading, or user-visible behavior without understanding the existing policy.
-
-Preparation is not release permission. When an approved task changes a remote repository, create the branch, commit, push, and open or update the pull request without another confirmation unless the user explicitly excluded one of those delivery actions. Run the repository's own defined deployment only when applicable user or repository instructions define a ship gate and that gate passes. If no ship gate is defined, do not infer one; report the deployment as `not reached: no ship gate defined`. A deployment that publishes or releases an external artifact still requires explicit authorization. Do not create tags or releases, make production-control changes outside the defined deployment, or read release credentials unless the user explicitly authorizes the action. Read `references/publishing/workflow.md` before release work.
-
-## Resolve the current source of truth
-
-Resolve the package root from the active `pi` command; do not assume npm, mise, asdf, Homebrew, Bun, or a remembered install path. Run the bundled read-only helper from the skill directory:
+Run the bundled read-only resolver by its absolute skill-relative path:
 
 ```bash
-python3 scripts/resolve_pi.py --json
+python3 <skill-dir>/scripts/resolve_pi.py --json
 pi --version
 ```
 
-Resolve the script path from this skill directory rather than the caller's cwd. The helper mirrors Pi's precedence: a set `PI_PACKAGE_DIR` must verify first, without requiring `pi` on PATH; otherwise it unwraps mise/asdf shims and resolves executable ancestry or standard npm launcher layouts. A `PI_PACKAGE_DIR` override bypasses launcher resolution, so `piBin` and `piExecutable` are `null`; verify the runnable `pi` separately. An explicit `--pi PATH` deliberately inspects that executable and ignores the override.
+The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher, including mise/asdf. An override needs no `pi` on PATH and returns null launcher fields: verify runnable Pi separately. `--pi PATH` deliberately ignores the override.
 
-When install/runtime behavior matters, compare `type -a pi`, `pi --version`, `command -v node`, and `node --version` in clean shells inside and outside the target project. A mise/asdf-owned global npm Pi can shadow the stable install while both share `~/.pi/agent` unless `PI_CODING_AGENT_DIR` differs. Report duplicates first. Only with explicit authorization, uninstall the stale copy through its exact runtime prefix, such as `npm --prefix <runtime-prefix> uninstall -g @earendil-works/pi-coding-agent`; never use a plain global uninstall. Reshim/rehash and reverify from the project.
+Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read selected Markdown files completely, follow relevant cross-references, and verify copied APIs against matching implementation/types. For upgrades, read every crossed changelog entry.
 
-The active package's executable `dist/*.js`, emitted `.d.ts`, package exports, and observed CLI/runtime behavior establish the local contract. Mitch runs `fitchmultz/pi`; public extensions also serve users of the latest official Pi release. `pi-posthorse` is the sole fork-only exception because official Pi cannot support it. For other public extensions, verify changed APIs and runtime behavior against both supported targets using their matching implementation and types. Prefer shared native capabilities and check fork-specific behavior against the extension's stated support contract. Reuse still-valid evidence and scope additional checks to the affected behavior. Official docs and examples are discovery aids and may be wrong. Read each selected Pi Markdown file completely and follow relevant cross-references before coding. Minimum sources by surface:
+Mitch runs `fitchmultz/pi`; public extensions must also support the latest official Pi release. `pi-posthorse` is the sole fork-only exception because official Pi cannot support it. Verify affected APIs and runtime behavior against both targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded above are inspected baselines, not a reason to skip a newer supported release.
 
-- extensions/trust/runtime: `CHANGELOG.md`, `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/environment-variables.md`, `examples/extensions/README.md`, matching examples and generated types;
-- TUI: `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples, `dist/*` and bundled `@earendil-works/pi-tui` types;
-- packages/install/release: `docs/packages.md`, `docs/environment-variables.md` for offline/package-dir behavior, and package-manager/resource-loader source;
-- skills/prompts: `docs/skills.md`, `docs/prompt-templates.md`;
-- SDK/RPC/session: `docs/sdk.md`, `docs/rpc.md`, `docs/json.md`, `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, `examples/sdk/README.md`, matching examples/types/source; for pi-agent-core harness or remote sessions also read the released agent/client/protocol READMEs, root package exports, session/repository types, and matching implementations;
-- providers/auth/models: `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, `docs/llama-cpp.md` when applicable, matching examples/types/source.
+When install/runtime identity matters, compare `type -a pi`, `pi --version`, `command -v node`, and `node --version` inside and outside the project in clean shells. Duplicate installations can share `~/.pi/agent` unless `PI_CODING_AGENT_DIR` differs. Report shadowing; remove a stale installation only with explicit authorization and its exact runtime prefix, never a plain global uninstall. Reshim/rehash and reverify afterward.
 
-For upgrades, read every crossed changelog entry. If docs, examples, generated `.d.ts`, CLI help, and implementation disagree, follow the active implementation and emitted types, confirm with a safe CLI/runtime probe when possible, and record the mismatch.
+## Load only the relevant contract
 
-Pi 0.84.2 still ships some misleading docs/examples. Before copying tool, TUI, SDK/RPC, lifecycle, provider, session, or model snippets, read `references/current-version-hazards.md` and verify applicable claims against active source and emitted types.
+Paths below are relative to the resolved Pi package unless prefixed `references/`. Read `references/current-version-hazards.md` before copying affected APIs; it distinguishes shared contracts from fork additions.
 
-## Available scripts
+| Changed surface | Current Pi sources | Bundled detail |
+| --- | --- | --- |
+| Tools, events, trust, load order, packages, SDK/RPC | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/environment-variables.md`, matching examples/types/source; add `docs/packages.md` or `docs/sdk.md`, `docs/rpc.md`, `docs/json.md` for that surface | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
+| Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations | `references/lifecycle-checklist.md` |
+| TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples and pi-tui exports/types | `references/tui-authoring-guide.md` |
+| Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, pi-ai exports/types/source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
+| Skill/template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource-loader and package-manager | No runtime hook needed for content-only work |
+| Release/publishing | `docs/packages.md`, CLI help, package-manager | `references/publishing/workflow.md` before release work |
+| Requested Linux/Docker proof | Exact host/distribution identity and project tests | `references/linux-docker-validation.md` |
+| New extension idea | Existing project and native mechanisms | `references/idea-evaluation-checklist.md` |
 
-- `scripts/resolve_pi.py [--pi PATH] [--json]` resolves and verifies the active package root. It is read-only; its only subprocess is fixed-argument `mise which pi` or `asdf which pi` when the active path is that manager's shim.
+For pi-agent-core harness or remote sessions, read their current READMEs, root exports, session/repository types, and implementations. Do not substitute coding-agent's SessionManager contract for a different session API.
 
-## Choose the smallest correct mechanism
+## Implementation and validation
 
-- **Skill**: reusable instructions only.
-- **Prompt template**: user-invoked prompt expansion only.
-- **Extension command**: explicit user action needing session/runtime/UI control.
-- **Custom tool**: model-callable structured capability.
-- **Event handler**: observation, policy, mutation, or lifecycle reaction.
-- **Custom UI/TUI**: overlays, widgets, editors, renderers, or other interactive surfaces.
-- **SDK/RPC runtime**: another process embeds or manages Pi sessions.
-- **Package**: installable resources shared across projects or machines.
+1. Define the user-visible outcome, runtime surface, authority, modes, and state boundaries; inspect the existing package and canonical validation.
+2. Design only applicable startup, reload/restart, resume/fork/tree/compact, cancellation, concurrency, and non-UI behavior. Reconstruct durable state and dispose owned resources. Use shared native APIs; fork additions must not become requirements for official-host users outside the Posthorse exception.
+3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the whole native batch.
+4. Guard terminal-only UI with `ctx.mode === "tui"` and dialog flows with `ctx.hasUI`. Preserve non-interactive workflows with explicit policy rather than assuming dialogs exist. Visually inspect new/changed TUI controls and their native click/key paths across states affected by the task or shared root cause; report unrelated existing omissions separately.
+5. Type-check TypeScript with the repo command or `tsc --noEmit`. Use repo lint/format; otherwise an installed `npx --no-install @biomejs/biome check`, never fetch a formatter implicitly or invoke unrelated `biome`.
+6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Reuse checks whose relevant inputs remain valid.
+7. For factory work, dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`; also inspect steady-state timers, processes, memory, network, and prompt/tool cost. Model settings belong to the host, not a skill-side client or router.
+8. Update affected docs, tests, metadata, and changelog when their contract changes. Report mismatches between docs and runtime rather than copying them.
 
-Use runtime code only when the outcome needs runtime behavior.
+## Authority and delivery
 
-## Workflow
+Extensions/packages execute with full trust. Review scripts, dependencies, file/process/network access, credentials, and logging. Project trust gates input loading; it is neither a sandbox nor a per-tool permission system. Preserve intentional tool overrides, remotes, persistent shells, dynamic providers/tools, subagents, and provider rewriting; make provenance, cancellation, modes, and lifecycle explicit.
 
-1. Define the user-visible outcome, runtime surface, authority, modes, state, and lifecycle boundaries.
-2. Read the current installed implementation and emitted types, crossed changelog entries, full relevant docs, matching examples, and safe CLI/runtime probes.
-3. Inspect the existing extension/package and its canonical tests, scripts, metadata, and install path.
-4. Design startup/reload/new/resume/fork/tree/compact behavior, state reconstruction, cancellation, non-UI behavior, concurrency, and TUI interaction only where they apply.
-5. Implement the smallest focused change against current APIs.
-6. Type-check every TypeScript change with the repo script or `tsc --noEmit`. Use the repo lint/format script; otherwise use an already-installed `@biomejs/biome` via `npx --no-install @biomejs/biome check`. Do not fetch a formatter implicitly and do not invoke the unrelated `biome` package.
-7. Load the extension/package through its intended path and exercise the changed command/tool/event/provider/UI/SDK/RPC flow. Use explicit `--approve` or `--no-approve` when project trust affects the result.
-8. When factory-load work, dependencies, startup, or performance changed, run the startup A/B in `references/runtime-authoring-guide.md`; inspect steady-state timers, watchers, processes, memory, network, and prompt/tool tax too.
-9. Update package metadata, docs, tests, and changelog when install, runtime contract, performance, or user-visible behavior changed.
+Follow current user/harness authority. Make routine reversible improvements within the approved outcome, behavior, cost, and permissions; update the plan and continue. Fix supporting defects needed for that outcome or required checks; report unrelated pre-existing nonblocking bugs separately.
 
-## Runtime invariants
+An approved remote-repository change includes branch, commit, push, and PR delivery unless explicitly excluded. Preparation does not authorize tags, releases, external artifact publication, release credential reads, or production control outside the defined deployment. Run a repository-defined deployment only after its applicable user/repository ship gate; if none exists, report `not reached: no ship gate defined`. Artifact publication still requires applicable explicit authorization. Honor existing authorization and holds; historical examples cannot grant another user permission.
 
-- During factory load, register handlers/tools/commands/shortcuts/flags/message and entry renderers/providers. Default-only `getFlag()` reads and `pi.exec()` are also available, but keep startup work minimal. Run session-bound actions from `session_start`, commands, tools, or events, and read CLI-provided flag values only after parsing.
-- Treat reload, session replacement/import, cwd changes, and branch navigation as real boundaries. Rehydrate durable state from session entries/branch data and clean up timers, streams, subprocesses, listeners, overlays, and subscriptions. Committed session replacement aborts and persists active work, and the interactive `/tree` command likewise aborts before navigating; programmatic `navigateTree()` (extension `ctx.navigateTree`, RPC, print mode) instead rejects while a run is active. Only the aborting paths can leave later unstarted sequential siblings unmatched; no path synthesizes results for unstarted siblings in a sequential tool batch. If balanced tool-call history matters, wait for final idle before switching; do not race the transition with synthetic session writes.
-- Use `agent_end` for one low-level run; use `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` for final-idle work after retries, compaction retry, and queued continuations. Never use low-level `session.agent.waitForIdle()` for settlement. Low-level `Agent.reset()` rejects until the agent is idle (0.84.1).
-- Tools run in parallel by default. Queue the whole file read-modify-write window with `withFileMutationQueue()`. `executionMode: "sequential"` serializes the entire sibling-call batch in source order; use it only when sibling calls truly share one state machine.
-- Blocked `tool_call` handlers may return `{ block: true, terminate: true }` (0.84.1); the automatic follow-up model call is skipped only when every finalized result in the sibling batch terminates. Result-level `terminate` remains the final structured-output mechanism.
-- Pi 0.84 bundles TypeBox 1.3.7. Import from `typebox`; use supported APIs rather than old TypeBox compatibility shims.
-- For cache-friendly lazy tools, register every tool up front, keep searchable tools inactive, and activate them additively from a loader tool. Removing or replacing tools uses the normal fallback; prompt metadata on newly active tools can still invalidate the stable system-prompt prefix. The `defaultTools` setting (0.84.2) configures the startup built-in tool selection globally or per project and preserves extension/SDK custom tools.
-- Guard terminal-only UI with `ctx.mode === "tui"`; use `ctx.hasUI` for TUI/RPC dialogs. Define print/JSON/RPC behavior instead of relying on interactive confirmation.
-- Use `before_provider_headers` for outbound assembled headers, `before_provider_request` for serialized payload changes, and `after_provider_response` for response status/headers. `ModelRuntime` owns final auth/header assembly and applies the pi-ai `ModelsRequestTransforms` header transform before dispatch. `ProviderHeaders` values are `string | null`; preserve `null` deletion markers when forwarding. Never log resolved credentials or auth headers.
-- Use legacy `pi.registerProvider(id, config)` for supported APIs with static/simple catalogs; use `pi.registerProvider(createProvider(...))` when the provider owns native auth, filtering, refresh/cache, or streaming. `createProvider({ fetchModels })` still returns fetched models and owns publication. Handwritten refresh code reads `context.stored` and commits persistence plus synchronous state through generation-checked `context.publish()`, never `context.store`. Native providers still receive `models.json` overlays; inspect field precedence for legacy config. Validate removal/reload for any conditional registration.
-- When extension model UI or actions must honor `--models` or `enabledModels`, use the read-only `ctx.scopedModels` snapshot when non-empty. An empty array means the session is unscoped, so all available models remain eligible.
-- Put nested-LLM `Usage` from tools, custom compaction, and branch summaries in the top-level `usage` field so persisted session totals include it; do not hide it in `details`.
-- Gate tool `constrainedSampling` on model capability flags; prefer `json_schema`/`prefer`. Bash tools expose `PI_SESSION_ID`/`PI_SESSION_FILE`/`PI_PROVIDER`/`PI_MODEL`/`PI_REASONING_LEVEL`; direct RPC bash runs `user_bash` handlers before execution and streams `bash_execution_update`.
-- JSON/RPC `message_update` is delta-only: accumulate `assistantMessageEvent` deltas between `message_start` and `message_end`, and replace local state with authoritative `message_end.message`. Since 0.84.2 each delta event also carries the latest cumulative top-level `usage`, which may remain zero until completion; cumulative `message` and `partial` fields stay absent. Internal SDK/extension `AgentSessionEvent` still carries its in-process cumulative message.
-- `ModelRegistry.refresh(options)` returns `ModelsRefreshResult`; inspect `aborted` and provider `errors`. `setRuntimeApiKey(providerId, key, { signal })` accepts auth cancellation only; call `refresh({ providers: [providerId], signal })` separately when remote catalog freshness is required. Preflight credentials with `pi auth check` (0.84.1) before auth-dependent validation. Config-form OAuth `refreshToken(credentials, signal)` must honor the concrete signal.
-- New pi-agent-core harness work imports v2 `AgentHarness` and the v4 lane-based `Session`, `SessionStorage`, `SessionRepo`, `JsonlSessionRepo`, and `InMemorySessionRepo` from the package root. `AgentHarness` is currently a compile-complete scaffold with many operation paths rejecting `HarnessNotImplemented`; verify the exact path before adoption. Custom `FileSystem` implementations provide atomic same-filesystem replacement through `renameFile()`. Do not import removed experimental or legacy repository subpaths.
-- `RemoteSession.sessions` contains durable `SessionMetadata`; inspect an acquired `SessionSnapshot` for runtime phase, model, thinking, attachment, and lock state.
-- RPC clients should query `get_available_thinking_levels` after model changes rather than hard-code a global level set.
-- Pair `pi.appendEntry()` with `pi.registerEntryRenderer()` for durable display-only transcript state excluded from model context. Use custom messages when content should enter model context. Message renderers receive `outputPad`; apply it to horizontal spacing, while entry renderers receive only `expanded`.
-- `pi.sendUserMessage(content, { expandPromptTemplates: true })` (0.84.2) explicitly dispatches extension commands and expands skills/prompt templates; the default remains `false`. `pi.sendMessage(..., { triggerTurn: false })` records a custom message without steering an active run (fixed in 0.84.2).
-- For new or changed owned TUI controls, make displayed actionable keyboard hints clickable where native mouse input is available, with labels and actions matching the current screen/focus. Cover all screens and states affected by the approved task or shared root cause; report unrelated existing omissions separately. Follow `references/tui-authoring-guide.md` for native components, macOS Option labels, hit regions, and pointer validation.
-- Visually inspect changed TUI behavior; code review alone is not proof. Account for per-run `--use-theme` overrides, `PI_TUI_ESC_TIMEOUT` on high-latency SSH input, and built-in fullscreen search (`Ctrl+Shift+F`) when validating (0.84.2).
+## Output
 
-## Reference loading
+Report the abstraction, exact host/source identity, changes, applicable lifecycle/mode/TUI evidence, and validation. Include repository delivery and deployment status, authorized external actions taken, and concrete remaining gaps with recovery actions. Omit irrelevant checklist fields.
 
-Read only when applicable:
-
-- `references/current-version-hazards.md` — Pi 0.84.2 migrations and stale docs/examples before copying affected snippets.
-- `references/runtime-authoring-guide.md` — runtime authority, trust, load order, lifecycle, events, packages, RPC, performance, and validation.
-- `references/tui-authoring-guide.md` — terminal UI, overlays, widgets, editors, shortcuts, autocomplete, renderers, and mode fallbacks.
-- `references/provider-model-guide.md` — providers, auth, model catalogs/compatibility, ModelRuntime, or SDK model/auth migration.
-- `references/lifecycle-checklist.md` — state, reload, fork/resume/tree, compaction, final-idle, or runtime replacement.
-- `references/tool-design-checklist.md` — custom tools or built-in overrides.
-- `references/idea-evaluation-checklist.md` — deciding whether a new extension should exist.
-- `references/linux-docker-validation.md` — requested Linux/Docker validation.
-- `references/publishing/workflow.md` — package preparation, release, publish, and install/update verification.
-
-## Output contract
-
-```md
-Abstraction: [skill/template/command/tool/event/UI/SDK/RPC/package]
-Current sources: [Pi version, exact docs/examples/types/help/source]
-Implementation: [changed files]
-Lifecycle/authority: [state, boundaries, modes, concurrency, trust]
-TUI/UX: [guards, rendering, key/focus flow, visual evidence if applicable]
-Validation: [type-check, tests/lint, runtime/package/manual checks, startup A/B if applicable]
-Repository delivery: [branch, commit, push, pull request: complete / excluded / blocked / failed; deployment: run or verified / not defined / not reached / blocked / failed]
-Explicit external actions: [none, or exact authorized tags/releases/publication/release credentials/production control outside the defined deployment]
-Remaining gaps: [only real gaps]
-```
-
-## Stop rules
-
-Stop only when the abstraction is correct, implementation matches the active installed contract, the real changed path is validated, each routine branch, commit, push, and pull-request action is complete, explicitly excluded, or truthfully reported blocked or failed with its recovery action, deployment is run or verified after its applicable gate or truthfully reported not defined, not reached, blocked, or failed, release and production-control actions outside the defined deployment stayed within explicit authorization, and no unverified lifecycle/install/TUI assumption could change correctness.
+Finish only when the changed path is validated, applicable delivery is complete or explicitly excluded/blocked/failed, and no unverified lifecycle/install/TUI assumption can change correctness. Do not imply release, deployment, or installation happened from preparation evidence alone.
