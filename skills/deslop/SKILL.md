@@ -1,81 +1,45 @@
 ---
 name: deslop
-description: "Clean AI-generated slop from branch/PR diffs while preserving behavior: noisy comments, debug/scaffold leftovers, odd defensive checks, evidence-laundering casts, spurious try/catch, needless wrappers/nesting, test-table ceremony, and changed-hunk style mismatch. Do not use for features, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
+description: "Remove AI-generated noise from changed branch/PR hunks while preserving behavior: redundant comments, scaffolding, casts, catches, wrappers, and test ceremony. Not feature work, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
 ---
 
 # Deslop
 
-## Goal
+Remove noise from the diff with minimal behavior-preserving edits. Keep unrelated user work, non-obvious invariants, security reasoning, and external contracts intact.
 
-Remove AI-generated noise from a branch or PR diff without changing intended behavior.
+## Establish scope
 
-## Success criteria
+1. Read `git status --short` and inspect uncommitted changes. Treat dirty files as user-owned until proven otherwise.
+2. Use the user's comparison base; otherwise prefer `main`, then the repository integration branch. Ask only if choosing the base materially changes the diff.
+3. Inspect `git diff <base>...HEAD` for committed changes since divergence, plus the worktree diff. Edit changed hunks only; read surrounding code to understand their behavior and style.
 
-- The comparison base is known: user-stated base first, else the repo integration branch such as `main` or `master`.
-- Pre-existing user changes are identified and preserved unless explicitly in scope.
-- Only changed hunks in the branch/worktree diff were edited.
-- Slop patterns were removed with minimal, focused edits.
-- Behavior is unchanged unless the user separately asked for a bug fix.
-- Final summary is concise and names validation performed.
+## What to cut
 
-## Use when
+- Comments that repeat code or add off-style AI narration.
+- Temporary debug logs, commented-out code, and scaffold leftovers.
+- Defensive checks abnormal for a proven trusted internal path.
+- Adapters, wrappers, nesting, names, or structure that add noise compared with neighboring code.
 
-- The user asks to deslop, remove AI artifacts, clean a noisy diff, or make a PR less obviously AI-written.
-- A branch/PR diff shows comment bloat, temporary debug/scaffold leftovers, spurious try/catch, evidence-laundering casts, needless wrappers, or nesting that local style would simplify.
+### Casts
 
-## Do not use when
+Delete chained assertions (`x as A as B`) and widen-then-assert patterns (`const x: unknown = known; … x as T`) only when the value already has a precise type or a typed replacement is in the hunk. Exempt `as const`.
 
-- The user asks for intentional behavior changes, feature work, or root-cause bug fixing.
-- The task is a broad maintainability/code-quality audit rather than cleanup of changed hunks.
-- The request is repo-wide formatting, generated-code cleanup, lint autofix, or style migration unrelated to the branch diff.
-- A local style disagreement would require a team decision.
+After collapsing a laundering pattern, keep a remaining assertion only with a preceding `SAFETY:` or equivalent comment stating the checked invariant. Do not invent a vague comment to justify it. Leave it unchanged if the producer is off-hunk or no compiling replacement exists; do not impose a wider ban on `unknown`, `typeof`, or mocks.
 
-## Workflow
+### Catches
 
-1. Inspect state before editing: `git status --short` for uncommitted edits, plus `git diff <base>...HEAD` (three-dot: branch changes since divergence, not base movement) for committed branch work. Treat dirty files as user-owned until proven otherwise.
-2. If the base is not stated, prefer `main`; if absent, infer the integration branch from repo context or ask only if the choice changes the diff materially.
-3. Scan changed hunks only for:
-   - comments that repeat the code or use off-style AI narration
-   - temporary debug logs, commented-out code, or leftover scaffolding
-   - defensive checks abnormal for trusted internal paths
-   - evidence-laundering casts:
-     - delete chained assertions (`x as A as B`) and widen-then-assert (`const x: unknown = known; … x as T`) only when the value already has a precise type or a typed replacement is in the hunk
-     - exempt `as const`
-     - after collapsing a laundering pattern, keep a leftover assertion only when a preceding `SAFETY:` or equivalent invariant comment states the checked invariant
-     - fail open if the producer is off-hunk or no compiling replacement exists
-   - try/catch:
-     - delete catch-and-rethrow of the same error with no added context
-     - delete a swallowing catch only when it is proven redundant
-     - keep one that adds context or sits on a real I/O, parse, trust, or security boundary
-     - fail open if you cannot see why it is there
-   - needless adapters, wrappers, conditionals, or nesting that neighbors avoid
-   - nested or table-driven test ceremony where a plain test or an existing repo helper is clearer
-   - names, structure, or error handling inconsistent with the surrounding file
-4. Before simplifying parameterized tests, trace each value to its real boundary and type:
-   - keep malformed-value cases for external, untyped, or deserialized input when they prove a real boundary
-   - remove values the real typed internal producer cannot emit and that reach the code only through an impossible mock
-   - use `it.each`/`describe.each` only when multiple meaningful cases share behavior; collapse wrappers that only rerun one test
-   - prefer an existing local test helper over a hand-rolled nested table
-5. Apply the smallest behavior-preserving edit. Check nearby code first; prefer deletion and local-style simplification over rewrites.
-6. Re-check the diff for unrelated churn, accidental behavior changes, and remaining slop.
-7. Run relevant tests/type checks when code behavior or types were touched; for comment-only cleanup, diff inspection is enough.
+Delete catch-and-rethrow with no added context. Delete an intentional swallow only when proven redundant. Keep catches that add context or handle a real I/O, parse, trust, security, or containment boundary. If the purpose is unclear, leave it unchanged.
 
-## Stop rules
+### Tests
 
-Stop when changed hunks are clean, or when further cleanup would alter behavior, expand scope, or require a style/product decision.
+Trace table values to their real boundary and type before simplifying:
 
-## Output contract
+- Keep malformed inputs that exercise an external, untyped, or deserialized boundary.
+- Remove impossible values only when the real typed internal producer cannot emit them and they enter solely through an impossible mock.
+- Keep `it.each`/`describe.each` for multiple meaningful cases sharing behavior. Collapse single-case wrappers and needless nested tables; prefer existing local helpers.
 
-Report the base inspected, files changed, validation run, and any skipped cleanup with the reason.
+## Verify and finish
 
-## Anti-patterns
+Prefer deletion and local-style simplification over rewrites. Recheck the diff for behavior changes, unrelated churn, and remaining noise. Run relevant tests/type checks for code or type edits; comment-only cleanup needs diff inspection.
 
-- Behavior changes disguised as cleanup.
-- Broad rewrites instead of focused deslop.
-- Removing comments that document non-obvious invariants, security reasoning, or external contracts.
-- Deleting malformed-input coverage from a real trust boundary because downstream types look narrower.
-- Parameterizing typed internal seams with values they cannot produce just to appear defensive.
-- Touching unrelated user changes just because they are nearby.
-- Enforcing type-policy or lint rules beyond the hunk (banning `unknown`, `typeof`, or mocks).
-- Deleting a `SAFETY:`-justified assertion or equivalent invariant comment, or adding a vague comment to paper over a cast.
-- Deleting a catch that handles a real boundary, adds error context, or is an intentional containment swallow.
+Stop when the changed hunks are clean or further cleanup would change behavior, expand scope, or require a team/product decision. Report the base, files changed, validation, and any skipped cleanup with its reason.

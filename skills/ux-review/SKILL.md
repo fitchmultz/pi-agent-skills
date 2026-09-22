@@ -1,6 +1,6 @@
 ---
 name: ux-review
-description: "Review PRs, designs, plans, and product behavior that affect a human user's experience, especially agentic or long-running workflows. Evaluate usability, end-to-end task completion, recovery, visible progress, truthful outcomes, capability boundaries, scope fidelity, meaningful metrics, and channel-appropriate output. Do not use for backend-only changes with no user-visible impact, maintainability-only review, or live exploratory QA."
+description: "Review user-visible PRs, designs, plans, and workflows for usability, completion, recovery, truthful outcomes, scope, and capability boundaries. Default read-only. Not backend-only changes without user impact, maintainability-only review, or live exploratory QA."
 ---
 
 # End-User Experience Review
@@ -11,17 +11,7 @@ Review the whole path from a user's request or action to its truthful outcome. R
 
 Default to a read-only review. If the user also requests fixes, finish the review first so remediation does not erase the evidence, then rerun affected journeys and acceptance checks before issuing the current verdict.
 
-## Use when
-
-- A PR, design, plan, or implementation changes user-visible behavior.
-- An agent, automation, or long-running workflow retries, resumes, reports progress, performs external writes, or reports outcomes.
-- The user asks for a UX, product-experience, failure-UX, or end-user-impact review.
-
-## Do not use when
-
-- A backend-only change cannot alter user-visible behavior.
-- The request is only a maintainability, security, or visual-polish audit.
-- The user wants live exploratory QA through the product; use the dogfood skill instead.
+For live exploratory QA, use the bundled `../dogfood/SKILL.md`; this review of code, plans, or existing evidence does not require browser tools. Do not expand a maintainability/security-only or visual-polish request into a UX audit.
 
 ## Scope contract
 
