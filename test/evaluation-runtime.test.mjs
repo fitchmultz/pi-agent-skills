@@ -49,6 +49,24 @@ async function scriptedHost(t, steps) {
   return { host, contexts };
 }
 
+test('selected SDK owns native documentation despite an inherited package override', async t => {
+  const inheritedPackageDir = process.env.PI_PACKAGE_DIR;
+  const unrelatedRoot = join(tmpdir(), 'unrelated-pi-host');
+  process.env.PI_PACKAGE_DIR = unrelatedRoot;
+  t.after(() => {
+    if (inheritedPackageDir === undefined) delete process.env.PI_PACKAGE_DIR;
+    else process.env.PI_PACKAGE_DIR = inheritedPackageDir;
+  });
+  const { host, contexts } = await scriptedHost(t, [answer('Selected host documentation inspected.')]);
+  const result = await runCase(host, { id: 'host-docs', skill: 'pi-extension-development', prompt: 'Locate the native SDK documentation.', check() {} }, { skillsDir });
+  assert.equal(result.passed, true, result.failure);
+  assert.equal(host.sdk.getPackageDir(), host.root);
+  assert.equal(result.host.resourceRoot, host.root);
+  assert(contexts[0].includes(join(host.root, 'docs')));
+  assert(contexts[0].includes(join(host.root, 'README.md')));
+  assert(!contexts[0].includes(unrelatedRoot));
+});
+
 test('native evaluation asks, writes and verifies the same real fixture', async t => {
   const { host, contexts } = await scriptedHost(t, [
     call('read', { path: 'config.json' }),

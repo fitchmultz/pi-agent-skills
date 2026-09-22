@@ -28,9 +28,12 @@ export async function skillDigest(root) {
 
 export async function createHost({ index = process.env.PI_HOST_INDEX, provider = 'openai-codex', modelId = 'gpt-6-astra', authPath } = {}) {
   const url = index ? pathToFileURL(resolve(index)).href : import.meta.resolve('@earendil-works/pi-coding-agent');
-  const sdk = await import(url);
   const root = await realpath(fileURLToPath(new URL('..', url)));
   assert.equal(await realpath(fileURLToPath(url)), join(root, 'dist', 'index.js'), 'Select the native SDK index, not a CLI or another package');
+  process.env.PI_PACKAGE_DIR = root;
+  const sdk = await import(url);
+  const resourceRoot = await realpath(sdk.getPackageDir());
+  assert.equal(resourceRoot, root, 'Native SDK resources must belong to the selected host');
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
   const modelRuntime = await sdk.ModelRuntime.create({ authPath: authPath ?? join(sdk.getAgentDir(), 'auth.json'), modelsPath: null, refreshOnCreate: false });
   const model = modelRuntime.getModel(provider, modelId);
@@ -38,7 +41,7 @@ export async function createHost({ index = process.env.PI_HOST_INDEX, provider =
   const receiptPath = resolve(root, '../../..', 'fork-release.json');
   const receipt = existsSync(receiptPath) ? JSON.parse(await readFile(receiptPath, 'utf8')) : undefined;
   return { sdk, root, modelRuntime, model, identity: {
-    label: process.env.PI_COMPAT_HOST ?? 'installed', version: manifest.version, sdk: fileURLToPath(url),
+    label: process.env.PI_COMPAT_HOST ?? 'installed', version: manifest.version, sdk: fileURLToPath(url), resourceRoot,
     sdkSha256: hash(await readFile(fileURLToPath(url))), sourceCommit: receipt?.commit,
     provider: model.provider, model: model.id, api: model.api, contextWindow: model.contextWindow, maxTokens: model.maxTokens,
   } };

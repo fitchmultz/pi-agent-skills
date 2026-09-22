@@ -22,7 +22,7 @@ npm run eval:model -- --case clarify-and-continue
 npm run eval:model -- --provider openai --suite held-out
 ```
 
-Set `PI_HOST_INDEX` to another installed host's absolute `dist/index.js` to evaluate that host with its own dependencies. `PI_COMPAT_HOST` labels the report. Do not mix package dependencies or modify a running Pi installation.
+Set `PI_HOST_INDEX` to another installed host's absolute `dist/index.js` to evaluate that host with its own dependencies. Each evaluator process selects one host and sets `PI_PACKAGE_DIR` to its verified package root before importing the SDK, so native documentation and resources cannot inherit another launcher's host. The report records that resource root. `PI_COMPAT_HOST` labels the report. Do not mix package dependencies or modify a running Pi installation.
 
 The manual **Skill model evaluations** GitHub workflow uses the pinned official host and requires the repository's `OPENAI_API_KEY` secret. It is separate from required offline PR checks. Missing credentials fail an explicitly requested model run; they do not silently skip it. No credentials are bundled or provisioned by this repository.
 
