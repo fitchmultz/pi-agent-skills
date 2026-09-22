@@ -1,0 +1,77 @@
+name: Skills CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skills-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  official:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq librsvg2-bin
+      - name: Install D2
+        run: |
+          curl -fsSL https://github.com/d2lang/d2/releases/download/v0.9.0/d2-v0.9.0-linux-amd64.tar.gz -o "$RUNNER_TEMP/d2.tar.gz"
+          printf '%s  %s\n' 5669ddc46b99e942cc96078f4a4e36d5e62103348f4c05179ede27802fdd87a9 "$RUNNER_TEMP/d2.tar.gz" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/d2"
+          tar -xzf "$RUNNER_TEMP/d2.tar.gz" -C "$RUNNER_TEMP/d2"
+          sudo install -m 755 "$(find "$RUNNER_TEMP/d2" -type f -name d2 -print -quit)" /usr/local/bin/d2
+      - run: npm test
+      - run: npm run pack:check
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.19.0'
+      - name: Verify minimum supported Pi and Node
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pi-084" --ignore-scripts --no-audit --no-fund --package-lock=false @earendil-works/pi-coding-agent@0.84.0
+          PI_HOST_INDEX="$RUNNER_TEMP/pi-084/node_modules/@earendil-works/pi-coding-agent/dist/index.js" npm run smoke
+
+  fork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: skills
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: fitchmultz/pi
+          ref: main
+          path: fork
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: fork/package-lock.json
+      - name: Build current fork
+        working-directory: fork
+        run: |
+          git rev-parse HEAD
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run hydrate:model-data
+          npm run build:offline
+      - name: Verify native skill and SDK behavior
+        working-directory: skills
+        env:
+          PI_HOST_INDEX: ${{ github.workspace }}/fork/packages/coding-agent/dist/index.js
+          PI_COMPAT_HOST: fork
+          PI_OFFLINE: '1'
+          PI_TELEMETRY: '0'
+        run: node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs

@@ -11,7 +11,7 @@ npm run smoke
 npm run pack:check
 ```
 
-The native evaluation tests drive real Pi sessions, skill expansion, tools, filesystem changes, and a failing-then-passing Node test. Only their model stream is scripted. They also check cancellation, provider failures, manual-only skills, routing, and rejected writes. They run without model credentials, including through the compatibility workflow's independent host installations.
+The native evaluation tests drive real Pi sessions, skill expansion, tools, filesystem changes, and a failing-then-passing Node test. Only their model stream is scripted. They also check cancellation, provider failures, manual-only skills, routing, and rejected writes. Pull-request CI runs the full suite against the pinned official host and its host-sensitive discovery and evaluation tests against the current fork, without model credentials.
 
 ## Model access
 
@@ -24,7 +24,7 @@ npm run eval:model -- --provider openai --suite held-out
 
 Set `PI_HOST_INDEX` to another installed host's absolute `dist/index.js` to evaluate that host with its own dependencies. Each evaluator process selects one host and sets `PI_PACKAGE_DIR` to its verified package root before importing the SDK, so native documentation and resources cannot inherit another launcher's host. The report records that resource root. `PI_COMPAT_HOST` labels the report. Do not mix package dependencies or modify a running Pi installation.
 
-The manual **Skill model evaluations** GitHub workflow uses the pinned official host and requires the repository's `OPENAI_API_KEY` secret. It is separate from required offline PR checks. Missing credentials fail an explicitly requested model run; they do not silently skip it. No credentials are bundled or provisioned by this repository.
+Live model evaluations run locally by explicit request; GitHub Actions runs only the offline checks. Missing credentials fail an explicitly requested model run; they do not silently skip it. No credentials are bundled or provisioned by this repository.
 
 ## Controlled comparisons
 
