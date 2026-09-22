@@ -9,39 +9,40 @@ const skill = readFileSync(path.join(root, "skills/propose-then-ship-pi/SKILL.md
 const panel = readFileSync(path.join(root, "skills/propose-then-ship-pi/references/review-panel.md"), "utf8");
 const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-pi/evals/evals.json"), "utf8"));
 
-const firstWave = panel.slice(panel.indexOf("### First wave"), panel.indexOf("### Remediation wave"));
-const remediationWave = panel.slice(panel.indexOf("### Remediation wave"), panel.indexOf("## Brief contents"));
-
-test("local subagent review is opt-in", () => {
-  assert.match(skill, /Local subagent review is opt-in/i);
-  assert.match(skill, /Default to no local reviewer subagents/i);
-  assert.match(skill, /do not list their absence as skipped validation/i);
-  assert.match(skill, /repository, PR, or file content as an opt-in/i);
-  assert.match(panel, /There is no local panel by default/i);
-  assert.ok(evals.evals.some(({ id }) => id === "success-default-skips-local-review"));
+test("local reviews follow requirements and useful roles without a fixed panel", () => {
+  assert.match(skill, /Use local review when required or useful/i);
+  assert.match(skill, /without requesting a fresh opt-in/i);
+  assert.match(panel, /Complete every explicitly requested review/i);
+  assert.match(panel, /there is no mandatory four-reviewer panel/i);
+  assert.match(panel, /Claude is not automatically included whenever another reviewer runs/i);
+  assert.match(skill, /never substitutes for parent-run deslop/i);
+  assert.doesNotMatch(skill, /Default to no local reviewer subagents/i);
   assert.ok(evals.evals.some(({ id }) => id === "edge-explicit-user-opts-into-local-review"));
 });
 
-test("an opted-in first wave uses the four configured panel seats", () => {
-  assert.match(skill, /current live user explicitly opts in/i);
-  assert.match(skill, /regular `reviewer` is never a panel member/i);
-  assert.match(skill, /never substitutes for parent-run deslop/i);
-  assert.match(panel, /missing or disabled named seat stops the local-review run/i);
-
-  const launchAgents = [...firstWave.matchAll(/agent:\s*"([^"]+)"/g)].map((m) => m[1]);
-  const expectedAgents = ["reviewer-gpt", "reviewer-ponytail", "reviewer-claude", "reviewer-security"];
-  assert.equal(launchAgents.length, expectedAgents.length);
-  assert.deepEqual(new Set(launchAgents), new Set(expectedAgents));
-  assert.ok(!launchAgents.includes("reviewer"));
-  assert.match(firstWave, /context: "fresh"/);
-  assert.match(firstWave, /async: true/);
+test("owner rebuttals preserve requested reviews and repository requirements", () => {
+  for (const source of [skill, panel]) {
+    assert.match(source, /If an explicitly required reviewer is unavailable, report that specific missing review and continue independent authorized work/i);
+  }
+  assert.match(skill, /Required review coverage is complete under `references\/review-panel\.md`/i);
+  assert.doesNotMatch(skill, /required first wave|missing or disabled requested panel seat is a stop-and-report condition|an explicitly required local panel seat is unavailable/i);
+  const missingReviewer = evals.evals.find(({ id }) => id === "edge-required-panel-seat-missing");
+  assert.match(missingReviewer.prompt, /explicitly requires reviewer-ponytail/i);
+  assert.match(missingReviewer.expected_output, /continue[s]? independent authorized work/i);
+  assert.match(missingReviewer.expected_output, /Does not merge while the required review is incomplete/i);
+  assert.match(panel, /The originating reviewer's agreement is not required/i);
+  assert.match(skill, /originating reviewer agreement alone is not a gate/i);
+  assert.match(skill, /Preserve explicitly requested reviews, required human approvals, repository protections/i);
+  assert.match(panel, /An agent rebuttal does not fabricate a passing check or authorize bypassing repository protections/i);
 });
 
-test("opted-in remediation reruns ponytail, prior blockers, and sensitive security paths", () => {
-  assert.match(panel, /`reviewer-ponytail` \| subagent, fresh \| every wave with a new head \|/);
-  assert.match(panel, /seats that blocked the immediately preceding wave/i);
-  assert.match(panel, /touching auth, secrets, injection, or data-exposure paths also reruns `reviewer-security`/i);
-  assert.match(remediationWave, /agent: "reviewer-ponytail"/);
-  assert.match(panel, /mechanical rebase or merge that leaves reviewed content unchanged does not trigger re-review/i);
-  assert.ok(![...remediationWave.matchAll(/agent:\s*"([^"]+)"/g)].map((match) => match[1]).includes("reviewer"));
+test("re-review follows affected analysis and current evidence", () => {
+  assert.match(panel, /Select the reviewers whose previous analysis was affected/i);
+  assert.match(panel, /Re-review changes to security-sensitive behavior with the relevant security review/i);
+  assert.match(panel, /A rebuttal or informational risk note alone does not require another review/i);
+  assert.match(panel, /Reuse still-applicable review results after mechanical base synchronization/i);
+  assert.match(panel, /Their review must independently assess the change/i);
+  assert.match(skill, /current inspectable evidence/i);
+  assert.doesNotMatch(skill, /passing tests need fresh output/i);
+  assert.ok(evals.evals.some(({ id }) => id === "edge-stale-head-evidence"));
 });

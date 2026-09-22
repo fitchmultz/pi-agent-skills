@@ -10,7 +10,7 @@ Preparation is not permission to release or publish external artifacts.
 - After the task is approved, routine branch creation, commits, pushes, and pull-request updates require no separate confirmation unless the user explicitly excluded one of those actions. Deployment follows the defined-gate and explicit-release boundary in `SKILL.md`.
 - Tags, GitHub Release creation, npm publish, external artifact release, any defined deployment that publishes or releases an external artifact, production-control changes outside the repository's defined deployment, and release credential reads each require user authorization that covers that action.
 - Audits are read-only. Delete or rewrite local files only when the requested preparation scope authorizes working-tree edits; otherwise report cleanup findings.
-- Stop before an ambiguous branch, tag, registry scope, package name, version, account, or repository.
+- Stop only when branch, tag, registry scope, package name, version, account, or repository ambiguity could change the authorized outcome or external action; choose routine reversible working-branch names without asking.
 - Use the shell-preloaded `NPM_TOKEN`; if it is missing, source `~/.secrets` only inside the isolated publish subshell. Never use `set -a`, and never expose the temporary auth config to npm lifecycle scripts.
 
 ## Current source of truth

@@ -41,7 +41,7 @@ Do not use for:
 - Use multi-select only when more than one option is valid.
 - In plain text, use numbered questions and a compact reply format such as `1a 2b 3defaults` when helpful.
 
-4. Do not start implementation while must-have ambiguity remains. A labeled low-risk discovery step is allowed only if it does not commit a direction.
+4. Pause only implementation that depends on unresolved must-have ambiguity. Continue independent work already authorized by the user, including discovery that can resolve the question.
 
 5. If the user wants to proceed without answers, state assumptions briefly and continue only when they confirm or a safe default does not materially change scope, safety, or acceptance criteria.
 
@@ -51,7 +51,7 @@ Do not use for:
 
 - Broad open-ended questions when a tight option list would work
 - Asking for information already in the repo/config/docs
-- Starting implementation before resolving must-have ambiguity
+- Starting implementation that depends on unresolved must-have ambiguity
 - Over-questioning when one reasonable default would suffice
 - Labeling a UI option as recommended when order already communicates the default
 - Adding a custom-answer choice when the question UI supplies one automatically

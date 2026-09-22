@@ -83,7 +83,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
     const commandMap = new Map([
       ['pwd', [process.execPath, ['-e', 'console.log(process.cwd())']]],
       ...['status --short', 'status --porcelain', 'diff', 'diff HEAD', 'diff main...HEAD', 'diff --stat', 'rev-parse --show-toplevel', 'rev-parse HEAD'].map(args => [`git ${args}`, ['git', args.split(' ')]]),
-      ...['npm test', 'node --test'].map(command => [command, [process.execPath, ['--permission', `--allow-fs-read=${cwd}`, '--test-isolation=none', '--test']]]),
+      ...['npm test', 'node --test'].map(command => [command, [process.execPath, ['--permission', `--allow-fs-read=${cwd}`, '--experimental-test-isolation=none', '--test']]]),
       ['pi --version', [process.execPath, [join(host.root, 'dist', 'cli.js'), '--version']]],
       [`python3 ${join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py'), '--json']]],
     ]);

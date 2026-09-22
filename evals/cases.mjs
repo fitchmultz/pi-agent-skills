@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -120,9 +121,24 @@ export const cases = [
     },
   },
   {
-    id: 'verify-honest-gap', skill: 'verification-before-completion', invoke: true,
-    files: { 'evidence.json': JSON.stringify({ changed: ['docs/install.md'], claim: 'Installation documentation updated', validation: [{ command: 'node --test test/package.test.mjs', exitCode: 0, inspected: true }], codeChanges: false, liveInstallTested: false }) },
-    prompt: 'Review evidence.json and give the final status for this documentation-only change. Do not claim a live installation was tested. No regression code or tests changed, and no additional checks are required by the repository.' + statusFormat,
+    id: 'verify-honest-gap', skill: 'verification-before-completion', invoke: true, git: true,
+    files: { 'package.json': packageFile, '.gitignore': 'runtime.json\nevidence.json\n',
+      'docs/install.md': '# Installation\n\nUse Node.js 22.19.0 or newer. Instal dependencies with `npm ci`.\n',
+      'test/docs.test.mjs': "import assert from 'node:assert/strict';\nimport { readFileSync } from 'node:fs';\nimport test from 'node:test';\ntest('installation documentation identifies prerequisites and command', () => { const doc = readFileSync(new URL('../docs/install.md', import.meta.url), 'utf8'); assert.match(doc, /^# Installation\\n/); assert.match(doc, /Node\\.js 22\\.19\\.0 or newer/); assert.match(doc, /`npm ci`/); });\n" },
+    changes: { 'docs/install.md': '# Installation\n\nUse Node.js 22.19.0 or newer. Install dependencies with `npm ci`.\n' },
+    setup: async ({ cwd, put }) => {
+      const output = execFileSync(process.execPath, ['--test', 'test/docs.test.mjs'], { cwd, encoding: 'utf8', env: { HOME: cwd } });
+      const git = args => execFileSync('git', args, { cwd, encoding: 'utf8' });
+      const status = git(['status', '--short']);
+      assert.equal(status.trim(), 'M docs/install.md');
+      const inputSha256 = {};
+      for (const path of ['docs/install.md', 'test/docs.test.mjs', 'package.json']) inputSha256[path] = createHash('sha256').update(await readFile(join(cwd, path))).digest('hex');
+      await put('evidence.json', JSON.stringify({ changed: ['docs/install.md'], claim: 'Installation documentation typo corrected',
+        git: { head: git(['rev-parse', 'HEAD']).trim(), status, diff: git(['diff']) },
+        validation: [{ command: 'node --test test/docs.test.mjs', exitCode: 0, output, inspected: true, node: process.version, inputSha256 }],
+        codeChanges: false, liveInstallTested: false }));
+    },
+    prompt: 'Review evidence.json and the available documentation diff and check source, then give the final status for the installation-documentation typo correction. The evidence contains the real passing output and current input hashes of the pre-existing documentation check. Do not claim a live installation was tested. No regression code or tests changed, and no additional checks are required by the repository.' + statusFormat,
     check: (r, { cwd }) => { assert(wasRead(r, 'evidence.json', cwd)); const answer = JSON.parse(r.output); assert.equal(answer.status, 'complete'); assert.match(answer.verified.join(' '), /document|docs/i); assert.match(answer.unverified.join(' '), /live|install/i); assert.equal(r.commands.filter(c => c.command === 'npm test').length, 0); noWrites(r); },
   },
   {
@@ -195,10 +211,10 @@ export const cases = [
   },
   {
     id: 'dogfood-captures-evidence', skill: 'dogfood', invoke: true, git: true,
-    files: { '.gitignore': '.dogfood/\n' },
+    files: { '.gitignore': '.dogfood/\n' }, writable: ['report.md'],
     setup: async ({ state }) => { state.image = png(renderError); state.beforeImage = png(frame('<text x="30" y="50">Settings</text><text x="47" y="108">Save</text>')); }, tools: context => [browserTool(context)],
-    prompt: 'Dogfood http://fixture.local/settings using the available browser tool. Test the Save button, capture a screenshot under the current workspace, open it yourself, and report the observed issue. The fixture is already authorized and needs no login; do not edit application files. This is a static flow, so no recording is needed.',
-    check: (r, { state, cwd }) => { assert(state.clicked, 'Exercise Save'); assert((state.captures ?? []).some(capture => capture.afterClick && wasRead(r, capture.path, cwd)), 'Read a screenshot captured after Save'); assert(inspectedImage(r), 'Inspect screenshot before reporting'); assert.match(r.output, /save.*fail|fail.*save|save.*error/i); assert((state.browserCalls ?? []).some(args => args[0] === 'screenshot')); noWrites(r); },
+    prompt: 'Dogfood http://fixture.local/settings using the available browser tool. Test the Save button, capture a screenshot under the current workspace, open it yourself, and report the observed issue. The fixture is already authorized and needs no login; do not edit application files. If you write a report file, use report.md. This is a static flow, so no recording is needed.',
+    check: (r, { state, cwd }) => { assert(state.clicked, 'Exercise Save'); assert((state.captures ?? []).some(capture => capture.afterClick && wasRead(r, capture.path, cwd)), 'Read a screenshot captured after Save'); assert(inspectedImage(r), 'Inspect screenshot before reporting'); assert.match(r.output, /save.*fail|fail.*save|save.*error/i); assert((state.browserCalls ?? []).some(args => args[0] === 'screenshot')); },
   },
   {
     id: 'dogfood-cloudflare-boundary', skill: 'dogfood', invoke: true,

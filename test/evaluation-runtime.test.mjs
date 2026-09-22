@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHost, runCase, zeroUsage } from '../evals/runtime.mjs';
@@ -16,7 +19,9 @@ async function scriptedHost(t, steps) {
   t.after(() => rm(dir, { recursive: true, force: true }));
   const host = await createHost({ provider: 'openai', authPath: join(dir, 'auth.json') });
   await host.modelRuntime.setRuntimeApiKey('openai', 'fixture-key-never-sent');
-  const { createAssistantMessageEventStream } = await import(pathToFileURL(join(dirname(host.root), 'pi-ai/dist/utils/event-stream.js')));
+  const aiPackagePath = findPackageJSON('@earendil-works/pi-ai', pathToFileURL(host.identity.sdk));
+  const aiPackage = JSON.parse(await readFile(aiPackagePath, 'utf8'));
+  const { createAssistantMessageEventStream } = await import(new URL(aiPackage.exports['.'].import, pathToFileURL(aiPackagePath)));
   const contexts = [];
   t.mock.method(host.modelRuntime, 'streamSimple', (model, context, options) => {
     contexts.push(JSON.stringify(context));
@@ -73,6 +78,56 @@ test('native command execution records a real RED/GREEN regression', async t => 
   const result = await runCase(host, selected, { skillsDir });
   assert.equal(result.passed, true, result.failure);
   assert.deepEqual(result.commands.map(command => command.exitCode), [1, 0]);
+});
+
+test('dogfood can write its evidence report without editing application files', async t => {
+  const { host } = await scriptedHost(t, [
+    call('agent_browser', { args: ['open', 'http://fixture.local/settings'] }),
+    call('agent_browser', { args: ['snapshot', '-i'] }),
+    call('agent_browser', { args: ['click', '@e1'] }),
+    call('agent_browser', { args: ['screenshot', '.dogfood/save.png'] }),
+    call('read', { path: '.dogfood/save.png' }),
+    call('write', { path: 'report.md', content: '# Save failure\n\nSave failed after clicking the button. Evidence: .dogfood/save.png\n' }),
+    answer('Save failed. Report: report.md; screenshot: .dogfood/save.png.'),
+  ]);
+  const result = await runCase(host, cases.find(item => item.id === 'dogfood-captures-evidence'), { skillsDir });
+  assert.equal(result.passed, true, result.failure);
+  assert.match(result.files['report.md'], /Save failed/);
+  assert.deepEqual(result.violations, []);
+});
+
+test('documentation completion evidence records the actual checked files and diff', async t => {
+  const selected = cases.find(item => item.id === 'verify-honest-gap');
+  const { host } = await scriptedHost(t, [
+    call('read', { path: 'evidence.json' }),
+    call('read', { path: 'docs/install.md' }),
+    call('read', { path: 'test/docs.test.mjs' }),
+    call('bash', { command: 'git diff' }),
+    answer(JSON.stringify({ status: 'complete', verified: ['Installation documentation updated; documentation check passed.'], unverified: ['Live installation was not tested.'] })),
+  ]);
+  const result = await runCase(host, { ...selected, check: async (record, context) => {
+    selected.check(record, context);
+    const evidence = JSON.parse(await readFile(join(context.cwd, 'evidence.json'), 'utf8'));
+    const validation = evidence.validation[0];
+    assert.equal(validation.command, 'node --test test/docs.test.mjs');
+    assert.equal(validation.exitCode, 0);
+    assert.match(validation.output, /pass 1/);
+    assert.match(validation.output, /fail 0/);
+    assert.equal(validation.inspected, true);
+    assert.deepEqual(Object.keys(validation.inputSha256).sort(), ['docs/install.md', 'package.json', 'test/docs.test.mjs']);
+    for (const [path, sha256] of Object.entries(validation.inputSha256)) {
+      assert.equal(sha256, createHash('sha256').update(await readFile(join(context.cwd, path))).digest('hex'));
+    }
+    const git = args => execFileSync('git', args, { cwd: context.cwd, encoding: 'utf8' });
+    assert.equal(evidence.git.head, git(['rev-parse', 'HEAD']).trim());
+    assert.equal(evidence.git.status, git(['status', '--short']));
+    assert.equal(evidence.git.diff, git(['diff']));
+    assert.equal(git(['diff', '--name-only']).trim(), 'docs/install.md');
+    assert.equal(evidence.liveInstallTested, false);
+    assert.equal(evidence.codeChanges, false);
+  } }, { skillsDir });
+  assert.equal(result.passed, true, result.failure);
+  assert.equal(result.events.filter(event => event.type === 'result' && event.isError).length, 0);
 });
 
 test('manual-only skills expand explicitly and disappear from no-skills controls', async t => {
