@@ -71,7 +71,7 @@ The mouse APIs below were verified on Pi 0.85.1. Check the active package's expo
 
 Regular `TuiMainScreen` does not capture mouse input; the terminal owns scrollback. Fullscreen `TuiAltScreen` supplies native pointer routing. Report this boundary and retain regular-mode keyboard flow; do not add raw mouse capture or change Pi core to manufacture support.
 
-- Every displayed actionable keyboard hint in owned UI must be clickable through that native route. Audit all screens, focus modes, and compact states, not only the reported button.
+- Displayed actionable keyboard hints in new or changed owned UI controls must be clickable through that native route. Cover all screens, focus modes, and compact states affected by the approved task or shared root cause; report unrelated existing omissions separately.
 - Labels must describe the current action: Enter may open details in read focus but send in compose focus; Back follows the actual screen. Clicks and keys must share the underlying action and guards, preserving focus, drafts, and selection unless the action itself changes them.
 - Reuse `MouseRegion`, `Container`, `Box`, and `Text` from `@earendil-works/pi-tui` and existing native controls. No new mouse parser, UI framework, or replacement editor/selector. Custom render wrappers must forward `handleMouse`, not only rendering and keyboard input.
 - Base hit regions on actual rendered spans after platform formatting, wrapping, clipping, and padding. Reuse native coordinate handling; keep any necessary inline layout small and shared by rendering and hit testing. Hidden hints, separators, and unused padding must not activate actions.
