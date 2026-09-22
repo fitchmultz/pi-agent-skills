@@ -90,7 +90,10 @@ test('dogfood can write its evidence report without editing application files', 
     call('write', { path: 'report.md', content: '# Save failure\n\nSave failed after clicking the button. Evidence: .dogfood/save.png\n' }),
     answer('Save failed. Report: report.md; screenshot: .dogfood/save.png.'),
   ]);
-  const result = await runCase(host, cases.find(item => item.id === 'dogfood-captures-evidence'), { skillsDir });
+  const selected = cases.find(item => item.id === 'dogfood-captures-evidence');
+  const result = await runCase(host, { ...selected, setup: async ({ state }) => {
+    state.image = state.beforeImage = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+  } }, { skillsDir });
   assert.equal(result.passed, true, result.failure);
   assert.match(result.files['report.md'], /Save failed/);
   assert.deepEqual(result.violations, []);
