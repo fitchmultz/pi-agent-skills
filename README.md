@@ -43,6 +43,6 @@ Run opt-in task and routing evaluations through the actual Pi SDK and configured
 npm run eval:model -- --case clarify-and-continue
 ```
 
-See [Skill evaluations](docs/evaluations.md) for both-host comparisons, repeated and held-out cases, caller profiles, the optional GitHub workflow, and fixture limitations. No model credentials are needed for the normal test suite.
+See [Skill evaluations](docs/evaluations.md) for both-host comparisons, repeated and held-out cases, caller profiles, the optional GitHub workflow, and fixture limitations. The [0.7.0 results](docs/evaluation-results.md) include exact outcomes, retained failures, source identities, and evidence. No model credentials are needed for the normal test suite.
 
 This repository is private to npm publishing. Install it from git or a local checkout.

@@ -7,6 +7,8 @@
 - Align verification and review with current authorization: reuse applicable evidence, demonstrate regression failures when practical, continue independent work, and resolve findings with fixes or evidence-backed rebuttals.
 - Add native Pi task and routing evaluations with baseline comparisons, held-out prompts, caller-policy and no-skills controls, and retained tool/image evidence. Live model runs remain separate from offline compatibility checks.
 - Report failing CI checks immediately while preserving the existing non-Greptile check selection and PR-state receipts.
+- Honor caller-selected QA report paths independently of screenshot directories, and preserve explicit Crabbox/platform-matrix routing exclusions.
+- Publish [bounded model comparison results](docs/evaluation-results.md), including corrected fixtures, raw failures, and reproducible evidence.
 
 ## [0.6.0] - 2026-09-05
 
