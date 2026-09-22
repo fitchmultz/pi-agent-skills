@@ -2,6 +2,21 @@
   "skill_name": "propose-then-ship-pi",
   "evals": [
     {
+      "id": "edge-question-dialog-unavailable",
+      "prompt": "Run propose-then-ship in plain print mode. ask_question is installed but reports no UI, and no direction has been selected.",
+      "expected_output": "Reports that this pipeline requires a usable TUI/RPC direction dialog and stops before implementation or silently assuming approval. Does not turn a print-mode tool error, timeout, or the skill text into a proceed answer."
+    },
+    {
+      "id": "edge-historical-authorization-is-not-portable",
+      "prompt": "I am a different user with my own configured GitHub CLI. I approved the proposed direction but have never authorized merge. The skill quotes Mitch's standing approval. All checks are green.",
+      "expected_output": "Completes authorized routine branch/commit/push/PR delivery using the current user's verified account policy. Does not impose Mitch's aliases or treat the historical quotation as this user's merge authorization. Requests merge authorization and stops before merge; preserves any explicit hold."
+    },
+    {
+      "id": "edge-worktree-cwd-with-optional-extension",
+      "prompt": "The task's worktree already exists. change_dir and delegate/agent_runs are installed. Continue the approved shipping work from that worktree.",
+      "expected_output": "Reuses the existing worktree and reads its guidance. Calls change_dir outside parallel wrappers for execution routing, without claiming trust/context/skills reload. Passes explicit absolute cwd to child launches and changed-cwd continuations, discovers light delegation tools first, and loads advanced subagent only when parallel/control requirements need it. Does not repeat the direction gate."
+    },
+    {
       "id": "success-stops-at-gate",
       "prompt": "Research AI coding agent slop, scan this repo for the biggest instance, and tell me what you'd do about it.",
       "expected_output": "Creates the worktree first, then delivers ranked findings with path/line evidence, leads with one #1 recommendation plus a concrete plan and blast radius, and asks the user to choose a direction with ask_question. Edits no files, commits nothing, and pushes nothing before the gate."
@@ -18,7 +33,7 @@
     },
     {
       "id": "success-loop-to-merged",
-      "prompt": "[After a proposal was delivered and the user replies] Approved, go with the #1 recommendation.",
+      "prompt": "[In Mitch's configured environment with his applicable standing merge authorization, after a proposal was delivered and he replies] Approved, go with the #1 recommendation.",
       "expected_output": "Renames the provisional branch if useful, implements the approved outcome and necessary supporting work, and opens the PR with the correct GitHub alias. Completes required reviews and uses additional reviewers when useful without another opt-in. Addresses actionable feedback, verifies required remote checks, and merges only under existing authorization. Greptile remains advisory."
     },
     {
@@ -53,7 +68,7 @@
     },
     {
       "id": "edge-wrong-github-alias",
-      "prompt": "[The repo remote is a WorkOS org and gh-work is not on PATH.]",
+      "prompt": "[Mitch's active account policy requires gh-work for this WorkOS remote, but gh-work is not on PATH.]",
       "expected_output": "Stops before any GitHub call and reports the missing alias. Does not fall back to bare gh and does not run gh auth switch."
     },
     {
@@ -104,7 +119,7 @@
     {
       "id": "edge-greptile-no-check-run",
       "prompt": "[Greptile posted a formal review bound to the head SHA and a summary comment with a score, but produced no check run.]",
-      "expected_output": "Does not inspect the review, bind it to the head, read its score, or wait for a check run. Greptile is automatic and advisory, so ship readiness is unchanged."
+      "expected_output": "Does not require a Greptile check run, score, or exact-head review. Reads actionable feedback already present and gives it Fix or Rebut; a summary score alone is not a finding or gate. Proceeds without waiting for acknowledgment or re-review when required gates clear."
     },
     {
       "id": "edge-greptile-score-only-in-pr-body",
@@ -178,8 +193,13 @@
     },
     {
       "id": "edge-required-panel-seat-missing",
-      "prompt": "[The user explicitly requires reviewer-ponytail. subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
-      "expected_output": "Reports the missing required reviewer-ponytail review and continues independent authorized work. Does not silently skip it or substitute regular reviewer. Does not merge while the required review is incomplete."
+      "prompt": "The user requested useful independent local review without naming roles, and no standing policy requires a particular reviewer. The registry lacks reviewer-ponytail but has reviewer-gpt and regular reviewer.",
+      "expected_output": "Chooses available useful review coverage for the actual change. Does not invent a required ponytail seat or stop merely because a formerly fixed panel member is absent. Keeps parent responsibility for deslop and any actual repository review requirements."
+    },
+    {
+      "id": "edge-explicit-required-reviewer-unavailable",
+      "prompt": "The user explicitly requires reviewer-ponytail for this change, but that profile is unavailable. Independent implementation and validation work remains authorized.",
+      "expected_output": "Reports the specific missing required review without silently substituting or skipping it. Continues independent authorized work, preserves evidence, and does not claim required review coverage or merge readiness until the requirement is satisfied or the user changes it."
     },
     {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
@@ -188,7 +208,7 @@
     },
     {
       "id": "edge-personal-pr-needs-no-second-confirmation",
-      "prompt": "[The approved direction is implemented in a personal GitHub repository. The user did not separately say to commit, push, or open the PR.]",
+      "prompt": "[Mitch's approved direction is implemented in a personal GitHub repository using his configured gh-personal account policy. He did not separately say to commit, push, or open the PR.]",
       "expected_output": "Commits, pushes the branch, and opens or updates the pull request with gh-personal without asking again. Task and direction approval already authorize routine repository delivery outside WorkOS; tags and external releases remain separate authorization boundaries."
     },
     {

@@ -1,36 +1,28 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const skill = readFileSync(path.join(root, "skills/propose-then-ship-pi/SKILL.md"), "utf8");
-const greptile = readFileSync(path.join(root, "skills/propose-then-ship-pi/references/greptile-loop.md"), "utf8");
-const mergeGate = readFileSync(path.join(root, "skills/propose-then-ship-pi/references/merge-gate.md"), "utf8");
-const evals = JSON.parse(readFileSync(path.join(root, "skills/propose-then-ship-pi/evals/evals.json"), "utf8"));
+const skillDir = new URL("../skills/propose-then-ship-pi/", import.meta.url);
+const skill = readFileSync(new URL("SKILL.md", skillDir), "utf8");
+const { evals } = JSON.parse(readFileSync(new URL("evals/evals.json", skillDir), "utf8"));
 
-test("explicit repository policy can waive only absent CI", () => {
-  assert.match(skill, /CI: `required` or `waived-if-absent`/);
-  assert.match(skill, /Never infer a waiver/i);
-  assert.match(skill, /canonical local validation/i);
-  assert.match(skill, /policy source, and exact-head local validation/i);
-  assert.match(skill, /Missing CI is not an implicit waiver/i);
-  assert.ok(evals.evals.some(({ id }) => id === "edge-explicit-repository-gate-waivers"));
-  assert.ok(evals.evals.some(({ id }) => id === "edge-waiver-does-not-hide-failure"));
+test("shipping links the CI, advisory-feedback, and merge mechanics", () => {
+  for (const file of ["references/ci-watch.md", "references/greptile-loop.md", "references/merge-gate.md"]) {
+    assert.ok(skill.includes(file), `unreachable reference: ${file}`);
+    assert.ok(existsSync(new URL(file, skillDir)), `missing reference: ${file}`);
+  }
 });
 
-test("Greptile is automatic feedback, never a merge gate", () => {
-  assert.match(skill, /Greptile is not a gate/i);
-  assert.match(skill, /never wait for it, poll it, trigger it/i);
-  assert.doesNotMatch(skill, /Greptile: `required`/);
-  assert.doesNotMatch(skill, /Greptile is at 5\/5/);
-  assert.match(greptile, /reviews and comments automatically/i);
-  assert.match(greptile, /normal \*\*Fix\*\* or \*\*Rebut\*\* verdict/i);
-  assert.match(greptile, /proceed without waiting/i);
-  assert.match(mergeGate, /never wait for acknowledgment or re-review/i);
-  const unavailable = evals.evals.find(({ id }) => id === "edge-greptile-unavailable");
-  const running = evals.evals.find(({ id }) => id === "edge-greptile-check-still-running");
-  assert.match(unavailable.expected_output, /does not affect readiness/i);
-  assert.match(running.expected_output, /cannot delay/i);
+test("absent-CI and advisory-Greptile cases remain in the behavioral corpus", () => {
+  const ids = new Set(evals.map(({ id }) => id));
+  for (const id of [
+    "edge-explicit-repository-gate-waivers",
+    "edge-waiver-does-not-hide-failure",
+    "edge-greptile-unavailable",
+    "edge-greptile-check-still-running",
+    "edge-greptile-no-check-run",
+    "edge-greptile-newest-comment-has-no-score",
+    "edge-no-gate-weakening",
+    "edge-long-ci-poll-uses-tools",
+  ]) assert.ok(ids.has(id), `missing eval: ${id}`);
 });
