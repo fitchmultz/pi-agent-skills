@@ -1,6 +1,6 @@
 # Runtime Authoring Guide
 
-Use for detailed pi extension design after reading `SKILL.md` and resolving the active installed implementation and emitted types. Treat docs/examples as leads, not contracts.
+Use for the selected runtime surface after resolving the exact official/fork package and emitted types. Read the matching sections, not every unrelated subsystem. `references/current-version-hazards.md` in the main skill's reference map covers current migrations and distribution differences; implementation/types win over examples.
 
 ## Evidence to gather
 
@@ -112,7 +112,7 @@ Supported dynamic behavior:
 - Extension contexts expose the current session's resolved model scope through read-only `ctx.scopedModels`. Use it when an extension model UI or action must match `--models`/`enabledModels`; an empty array means there is no scope, not that no models are available.
 - Commands/events can send steering/follow-up messages or inject custom messages when that is the workflow.
 
-Use `/reload` or `ctx.reload()` for source/resource reload, not for ordinary dynamic state.
+Use `/reload` or `ctx.reload()` for resource refresh and extension reinitialization, not ordinary dynamic state. Official 0.87.0 reloads extension source; afed789 reuses cached factories, so changed extension code requires a process restart there.
 
 ## Lifecycle and state
 
@@ -125,7 +125,7 @@ Design for boundaries that apply:
 - model/thinking changes
 - interactive, RPC, JSON, and print modes
 - SDK runtime replacement and `AgentSessionRuntime.importFromJsonl()`
-- cwd changes whose project trust is unresolved
+- session replacement into another cwd, which can require a new trust decision; an optional `change_dir` execution override does not reload trust, AGENTS, skills, settings, or extensions
 
 Best practices:
 
@@ -133,7 +133,7 @@ Best practices:
 - Store branch-aware state in tool result `details` when the state follows tool actions. Keep nested-model `Usage` in the result's top-level `usage`, not inside `details`, so session totals include it.
 - Store non-model session state with `pi.appendEntry(customType, data)`. Pair it with `pi.registerEntryRenderer()` when persisted state needs interactive transcript UI without entering model context.
 - Rehydrate from `ctx.sessionManager.getBranch()` in `session_start`; handle `session_tree` when branch navigation changes meaning and `session_info_changed` when the displayed session name drives UI/state.
-- Use `agent_end` for per-low-level-run inspection. Use `agent_settled` or `AgentSession.waitForIdle()` for final notifications, host idle transitions, and cleanup that must wait until retries, overflow compaction/retry, summarization retries, and queued continuations finish. RPC clients needing final completion should also wait for `agent_settled`, not `agent_end`. Handle `summarization_retry_*` when UI or hosts surface compaction/branch-summary retry progress.
+- Use `agent_end` for per-low-level-run inspection. Use shared `agent_settled` or `AgentSession.waitForIdle()` for final notifications and host idle transitions after retries, compaction/summarization retries, and queued continuations. On 0.87.0, actionable final-boundary work belongs in `agent_before_settle`; `agent_settled` is notification-only. RPC completion likewise uses settlement, not `agent_end`. Handle `summarization_retry_*` when exposing retry progress.
 - Clean up timers, watchers, handles, subprocesses, raw terminal listeners, and UI loops in `session_shutdown` and component `dispose()`.
 - After `ctx.reload()`, treat the command handler as terminal: `await ctx.reload(); return;`.
 - Current Pi rejects persisted non-root `ctx.fork()` paths when the session file has not been written yet, which is the usual path before the first assistant response. Treat that clear unsaved-session error as expected validation and do not run replacement cleanup or success behavior after it. A root-level `position: "before"` fork can still create a parented session without opening the old file.
@@ -167,7 +167,7 @@ When embedding pi with `AgentSessionRuntime`:
 - Pi 0.84.0 exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
 - `input` runs after extension commands are checked and before skill/template expansion. Transforms chain; `handled` short-circuits.
 - `before_agent_start` can inspect `systemPromptOptions` and chain system-prompt changes.
-- `context` receives a deep copy of messages for provider-call context shaping.
+- In 0.87.0, `context` receives conversation messages without system messages; Pi restores prompt/tool declarations afterward. Use `context_with_system` for intentional full-transcript transformations. `SessionManager` owns future provider context: append through it and refresh, rather than assigning low-level agent message arrays.
 - `before_provider_headers` mutates assembled outbound `ProviderHeaders` in place: a string adds/overrides and `null` removes. `ModelRegistry.getApiKeyAndHeaders()` preserves those `string | null` values; forwarding code passes null markers through unchanged. Return values are ignored, and provider-internal retries reuse the resulting headers without rerunning the hook. Do not log auth headers or remove required auth/transport headers accidentally.
 - `before_provider_request` mutates provider payloads after serialization; these changes are not reflected by `ctx.getSystemPrompt()`.
 - `after_provider_response` observes response status and headers before stream consumption; use it for response diagnostics rather than stream parsing.
@@ -186,7 +186,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Runtime third-party dependencies belong in `dependencies`, even if they are heavy sandbox/client SDKs required by the feature.
 - Do not rely on devDependencies at runtime.
 - Imported pi core packages belong in optional `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`. Exact Pi baseline pins belong only in `devDependencies` when the repo uses them for validation.
-- Pi 0.84.2 bundles TypeBox 1.3.7. Use its supported `typebox` APIs and validate against the active package instead of pinning an older peer or adding a compatibility shim.
+- The inspected official/fork 0.87.0 packages bundle TypeBox 1.3.27. Use the installed `typebox` APIs; do not pin an older peer or add a compatibility shim.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
 - `npmCommand` may route installs through wrappers/package managers such as `mise`, `asdf`, `bun`, or `pnpm`; do not assume bare `npm`.
 - Project package settings and missing project package installs participate only after project trust. Package commands accept `--approve` / `--no-approve` for one-command trust behavior, and global `defaultProjectTrust` controls unresolved fallback behavior.
@@ -197,10 +197,10 @@ Read `docs/packages.md` before changing package layout or release guidance.
 
 ## pi-agent-core harness and remote sessions
 
-- New harness code imports v2 `AgentHarness` plus the v4 lane-based `Session`, `SessionStorage`, `SessionRepo`, `JsonlSessionRepo`, and `InMemorySessionRepo` from the `@earendil-works/pi-agent-core` root. Experimental subpaths and legacy repository APIs are removed; do not add adapters to preserve them. The promoted `AgentHarness` is a compile-complete scaffold, not a complete execution runtime: current prompt, queue, compaction, navigation, resume, watch, lane-management, and manual-drive paths reject with `HarnessNotImplemented`, so verify the exact operation before adopting it.
-- v4 storage owns durable operation records, global name/label facts, a session-wide sequence, and lane pointers. Use `session.view(lane)` for tree-scoped work and `SessionRepo` metadata methods for create/open/list/delete/fork. Do not mix this schema with coding-agent's v3 `SessionManager` JSONL.
-- Custom harness `FileSystem` implementations return failures through `Result` and implement `renameFile(source, destination, signal?)` as atomic same-filesystem replacement. `JsonlSessionRepo` relies on it for staged publication and torn-tail repair.
-- Remote client session lists expose durable `SessionMetadata`. Read runtime `phase`, `model`, `thinkingLevel`, `attached`, and `locked` only from an acquired authoritative `SessionSnapshot`; list metadata is not a live-state projection.
+- Current 0.87.0 root exports include `AgentHarness`, `Session`, `Storage`, `SessionRepo`, `JsonlSessionRepo`, and `MemorySessionRepo`. Use current Branch/session mutation and Context APIs; do not restore old experimental imports, `InMemorySessionRepo`, `SessionStorage`, or `session.view(lane)`.
+- Durable entries, values, usage, branches, and lane state belong to the harness storage contract. Keep that schema separate from coding-agent's v3 `SessionManager` JSONL. Probe operations actually adopted: the old blanket scaffold warning is obsolete, but `watchSession` still throws `SliceNotImplemented`.
+- Custom `FileSystem` methods return failures through `Result`. Current `renameFile(source, destination, context)` performs atomic same-filesystem replacement for JSONL publication/repair; use Context cancellation rather than the old optional-signal signature.
+- Experimental coding-agent client/server packages are source-only from 0.85.1. Use supported local SDK/stdio RPC for ordinary embedding. If source-level remote integration is explicitly required, inspect that protocol and its acquired live-state contract; durable listing metadata is not live runtime state.
 
 ## RPC mode gotchas
 
@@ -236,7 +236,7 @@ Pick validation that proves the changed contract:
 
 - type-check (`tsc --noEmit` or repo script) as a required gate for any TypeScript change; tests for extension code
 - `pi -e ./extension.ts` quick runtime load
-- auto-discovered location plus `/reload` for hot-reload behavior
+- auto-discovered location plus the actual host's reload/restart path; afed789 extension code changes need a process restart
 - command invocation in TUI for commands/UI
 - print/JSON/RPC mode for non-interactive contracts, including current-model thinking-level discovery for RPC hosts
 - session flows: `/new`, `/resume`, `/fork`, `/clone`, `/tree`, `/compact` when lifecycle matters; verify top-level usage survives tool, compaction, and branch-summary persistence when nested model calls are in scope

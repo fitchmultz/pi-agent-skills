@@ -60,7 +60,7 @@ Add extension-specific runtime dependencies after that. For semantic-code extens
 # Prefer official install paths or distro packages that behave like real Linux users would install.
 ```
 
-Pass the active host Pi version with `docker build --build-arg PI_VERSION="$(pi --version)" ...` so Linux validates the same contract inspected during development. Pin other tools only when the product contract requires it; otherwise use current stable installers plus logged `--version` checks.
+This npm baseline tests the **official release**. Pass its exact version with `docker build --build-arg PI_VERSION=<official-version> ...`. A fork may report the same `pi --version`; that does not select its code from npm. For a same-fork-build requirement, use the project's verified fork artifact/install path and record its commit/artifact identity separately. Never label an official-version container as fork validation. Pin other tools only when the contract requires it; otherwise log current installer/version identity.
 
 ## Secrets and local-only image policy
 
@@ -156,8 +156,8 @@ If the local Docker transport needs a variable such as `DOCKER_HOST`, add only t
 
 Responsibilities:
 
-1. Verify Docker is available and capture the active `pi --version`.
-2. Build a local-only image with that `PI_VERSION` and a deterministic tag such as `<package>-linux-smoke:local`.
+1. Verify Docker and capture the target Pi version plus distribution/commit/artifact identity.
+2. Build a local-only image with the exact official version or verified fork artifact and a deterministic tag such as `<package>-linux-smoke:local`.
 3. Create a fresh artifact directory and print its path.
 4. Run build, tests, package, and Pi install/resource checks in a credential-free container; persist the prepared image or artifact state needed by runtime smokes.
 5. If live-model proof is requested, start a second model-only container from that prepared state and forward only the required credential names. Run no package manager or lifecycle command there.

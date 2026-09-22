@@ -2,6 +2,21 @@
   "skill_name": "pi-extension-development",
   "evals": [
     {
+      "id": "public-extension-shared-host-policy",
+      "prompt": "Update a public Pi extension for Mitch. His installed fork supports an API absent from the latest official Pi. Can the extension now require the fork, and do old validation results need repeating?",
+      "expected_output": "Keeps the public extension compatible with both fitchmultz/pi and latest official Pi using shared native behavior; pi-posthorse is the sole fork-only exception. Verifies affected APIs and paths on both exact targets, reuses still-valid evidence, and does not repeat unrelated checks or invent a compatibility shim solely to copy the fork API."
+    },
+    {
+      "id": "official-fork-lifecycle-boundary",
+      "prompt": "My extension must run on official Pi 0.87.0 and fitchmultz/pi afed789. Use final-idle notifications, then reload after editing the extension. A teammate says to require newContext and session_checkpoint everywhere.",
+      "expected_output": "Uses shared agent_settled or AgentSession/ExtensionCommandContext waitForIdle for final settlement, not low-level agent_end. Does not require fork-only newContext/session_checkpoint on official Pi. Explains official reload refreshes extension source while afed789 requires a process restart for code changes, and verifies both actual host paths without adding no-op compatibility machinery."
+    },
+    {
+      "id": "optional-tools-and-execution-cwd",
+      "prompt": "I am using official Pi 0.87.0 without the companion skills. Move this task to its existing worktree, ask a required approval question in print mode, and start a child there.",
+      "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd and discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
+    },
+    {
       "id": "edge-choose-prompt-template-not-extension",
       "prompt": "I want a reusable /create-goal prompt with no runtime state or tools.",
       "expected_output": "Chooses prompt template rather than extension, reads prompt-template docs if implementing, and avoids runtime code."
@@ -19,7 +34,7 @@
     {
       "id": "interactive-tui-ux",
       "prompt": "Build a pi extension command with an interactive selector, read/compose views, and custom tool result display. Make its keyboard hints clickable in fullscreen mode and natural on macOS.",
-      "expected_output": "Reads full docs/tui.md and verifies active exports/types/source; uses native controls and MouseRegion/Container/Box/Text rather than a framework or mouse parser. Audits every displayed actionable hint across screens and focus states, shares guarded actions with keys, labels Enter and Back by their current action, and preserves focus, drafts, and selection. Uses public keyHint/keyText or rawKeyHint with current bindings to display Option on macOS without changing canonical alt IDs/config or rewriting user/agent text; avoids internal formatter imports. Forwards native pointer routing through render wrappers and matches hit regions to formatted, wrapped, clipped, padded output. Clicks actual rendered hint cells at normal/narrow widths and compact layouts in read/compose focus; asserts visible outcomes, consequential effects, and single activation, with no actions from hidden hints, separators, or unused padding. Keeps theme/width rules, TUI guards, regular-mode keyboard fallback, and visual verification of the tool display."
+      "expected_output": "Reads full docs/tui.md and verifies active exports/types/source; uses native controls and MouseRegion/Container/Box/Text rather than a framework or mouse parser. Audits actionable hints across screens and focus states affected by the approved task or shared root cause, reporting unrelated existing omissions separately, shares guarded actions with keys, labels Enter and Back by their current action, and preserves focus, drafts, and selection. Uses public keyHint/keyText or rawKeyHint with current bindings to display Option on macOS without changing canonical alt IDs/config or rewriting user/agent text; avoids internal formatter imports. Forwards native pointer routing through render wrappers and matches hit regions to formatted, wrapped, clipped, padded output. Clicks actual rendered hint cells at normal/narrow widths and compact layouts in read/compose focus; asserts visible outcomes, consequential effects, and single activation, with no actions from hidden hints, separators, or unused padding. Keeps theme/width rules, TUI guards, regular-mode keyboard fallback, and visual verification of the tool display."
     },
     {
       "id": "edge-regular-tui-mouse-boundary",
@@ -73,8 +88,8 @@
     },
     {
       "id": "llama-cpp-live-provider-management",
-      "prompt": "Use Pi 0.84.0's bundled llama.cpp support to manage and select a local model from my extension.",
-      "expected_output": "Reads docs/llama-cpp.md plus the hidden built-in extension, provider, and manager source. Recognizes Pi already loads it as a hidden built-in instead of adding a duplicate; treats /login llama.cpp as router-URL plus optional-key auth and /llama as model load/unload control; keeps discovered models live and non-persistent; filters availability to loaded models; avoids shell mutation during ordinary discovery; and validates server-down, unloaded, loaded, abort/timeout, and reload states."
+      "prompt": "Use installed Pi 0.87.0's bundled llama.cpp support to manage and select a local model from my extension.",
+      "expected_output": "Resolves the exact target version and reads docs/llama-cpp.md plus hidden built-in extension/provider/manager source. Reuses native /login llama.cpp and /llama rather than adding a duplicate; keeps discovery live and non-persistent. For current 0.87 hosts, preserves loaded, sleeping, and autoloadable unloaded preset selection instead of copying the older loaded-only filter. Avoids shell mutation during ordinary discovery and validates server-down, unloaded, loaded, abort/timeout, and the host's reload/restart path."
     },
     {
       "id": "model-runtime-sdk-auth-migration",
@@ -189,7 +204,7 @@
     {
       "id": "linux-docker-version-and-secret-boundary",
       "prompt": "Add a local Linux Docker smoke gate for this Pi extension using the same Pi build I have installed and one live model key.",
-      "expected_output": "Reads the Linux validation reference and active Pi version, launches a fail-fast host orchestrator through env -i with a temporary HOME and allowlisted variables, rejects credential-bearing project npm config before repository/dependency code, passes the exact PI_VERSION as a Docker build arg, installs Pi with --ignore-scripts, and runs build/test/package/install gates in a credential-free container. It then forwards only the credential explicitly mapped to the verified provider/model into a separate model-only process that runs no package manager or lifecycle scripts, uses a supported thinking level, keeps secrets out of layers/logs/copied files, does not publish the image, and saves separate phase artifacts."
+      "expected_output": "Reads the Linux validation reference and exact Pi distribution/version/commit, launches a fail-fast host orchestrator through env -i with a temporary HOME and allowlisted variables, rejects credential-bearing project npm config before repository/dependency code, and runs build/test/package/install gates in a credential-free container. An official target uses its exact npm PI_VERSION with --ignore-scripts; a fork target needs that fork's verified artifact/install path because the same version string does not identify the build. It then forwards only the credential explicitly mapped to the verified provider/model into a separate model-only process that runs no package manager or lifecycle scripts, uses a supported thinking level, keeps secrets out of layers/logs/copied files, does not publish the image, and saves separate phase artifacts."
     },
     {
       "id": "prepare-release-without-publishing",
@@ -258,8 +273,8 @@
     },
     {
       "id": "typebox-1-3-7-migration",
-      "prompt": "My Pi 0.84 extension stopped compiling because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
-      "expected_output": "Resolves the installed Pi and bundled TypeBox 1.3.7 exports, reads the crossed changelog and emitted types, migrates every removed Type.Base/Type.Awaited/Type.Promise/Type.AsyncIterator/Type.Iterator/Type.Options/Value.Mutate use to supported typebox APIs, adds no compatibility shim or old-version pin, and validates both type-checking and real tool argument parsing."
+      "prompt": "My extension written for Pi 0.84 stopped compiling on installed Pi 0.87.0 because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
+      "expected_output": "Resolves the exact target Pi and installed typebox exports (current official/fork 0.87.0 bundles 1.3.27, not the old 1.3.7), reads crossed changelog entries/types, migrates removed APIs to supported typebox APIs without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing."
     },
     {
       "id": "scoped-model-extension-picker",
@@ -303,18 +318,18 @@
     },
     {
       "id": "agent-core-v4-session-repositories",
-      "prompt": "Upgrade my pi-agent-core AgentHarness session code to Pi 0.84. Experimental imports and the old JSONL repository no longer resolve.",
-      "expected_output": "Imports v2 AgentHarness and v4 Session, SessionStorage, SessionRepo, JsonlSessionRepo, and InMemorySessionRepo from the package root; removes experimental and legacy repository subpaths instead of adding shims; models durable operation records, global facts, shared sequence numbers, and lane views deliberately; keeps coding-agent SessionManager JSONL separate; treats AgentHarness as a compile-complete scaffold whose current prompt, queue, compaction, navigation, resume, watch, lane-management, and manual-drive paths reject with HarnessNotImplemented; and validates only the exact implemented session/repository operations adopted."
+      "prompt": "Upgrade my old pi-agent-core AgentHarness session code to current official Pi 0.87.0 and fitchmultz/pi afed789. Experimental imports and old repository names no longer resolve.",
+      "expected_output": "Reads the exact current exports, session/storage types, and implementation on both hosts. Uses AgentHarness, Session, Storage, SessionRepo, JsonlSessionRepo, and MemorySessionRepo with current Branch/mutation and Context contracts; removes stale SessionStorage, InMemorySessionRepo, and session.view assumptions without shims. Keeps coding-agent SessionManager JSONL separate. Does not repeat the obsolete blanket HarnessNotImplemented warning; recognizes watchSession still throws SliceNotImplemented and validates only actual adopted operations."
     },
     {
       "id": "agent-core-filesystem-rename",
-      "prompt": "My custom pi-agent-core FileSystem stopped satisfying Pi 0.84 when I switched to JsonlSessionRepo.",
-      "expected_output": "Adds renameFile(sourcePath, destinationPath, abortSignal?) with atomic same-filesystem replacement semantics, returns every failure through Result without throwing, preserves the destination safely on failure, and validates staged JSONL publication, existing-destination replacement, abort, and cross-filesystem rejection."
+      "prompt": "My custom pi-agent-core FileSystem stopped satisfying current Pi 0.87.0 when I switched to JsonlSessionRepo.",
+      "expected_output": "Checks current FileSystem and Context types; implements renameFile(sourcePath, destinationPath, context) with atomic same-filesystem replacement, returns failures through Result without throwing, preserves the destination on failure, and validates staged publication, existing-destination replacement, cancellation, and cross-filesystem rejection. Does not copy the old optional AbortSignal signature."
     },
     {
       "id": "remote-session-metadata-snapshot",
-      "prompt": "My Pi 0.84 remote dashboard reads phase, model, thinking, attached, and locked from RemoteSession.sessions, but those fields vanished.",
-      "expected_output": "Treats RemoteSession.sessions and PiClient snapshot session lists as durable SessionMetadata for discovery only; acquires the selected session and reads runtime phase, model, thinkingLevel, attached, and locked from authoritative SessionSnapshot values; handles snapshot replacement and lease release; and does not restore the removed list-summary projection."
+      "prompt": "Upgrade my old RemoteSession/PiClient dashboard to the published Pi 0.87.0 package. I need live runtime state, not only saved session metadata.",
+      "expected_output": "Checks actual package exports before copying the old remote API. Explains experimental coding-agent client/server surfaces are source-only from 0.85.1; uses supported local SDK/stdio RPC when that meets the dashboard contract, or identifies the explicit source-level integration requirement without pretending a published remote API exists. Distinguishes durable session listings from authoritative acquired/live state and validates the chosen protocol, replacement, and release lifecycle."
     },
     {
       "id": "active-session-replacement-persistence",
