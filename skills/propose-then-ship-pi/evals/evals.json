@@ -178,8 +178,8 @@
     },
     {
       "id": "edge-required-panel-seat-missing",
-      "prompt": "[The user opted into local review. subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
-      "expected_output": "Stops and reports the missing reviewer-ponytail seat. Does not silently skip it, substitute regular reviewer, or continue with a smaller first-wave panel."
+      "prompt": "[The user explicitly requires reviewer-ponytail. subagent({action:\"list\"}) does not include reviewer-ponytail, but regular reviewer is available.]",
+      "expected_output": "Reports the missing required reviewer-ponytail review and continues independent authorized work. Does not silently skip it or substitute regular reviewer. Does not merge while the required review is incomplete."
     },
     {
       "id": "edge-regular-reviewer-not-panel-or-deslop-proxy",
