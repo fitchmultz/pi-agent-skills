@@ -11,20 +11,25 @@ import { createHost, runCase, zeroUsage } from '../evals/runtime.mjs';
 import { cases } from '../evals/cases.mjs';
 
 const skillsDir = fileURLToPath(new URL('../skills', import.meta.url));
-const call = (name, args) => ({ content: [{ type: 'toolCall', id: `fixture-${name}`, name, arguments: args }], stopReason: 'toolUse' });
+let callId = 0;
+const call = (name, args) => ({ content: [{ type: 'toolCall', id: `fixture-${++callId}`, name, arguments: args }], stopReason: 'toolUse' });
 const answer = text => ({ content: [{ type: 'text', text }], stopReason: 'stop' });
 
-async function scriptedHost(t, steps) {
+async function scriptedHost(t, steps, abortFailure) {
   const dir = await mkdtemp(join(tmpdir(), 'pi-eval-test-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const host = await createHost({ provider: 'openai', authPath: join(dir, 'auth.json') });
   await host.modelRuntime.setRuntimeApiKey('openai', 'fixture-key-never-sent');
   const aiPackagePath = findPackageJSON('@earendil-works/pi-ai', pathToFileURL(host.identity.sdk));
   const aiPackage = JSON.parse(await readFile(aiPackagePath, 'utf8'));
-  const { createAssistantMessageEventStream } = await import(new URL(aiPackage.exports['.'].import, pathToFileURL(aiPackagePath)));
+  const { createAssistantMessageEventStream, lazyStream } = await import(new URL(aiPackage.exports['.'].import, pathToFileURL(aiPackagePath)));
   const contexts = [];
   t.mock.method(host.modelRuntime, 'streamSimple', (model, context, options) => {
     contexts.push(JSON.stringify(context));
+    if (options.signal?.aborted) return lazyStream(model, async () => {
+      if (abortFailure) throw new Error(abortFailure);
+      options.signal.throwIfAborted();
+    });
     const stream = createAssistantMessageEventStream();
     const message = { role: 'assistant', content: [], api: model.api, provider: model.provider, model: model.id, usage: zeroUsage, timestamp: Date.now() };
     const fail = error => stream.push({ type: 'error', reason: error.stopReason ?? 'error', error: { ...message, ...error } });
@@ -162,6 +167,20 @@ test('manual-only skills expand explicitly and disappear from no-skills controls
   }
 });
 
+test('no-skills controls cannot read the bundle or discover its resolver through tool help', async t => {
+  for (const withoutSkills of [false, true]) {
+    const { host, contexts } = await scriptedHost(t, [call('read', { path: join(skillsDir, 'handoff/SKILL.md') }), answer('Inspected.')]);
+    const result = await runCase(host, { id: 'bundle-boundary', skill: 'handoff', prompt: 'Inspect the requested file.', check() {} }, { skillsDir, withoutSkills });
+    assert.equal(result.passed, !withoutSkills, result.failure);
+    const read = result.events.find(event => event.type === 'result' && event.tool === 'read');
+    assert.equal(read.isError, withoutSkills);
+    assert.equal(contexts[0].includes(skillsDir), !withoutSkills);
+    assert.equal(contexts[0].includes('resolve_pi.py'), !withoutSkills);
+    if (withoutSkills) assert.match(result.failure, /out-of-scope/);
+    else assert.match(read.text, /# Handoff/);
+  }
+});
+
 test('routing stops at a real skill read and records an incorrect non-read choice', async t => {
   const selected = { id: 'route', skill: 'handoff', mode: 'routing', shouldTrigger: true, prompt: 'Write a continuation handoff.' };
   const good = await scriptedHost(t, [{ stopReason: 'toolUse', content: [
@@ -176,6 +195,89 @@ test('routing stops at a real skill read and records an incorrect non-read choic
   assert.equal(missed.passed, false);
   assert.match(missed.failure, /Routing mismatch/);
   assert.deepEqual(missed.files, {});
+});
+
+test('initial routing permits listing and declared Git inspection before a skill read', async t => {
+  const selected = { id: 'inspection-route', skill: 'handoff', mode: 'routing', shouldTrigger: true, prompt: 'Inspect this fixture, then write a handoff.', git: true,
+    files: { 'notes.md': 'Original notes.\n', 'SKILL.md': 'An ordinary fixture file, not a selected skill.\n' }, changes: { 'notes.md': 'Updated notes.\n' } };
+  for (const shouldTrigger of [true, false]) {
+    const { host } = await scriptedHost(t, [
+      call('ls', { path: '.' }),
+      call('bash', { command: ' git status --short && git diff ' }),
+      call('read', { path: 'SKILL.md' }),
+      call('read', { path: join(skillsDir, 'handoff/SKILL.md') }),
+      call('write', { path: 'later.txt', content: 'Task execution must not begin.' }),
+    ]);
+    const result = await runCase(host, { ...selected, shouldTrigger }, { skillsDir });
+    assert.equal(result.passed, shouldTrigger, result.failure);
+    if (!shouldTrigger) assert.match(result.failure, /Routing mismatch/);
+    assert.deepEqual(result.skillsRead, ['handoff']);
+    assert.deepEqual(result.commands.map(command => command.exitCode), [0, 0]);
+    assert.match(result.commands[1].output, /Updated notes/);
+    assert.equal(result.requests.length, 4);
+    assert(!result.events.some(event => event.tool === 'write'));
+    assert.equal(result.routingStop.reason, 'target-skill');
+  }
+  const natural = await scriptedHost(t, [call('ls', { path: '.' }), answer('No skill needed.')]);
+  const result = await runCase(natural.host, { ...selected, shouldTrigger: false }, { skillsDir });
+  assert.equal(result.passed, true, result.failure);
+  assert.equal(result.requests.length, 2);
+  assert.deepEqual(result.skillsRead, []);
+  assert.equal(result.routingStop, undefined);
+});
+
+test('initial routing permits other skills but stops before task execution and later verification', async t => {
+  const selected = { id: 'initial-route', skill: 'verification-before-completion', mode: 'routing', prompt: 'Explore the app for bugs.' };
+  const target = () => call('read', { path: join(skillsDir, 'verification-before-completion/SKILL.md') });
+  for (const command of [null, 'npm test', 'node --test', 'git diff && touch later.txt']) {
+    const { host } = await scriptedHost(t, [
+      call('read', { path: join(skillsDir, 'dogfood/SKILL.md') }),
+      ...(command ? [call('bash', { command })] : []),
+      target(),
+    ]);
+    const result = await runCase(host, { ...selected, shouldTrigger: !command }, { skillsDir });
+    assert.equal(result.passed, true, result.failure);
+    assert.deepEqual(result.skillsRead, command ? ['dogfood'] : ['dogfood', 'verification-before-completion']);
+    assert.deepEqual(result.commands, []);
+    assert.equal(result.requests.length, 2);
+    assert.equal(result.routingStop.reason, command ? 'task-action' : 'target-skill');
+  }
+});
+
+test('routing preserves cancellation diagnostics and rejects failures before a decision', async t => {
+  const selected = { id: 'stop-route', skill: 'handoff', mode: 'routing', shouldTrigger: true, prompt: 'Write a handoff.' };
+  const good = await scriptedHost(t, [call('read', { path: join(skillsDir, 'handoff/SKILL.md') })]);
+  const result = await runCase(good.host, selected, { skillsDir });
+  assert.equal(result.passed, true, result.failure);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.routingStop.afterAssistantMessages, 1);
+  assert.equal(result.diagnostics.length, good.contexts.length - result.requests.length);
+  for (const diagnostic of result.diagnostics) {
+    assert.equal(diagnostic.controlledRoutingStop, true);
+    assert.equal(diagnostic.messageIndex, 1);
+    assert.match(diagnostic.errorMessage, /aborted/i);
+  }
+  const unrelated = await scriptedHost(t, [call('read', { path: join(skillsDir, 'handoff/SKILL.md') })], 'Unrelated setup failure');
+  const unexpected = await runCase(unrelated.host, selected, { skillsDir });
+  const requestedAfterStop = unrelated.contexts.length > unexpected.requests.length;
+  assert.equal(unexpected.passed, !requestedAfterStop, unexpected.failure);
+  if (requestedAfterStop) {
+    assert.deepEqual(unexpected.errors, ['Unrelated setup failure']);
+    assert.equal(unexpected.diagnostics[0].controlledRoutingStop, false);
+  }
+  for (const step of [
+    { ...answer(''), stopReason: 'error', errorMessage: 'This operation was aborted' },
+    { ...answer(''), stopReason: 'error', errorMessage: 'Fixture provider failure' },
+    { waitForAbort: true },
+  ]) {
+    const { host } = await scriptedHost(t, [step]);
+    const failed = await runCase(host, { ...selected, shouldTrigger: false }, { skillsDir, timeoutMs: 100 });
+    assert.equal(failed.passed, false);
+    assert.match(failed.failure, /This operation was aborted|Fixture provider failure|deadline/);
+    assert.equal(failed.routingStop, undefined);
+    assert(failed.diagnostics.length > 0);
+    assert(failed.diagnostics.every(diagnostic => !diagnostic.controlledRoutingStop));
+  }
 });
 
 test('listing skill resources hides graders without recording a violation', async t => {

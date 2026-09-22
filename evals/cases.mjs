@@ -165,7 +165,7 @@ export const cases = [
     files: { 'src/service.js': 'export const value = 1;\n' },
     changes: { 'src/service.js': 'export class IdentityAdapter { constructor(value) { this.value = value; } get() { return this.value; } }\nexport const value = new IdentityAdapter(1).get();\n' },
     prompt: 'Review the uncommitted diff against HEAD for unnecessary abstraction. Keep this read-only. The adapter has exactly this one caller and adds no validation or behavior. Give concrete findings, not unrelated architecture advice.',
-    check: r => { assert.match(r.output, /IdentityAdapter/); assert.match(r.output, /remove|inline|direct|unnecessary|delete/i); assert.match(r.output, /src\/service\.js/); noWrites(r); },
+    check: r => { assert.match(r.output, /identity\s*adapter/i); assert.match(r.output, /remove|inline|direct|unnecessary|delete/i); assert.match(r.output, /src\/service\.js/); noWrites(r); },
   },
   {
     id: 'ux-accepted-work-disappears', skill: 'ux-review', invoke: true,
