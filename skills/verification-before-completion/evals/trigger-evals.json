@@ -7,7 +7,7 @@
   {
     "query": "Open the PR once you're sure lint, typecheck, and tests pass.",
     "should_trigger": true,
-    "reason": "PR readiness depends on fresh validation evidence."
+    "reason": "PR readiness depends on current applicable validation evidence."
   },
   {
     "query": "Mark the goal complete after confirming every acceptance criterion has evidence.",

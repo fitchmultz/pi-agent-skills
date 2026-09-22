@@ -4,7 +4,7 @@ Use this reference for cursor jumps, redraw flicker, streaming output, focus/inp
 
 ## Contract
 
-The terminal path wraps the target command in localhost-only ttyd, then uses the same browser lifecycle as ordinary VFR:
+The terminal path requires `ttyd` on PATH and the separately installed `agent_browser` tool. It wraps the target command in localhost-only ttyd, then uses the same browser lifecycle as ordinary VFR:
 
 ```text
 terminal-start -> render-check -> record -> interact -> record stop -> terminal-stop -> contact sheets -> agent image review
@@ -84,7 +84,7 @@ Print the capture script:
 python3 <dogfood-skill-dir>/scripts/vfr.py terminal-capture-js
 ```
 
-Pass that output through native `agent_browser` `eval --stdin` and save it:
+Pass that output through the installed `agent_browser` tool's `eval --stdin` and save it:
 
 ```json
 {

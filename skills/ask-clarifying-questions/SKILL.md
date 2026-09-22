@@ -1,61 +1,24 @@
 ---
 name: ask-clarifying-questions
-description: "Use this skill when material ambiguity would change scope, acceptance criteria, constraints, implementation path, safety, or reversibility and a user answer is needed before work can proceed. Do not use when quick repo/config discovery, current docs, or a reasonable stated default can resolve it."
+description: "Resolve material ambiguity that needs a user decision before dependent implementation: scope, acceptance, constraints, safety, or reversibility. Skip questions answerable from repo/config discovery, current docs, or already-approved defaults."
 ---
 
 # Ask Clarifying Questions
 
-## Goal
-
-Resolve only the ambiguity that would materially change the work, then let implementation proceed with the smallest useful set of answers or explicit assumptions.
-
-## When to use
-
-Use when the request is underspecified in a way that would materially change:
-
-- objectives or acceptance criteria
-- scope boundaries or constraints
-- environment assumptions
-- safety or reversibility
-- user-owned tradeoffs where the wrong default would cause churn, data loss, cost, or unwanted behavior
-
-## When not to use
-
-Do not use for:
-
-- questions a quick low-risk repo/config read or current docs/help can answer
-- minor ambiguity that does not change the implementation path materially
-- preference questions that are nice to know but not blocking
-- situations where the user already explicitly approved reasonable defaults
+Resolve only decisions that materially change the work. Discover facts from the repo, configuration, or current docs before asking the user; do not reopen approved defaults or ask nonblocking preference questions.
 
 ## Workflow
 
-1. Decide whether the request is materially underspecified. If a quick low-risk discovery read can resolve it, do that first instead of asking.
+1. Identify the must-have decisions about objectives, acceptance, scope, environment, or user-owned tradeoffs. Ask only questions whose wrong answer would change implementation, cause churn, cost, data loss, or unwanted behavior.
+2. Ask the smallest useful set: prefer 1–3 questions, hard maximum 8. Favor questions that eliminate whole branches of work.
+3. Prefer the harness question tool when installed and usable. `ask_question` is an optional extension, and its dialogs need TUI or an RPC client that answers them; plain print mode is not a dialog surface. Otherwise ask in plain text.
+4. Make answers easy:
+   - Prefer multiple choice or yes/no; put the recommended/default option first without labeling it recommended.
+   - Do not add a custom-answer option when the UI supplies one.
+   - Use multi-select only when multiple answers are valid.
+   - In plain text, number questions and offer a compact reply format such as `1a 2b 3defaults` when useful.
+5. Pause only implementation that depends on unresolved must-have ambiguity. Continue independent authorized work, including discovery that can resolve the question.
+6. If the user wants to proceed without answers, state assumptions briefly. Continue only when they confirm or a safe default does not materially change scope, safety, or acceptance.
+7. If answers materially change the plan, restate the clarified objective, constraints, and success criteria before acting.
 
-2. Ask only the must-have questions (prefer 1–3; hard max 8). Prefer questions that eliminate entire branches of work.
-
-3. Make questions easy to answer:
-- Prefer the harness question tool when available.
-- Offer multiple choice or yes/no; put the recommended/default option first without labeling it recommended when order implies default.
-- Do not add a custom/freeform option if the UI already provides one.
-- Use multi-select only when more than one option is valid.
-- In plain text, use numbered questions and a compact reply format such as `1a 2b 3defaults` when helpful.
-
-4. Pause only implementation that depends on unresolved must-have ambiguity. Continue independent work already authorized by the user, including discovery that can resolve the question.
-
-5. If the user wants to proceed without answers, state assumptions briefly and continue only when they confirm or a safe default does not materially change scope, safety, or acceptance criteria.
-
-6. If answers materially change the plan, restate the clarified objective, key constraints, and success criteria before acting.
-
-## Anti-patterns
-
-- Broad open-ended questions when a tight option list would work
-- Asking for information already in the repo/config/docs
-- Starting implementation that depends on unresolved must-have ambiguity
-- Over-questioning when one reasonable default would suffice
-- Labeling a UI option as recommended when order already communicates the default
-- Adding a custom-answer choice when the question UI supplies one automatically
-
-## Stop rules
-
-Ask only until the next implementation path is safe and clear. Stop when one reasonable default is enough, the repo can answer, or the user accepted assumptions.
+Stop asking once the next implementation path is clear. Do not turn clarification into a survey or ask the user to rediscover available facts.

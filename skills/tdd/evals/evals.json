@@ -34,7 +34,7 @@
     {
       "id": "success-final-report",
       "prompt": "Finish the TDD change and report back.",
-      "expected_output": "Reports Behavior, Red, Green, Ablation, Refactor, Validation, and Skipped with fresh command evidence and no completion claim beyond what validation proves."
+      "expected_output": "Reports Behavior, Red, Green, Ablation, Refactor, Validation, and Skipped with current command evidence, reusing still-valid results, and no completion claim beyond what validation proves."
     }
   ]
 }

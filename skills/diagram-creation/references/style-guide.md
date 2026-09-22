@@ -165,6 +165,10 @@ second -> third: { style.opacity: 0 }
 | Long label pinched | Semantic queue, database, or cylinder geometry | Shorten the label or use a rounded rectangle with a role label |
 | Nested direction ignored | Root and child directions conflict under D2 0.7.1/ELK | Use explicit grid rows/columns, compatible root direction, or another engine |
 
+## D2 publication
+
+D2 publication uses Python 3's standard-library `fcntl.flock` on macOS/Linux. A competing publisher for the same output base fails before changing either final artifact; retry after it finishes. Different output bases remain independent. Keep the hidden `.<output-base>.diagram.lock` sidecar: do not delete or replace it while renderers may run. The OS releases the lock after the renderer and publication children exit, even after SIGKILL. SIGKILL cannot roll back publication, so interrupted `.diagram-backup.*` and `.diagram-publish.*` directories retain recovery artifacts.
+
 ## D2 renderer constraints
 
 - Direct D2 PNG output can depend on Playwright. The bundled renderer emits SVG first, then rasterizes with librsvg.

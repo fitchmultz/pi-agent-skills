@@ -2,9 +2,21 @@
   "skill_name": "ask-clarifying-questions",
   "evals": [
     {
+      "id": "edge-question-does-not-block-independent-work",
+      "prompt": "The authorized task has two independent parts: fix a documented typo and add an export whose PII scope still needs my decision. Ask about the export while completing work that does not depend on that answer.",
+      "expected_output": "Asks only the necessary export-scope question, pauses the dependent export implementation, and completes the separately authorized typo fix without another approval request.",
+      "files": []
+    },
+    {
+      "id": "edge-no-dialog-plain-text-fallback",
+      "prompt": "The available facts leave a material scope choice unresolved. This session is plain print mode, so ask_question cannot show a dialog. Ask the blocking question before implementing.",
+      "expected_output": "Uses the permitted numbered plain-text question fallback with concise options. Does not invent a dialog answer or start work that depends on the unanswered material choice; continues independent authorized work.",
+      "files": []
+    },
+    {
       "id": "success-material-ambiguity",
       "prompt": "Build the admin export feature. It might include user PII and should support either CSV or JSON; ask before implementing if needed.",
-      "expected_output": "Identifies material ambiguity around data scope, PII handling, and export format; asks only the blocking questions with concise options ordered by the safest/default path; does not start implementation until answers or explicit assumptions are accepted.",
+      "expected_output": "Identifies material ambiguity around data scope, PII handling, and export format; asks only the blocking questions with concise options ordered by the safest/default path; pauses only implementation dependent on those answers while continuing independent authorized work.",
       "files": []
     },
     {
@@ -22,7 +34,7 @@
     {
       "id": "failure-over-questioning",
       "prompt": "Implement password reset. The repo already has docs for mail provider and token expiry. Ask clarifying questions first.",
-      "expected_output": "Does not ask broad or repo-answerable questions; reads the relevant docs/config first, then asks only unresolved material questions such as product copy or security-sensitive behavior not defined by the source of truth.",
+      "expected_output": "Does not ask broad or repo-answerable questions; reads the relevant docs/config first, then asks only unresolved decisions necessary for correctness or materially different scope, acceptance, safety, or behavior; does not ask optional product-copy preferences.",
       "files": []
     }
   ]

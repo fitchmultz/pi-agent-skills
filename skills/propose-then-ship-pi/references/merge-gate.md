@@ -1,6 +1,6 @@
 # Merge Gate
 
-Read when Phase 4 exits. The standing authorization quoted in SKILL.md Phase 5 covers the merge unless the user invoked the wait-for-approval override or the deployment preflight below finds an external release or production-control action that still needs explicit authorization. Under the wait override, stop at Merge-ready instead of entering this gate. Replace `<gh>` with the alias you resolved from the remote owner.
+Read when Phase 4 exits and the current user has authorized merge. Honor Mitch's applicable standing approval without asking again; the historical quotation in SKILL.md does not authorize unrelated users. Under an explicit wait-for-approval override, stop at Merge-ready. Deployment preflight can still require separate release/production authorization. Replace `<gh>` with the executable verified under the current user's account policy.
 
 ## Base freshness
 
@@ -23,18 +23,18 @@ Direct file overlap is the cheap signal. Base changes also reach a PR through a 
 
 Bring base in with `git merge "origin/<base>"` or `<gh> pr update-branch --rebase`, then:
 
-- **Nothing intersects.** Push, then refresh CI, mergeability, draft state, and other deterministic exact-head gates. Carry panel clearance forward because the reviewed content did not change.
-- **Something intersects.** Run the targeted checks that exercise the intersection against the merged result first. If the reviewed content remains unchanged, push and refresh the same non-panel gates. If conflict resolution or another edit changes reviewed content, commit it, push it, and return to Phase 4 under the review policy in `references/review-panel.md`.
+- **Nothing intersects.** Push, then refresh CI, mergeability, draft state, and other exact-head gates. Reuse review results whose analyzed behavior remains unchanged.
+- **Something intersects.** Run targeted checks against the combined result first. If reviewed behavior is unchanged, refresh the same gates without repeating unaffected reviews. If conflict resolution or other edits invalidate analysis, commit, push, and return to Phase 4 for affected or explicitly required reviews.
 
-A mechanical base sync changes the commit SHA but does not invalidate panel clearance or the UX verdict when the reviewed content and user-visible behavior are unchanged. CI and other commit-bound evidence must still be refreshed on the new SHA. Greptile remains automatic and advisory; never wait for or trigger it. Never arm auto-merge to bypass required reviews of substantive changes, because GitHub's own conditions do not include that review coverage.
+A mechanical base sync changes the SHA without invalidating analysis of unchanged content or the UX verdict for unchanged user-visible behavior. Refresh CI and other commit-bound evidence on the new SHA. Greptile remains advisory; never wait for or trigger it. Do not use auto-merge to bypass an explicitly required review or unresolved valid blocker.
 
-Re-check the commit count before merging. Continue while evidence supports progress. If repeated base advances prevent the gates from clearing, inspect the failing boundary and change the approach; report a concrete blocker when further work cannot proceed rather than lowering the bar.
+Re-check the commit count before merging. Continue while fresh evidence supports progress; if base churn prevents completing the gates, report that concrete blocker and the next action rather than lowering the bar.
 
 `<gh> pr view <PR> --json mergeStateStatus` returns `BEHIND` only where the repo requires branches to be up to date. Elsewhere a stale branch still reports `CLEAN`, so trust the commit count.
 
 ## Merge
 
-Run one final gate check immediately before merging. Authorization may arrive long after Phase 4 finished. Before merging, inspect the repository's deployment configuration and determine whether merge itself triggers deployment. If that trigger can publish or release an external artifact or perform production control outside the repository's defined deployment, obtain explicit authorization before merge; never merge first and ask afterward. Re-check head SHA, mergeability, draft state, required checks, the current required review coverage and its recorded requirement sources, the current UX-impact verdict, blocking human or required-reviewer feedback, and any Greptile comments already present in the same pass. A mechanical base sync may carry panel clearance and the UX verdict across SHAs only after confirming the reviewed content and user-visible behavior are unchanged; substantive conflict resolution reopens review. Fix or rebut present actionable Greptile comments, but never wait for acknowledgment or re-review. Anything older is a memory, not evidence.
+Run one final gate check immediately before merging. Authorization may arrive long after Phase 4 finished. Before merging, inspect the repository's deployment configuration and determine whether merge itself triggers deployment. If that trigger can publish or release an external artifact or perform production control outside the repository's defined deployment, obtain explicit authorization before merge; never merge first and ask afterward. Re-check head SHA, mergeability, draft state, required checks, completion of required reviews and resolution of actionable findings for the current content, the current UX-impact verdict, blocking human or required-reviewer feedback, and any Greptile comments already present in the same pass. A mechanical base sync may carry review results and the UX verdict across SHAs after confirming unchanged relevant behavior; substantive conflict resolution needs affected review. Evidence-backed owner rebuttals resolve incorrect, out-of-scope, or approved-behavior-conflicting agent findings without originating reviewer agreement, while actual repository protections and required human approvals remain binding. Fix or rebut present actionable Greptile comments, but never wait for acknowledgment or re-review. Reuse older evidence only when its relevant inputs demonstrably remain valid.
 
 Bind the merge to the SHA you verified, so a push that lands between the check and the merge aborts instead of shipping unreviewed:
 
