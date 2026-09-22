@@ -57,7 +57,7 @@ This skill assumes pi, not Cursor. Four rules carry most of the difference.
 
 1. **Shell state does not persist.** Each `bash` call is a new process. Values such as the base branch, worktree path, and PR number die at the end of the call that computed them. Compute a value, read it, then write the literal into every later command.
 2. **Select the worktree explicitly.** When `change_dir` is available, call it before dependent tools and then use paths relative to that worktree. Otherwise scope commands with an explicit directory. Pass the intended working directory to each subagent.
-3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run and use the effective names it returns. If local review was explicitly enabled, a missing or disabled requested panel seat is a stop-and-report condition, never a silent skip or substitute. A Review grouping that also lists regular `reviewer` does not expand an opted-in panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; configured agents already carry their own models and fallbacks.
+3. **Confirm the agent registry before delegating.** Call `subagent({ action: "list" })` once per run and use the effective names it returns. If an explicitly required reviewer is unavailable, report that specific missing review and continue independent authorized work; do not silently substitute or skip it. A Review grouping that also lists regular `reviewer` does not expand an opted-in panel: regular `reviewer` is never a panel member and never substitutes for parent-run deslop. Do not pin model IDs in this skill; configured agents already carry their own models and fallbacks.
 4. **Pick the GitHub alias from the remote owner.** Never run bare `gh` and never run `gh auth switch`.
 
 ```bash
@@ -155,7 +155,7 @@ Use reviewer disagreement to identify missing evidence. Change code only to addr
 
 Leave the loop only when all of these hold against the current head SHA:
 
-- When local review was enabled, its required first wave and any remediation waves are clear under `references/review-panel.md`. When it was not enabled, no local reviewer sign-off is required.
+- Required review coverage is complete under `references/review-panel.md`, with actionable findings fixed or resolved by evidence-backed rebuttals. An unavailable required reviewer remains incomplete coverage and blocks merge, not independent authorized work.
 - Every actionable human, required-check, already-present automated-review, and opted-in panel finding has a recorded **Fix** or **Rebut** verdict, and material informational notes are recorded where relevant. A follow-up alone never clears a finding.
 - No new substantive scope or substantive conflict resolution landed without rerunning any validation or opted-in review that it invalidated; mechanical base syncs alone do not invalidate local panel clearance.
 - The diff is free of AI narration and debug leftovers, and the verification pass confirmed the green claim with current inspectable evidence.
@@ -250,7 +250,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 | Gate | Result |
 | --- | --- |
-| Local panel | [not requested (default) / requirement source plus waves run, seats, findings fixed, and findings rebutted] |
+| Local panel | [not requested (default) / requirement source plus reviews completed, findings fixed, and findings rebutted] |
 | CI | [green and what ran / waived-if-absent, policy source, and exact-head local validation] |
 | Feedback | [blocking human or required-reviewer feedback addressed] |
 | UX | [bundled UX review verdict for changes that can affect users / `N/A` with proof of no user-visible impact] |
@@ -277,7 +277,7 @@ Title it `Shipped` once merged. Under the wait-for-approval override, title it `
 
 ## Stop rules
 
-Stop and hand back when: the user excludes a branch, commit, push, or pull-request action required by this pipeline; the direction gate has not been answered; a finding requires changing the approved outcome, behavior, scope, acceptance criteria, cost, or permissions; further progress requires an unavailable capability or a user decision; an explicitly required local panel seat is unavailable; required CI cannot be restored without an unapproved change to scope or authority; the required GitHub alias is unavailable; merging would require weakening a gate; or merge would trigger an external artifact release or production control outside the defined deployment that lacks explicit authorization. For an authorization stop, ask for that authorization before merge.
+Stop and hand back when: the user excludes a branch, commit, push, or pull-request action required by this pipeline; the direction gate has not been answered; a finding requires changing the approved outcome, behavior, scope, acceptance criteria, cost, or permissions; further progress requires an unavailable capability or a user decision; required CI cannot be restored without an unapproved change to scope or authority; the required GitHub alias is unavailable; merging would require weakening a gate; or merge would trigger an external artifact release or production control outside the defined deployment that lacks explicit authorization. For an authorization stop, ask for that authorization before merge.
 
 Stop before Phase 0 when the target repository is the home dotfiles checkout, where `$HOME` is the repository root. Worktree and branch operations there are governed by separate standing prohibitions. Report the conflict and ask how to proceed.
 
