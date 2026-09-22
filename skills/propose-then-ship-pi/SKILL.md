@@ -185,7 +185,7 @@ A follow-up may record an issue rebutted as outside this PR's scope, but it is o
 
 ## Available scripts
 
-**pr_signals.sh**: poll a PR's required CI checks until they settle. Read-only. Call it by absolute path, since the working directory is the worktree. Advisory automated reviewers such as Greptile do not affect its result.
+**pr_signals.sh**: poll all reported CI checks for a PR until one fails or all settle. Read-only. Call it by absolute path, since the working directory is the worktree. Greptile checks do not affect its result.
 
 Resolve `scripts/pr_signals.sh` from this skill directory before invoking it. Its 300-second default bounds accumulated polling sleeps; the Bash tool timeout is the hard wall-clock bound around subprocesses too. Use a bounded tool call:
 
