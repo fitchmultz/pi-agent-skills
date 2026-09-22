@@ -18,6 +18,12 @@ test('structured verdicts distinguish incomplete fixes and rejected reviews', ()
   assert.doesNotThrow(() => check('ux-simple-success', JSON.stringify({ verdict: 'approve', findings: [] }), reads(['journey.md'])));
 });
 
+test('handoff accepts planning-mode wording but still requires the scope boundary', () => {
+  const handoff = scope => `Continue the conversation from the previous session.\n${scope}\nNever include customer data. No tests have been run.\n---`;
+  assert.doesNotThrow(() => check('handoff-continue', handoff('Stay in planning mode; do not modify files or begin implementation.')));
+  assert.throws(() => check('handoff-continue', handoff('Implement the CSV export now.')));
+});
+
 test('wrapper review accepts the human-readable adapter name but rejects unrelated findings', () => {
   assert.doesNotThrow(() => check('review-concrete-wrapper', '**Request changes** src/service.js:1–2 — Remove the identity adapter and restore export const value = 1.'));
   assert.throws(() => check('review-concrete-wrapper', 'src/service.js:1 — Remove the logging wrapper and use a direct call.'));
