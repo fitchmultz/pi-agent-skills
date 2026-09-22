@@ -1,2 +1,4 @@
 test/
 AGENTS.md
+/evals/
+/.eval-results/

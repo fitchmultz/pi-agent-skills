@@ -1,0 +1,14 @@
+[
+  {"skill":"ask-clarifying-questions","query":"We need to permanently delete either the old archive or the current export. Nobody has chosen which, and the repository cannot answer that. Resolve that choice before touching the data.","should_trigger":true},
+  {"skill":"bro","query":"Say that again in everyday language.","should_trigger":false},
+  {"skill":"deslop","query":"Strip the obvious AI narration and pointless wrappers out of my uncommitted diff; keep exactly the same behavior.","should_trigger":true},
+  {"skill":"diagram-creation","query":"Turn these verified service relationships into an editable architecture image and a PNG I can put in the design doc.","should_trigger":true},
+  {"skill":"dogfood","query":"Walk through the settings page like a customer, press Save, and capture evidence of any visible bugs.","should_trigger":true},
+  {"skill":"handoff","query":"I'm switching to a fresh agent session. Give me the text to paste there so it retains the decisions and knows the next step.","should_trigger":true},
+  {"skill":"pi-extension-development","query":"Build a Pi plugin command that opens a native terminal overlay and survives reload correctly.","should_trigger":true},
+  {"skill":"propose-then-ship-pi","query":"Investigate the largest maintainability problem, give me your ranked recommendation, wait for my choice, then take the approved change through its pull request to merge.","should_trigger":true},
+  {"skill":"tdd","query":"Start by proving the whitespace bug with a failing test, make the smallest fix, then refactor while keeping the test green.","should_trigger":true},
+  {"skill":"thermo-nuclear-code-quality-review","query":"Give this branch a demanding structural review: needless layers, duplication, tangled conditions, and opportunities to delete complexity.","should_trigger":true},
+  {"skill":"ux-review","query":"Review the experience when an accepted background export loses its worker. Can the user understand what happened and reach a truthful outcome?", "should_trigger":true},
+  {"skill":"verification-before-completion","query":"The fix is ready and I am about to report it complete. Check whether the changed behavior and test evidence actually support that claim.","should_trigger":true}
+]

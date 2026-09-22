@@ -1,0 +1,49 @@
+name: Skill model evaluations
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Evaluation suite
+        type: choice
+        options: [behavior, routing, held-out]
+        default: behavior
+      profile:
+        description: Caller policy
+        type: choice
+        options: [portable, authorized]
+        default: portable
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
+      - name: Run native model evaluations
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          EVAL_SUITE: ${{ inputs.suite }}
+          EVAL_PROFILE: ${{ inputs.profile }}
+          PI_COMPAT_HOST: official
+        run: |
+          test -n "$OPENAI_API_KEY" || { echo 'Configure the OPENAI_API_KEY repository secret before requesting a model run.' >&2; exit 1; }
+          args=()
+          if [[ "$EVAL_PROFILE" == authorized ]]; then args+=(--profile evals/profiles/authorized.md); fi
+          npm run eval:model -- --provider openai --suite "$EVAL_SUITE" --repeat 2 --jobs 4 --out .eval-results/results.jsonl "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skill-model-evaluations
+          path: .eval-results/
+          if-no-files-found: warn
+          retention-days: 14
