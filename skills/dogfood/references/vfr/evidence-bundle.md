@@ -4,8 +4,10 @@ Use this reference after capture to decide what the agent must inspect and cite.
 
 ## Minimal bundle
 
+Use the evidence location selected under the main skill's rules: the requested path, an ignored project run, or a unique directory outside the checkout when tracked-file edits are not permitted.
+
 ```text
-.dogfood/runs/<timestamp>-<slug>/
+<absolute-run>/
   meta.txt
   actions.ndjson
   video.webm
@@ -83,7 +85,7 @@ For each transient finding include:
 - Repro: exact user steps
 - Expected: existing content remains visible while processing
 - Actual: main content blanks briefly after submit
-- Video: `.dogfood/runs/.../video.webm`
+- Video: `<absolute-run>/video.webm`
 - Frames: before, during, and after image paths
 - Contact sheet: exact sheet path
 - Correlated signals: optional console/network/performance evidence

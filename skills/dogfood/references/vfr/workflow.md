@@ -1,6 +1,6 @@
 ---
 name: dogfood-vfr-workflow
-description: One safe Pi-native workflow for recording, verifying, and inspecting transient browser behavior.
+description: Recording, verification, and inspection with the separately installed agent_browser tool.
 ---
 
 # Dogfood Visual Flight Recorder Workflow
@@ -12,7 +12,7 @@ Do not start this workflow for the Cloudflare targets guarded by the main dogfoo
 ## Non-negotiable contract
 
 1. Preflight ffmpeg before starting any recording.
-2. Use native `agent_browser`, one focused flow, one absolute output path, and a run-owned managed session.
+2. Use the installed `agent_browser` extension tool, one focused flow, one absolute output path, and a run-owned managed session.
 3. Treat `record start` as pending. Treat any recording dependency warning as a blocker.
 4. Stop exactly once, then require verified artifact metadata before analysis or close.
 5. Generate contact sheets and open them with `read`.

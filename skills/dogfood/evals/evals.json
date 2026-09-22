@@ -2,9 +2,24 @@
   "skill_name": "dogfood",
   "evals": [
     {
+      "id": "edge-read-only-qa-evidence-outside-checkout",
+      "prompt": "Dogfood only the settings form, not billing or signup. Browser access is already authorized. Do not edit tracked files; .dogfood is not ignored, but screenshots and recordings outside the checkout are permitted.",
+      "expected_output": "Tests the requested settings scope using existing authorization and a unique absolute evidence directory outside the checkout. Does not require a .gitignore edit, stop merely because .dogfood is unignored, or expand into billing/signup. Inspects and reports artifacts and cleans up only run-owned resources."
+    },
+    {
+      "id": "edge-browser-extension-unavailable",
+      "prompt": "Dogfood my local settings page in a stock Pi session that has read and bash but no agent_browser tool.",
+      "expected_output": "Reports the separately installed browser-tool prerequisite. Does not assume stock official/fork Pi includes agent_browser, shell out to agent-browser as a substitute, or claim UI verification from source inspection."
+    },
+    {
+      "id": "edge-standing-auth-with-explicit-hold",
+      "prompt": "My active policy already authorizes authenticated browser access. Dogfood account settings using my session, but do not submit the deletion form.",
+      "expected_output": "Uses the existing authorized session without asking for browser-access approval again, tests permitted settings flows, stops before deletion submission, and preserves the caller-owned session and inspected evidence."
+    },
+    {
       "id": "success-standard-web-qa",
       "prompt": "Dogfood the local app and focus on signup and settings.",
-      "expected_output": "Discovers or starts the app URL, ensures project .gitignore ignores .dogfood/ when edits are allowed, creates a unique run without deleting prior evidence, exercises signup/settings and adjacent user flows through native browser tools, opens its screenshots with an image-capable tool, captures reproducible evidence, reports coverage and blockers, cleans up run-owned processes, and does not fix or use source as evidence unless asked."
+      "expected_output": "Discovers or starts the app URL, honors requested evidence paths or chooses a unique ignored project run or permitted outside-checkout directory without deleting prior evidence, exercises requested signup/settings flows and relevant high-risk paths within scope through installed browser tools, opens its screenshots with an image-capable tool, captures reproducible evidence, reports coverage and blockers, cleans up run-owned processes, and does not fix or use source as evidence unless asked."
     },
     {
       "id": "edge-irreversible-boundary",

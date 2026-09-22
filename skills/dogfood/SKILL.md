@@ -1,7 +1,7 @@
 ---
 name: dogfood
 description: "Dogfood or exploratory-QA browser-visible products through real user flows: web apps, local URLs, visual bug hunts, jank/flicker/streaming, and terminal/TUI redraw via VFR. Do not use for backend/unit-test-only checks, code review, trivial visual tweaks, or fixing bugs unless asked."
-compatibility: "Requires a live browser automation surface. Cloudflare control-plane work also requires the configured cloudflare_api_docs, cloudflare_api_search, and cloudflare_api_execute tools. Motion capture requires Python 3.9+ and FFmpeg 5.1+ on the Pi process PATH; optional deep anomaly analysis also uses uv."
+compatibility: "Requires separately installed agent_browser tools and an image-capable read tool. Cloudflare work uses configured cloudflare_api_docs/search/execute. Motion capture needs Python 3.9+ and FFmpeg 5.1+ on Pi's PATH; terminal capture needs ttyd; optional deep analysis uses uv."
 ---
 
 # Dogfood
@@ -12,7 +12,7 @@ Explore a browser-visible product like a real user, find meaningful issues, and 
 
 ## Success criteria
 
-- Main and high-risk flows in scope were exercised through the UI.
+- Requested flows and high-risk paths within scope were exercised through the UI.
 - Findings are user-impactful, severity-ranked, and reproducible.
 - Every finding has steps, expected vs actual behavior, environment, and evidence paths.
 - The agent opened representative screenshots itself with an image-capable tool before making visual claims.
@@ -23,7 +23,7 @@ Explore a browser-visible product like a real user, find meaningful issues, and 
 
 ## Inputs and defaults
 
-Only the target URL/app is required. Discover a local URL when the user asks to start the app. Focus on user-specified flows and high-risk paths within the requested scope. Use authenticated access covered by current or standing authorization; ask only when authentication actually requires the user's presence.
+Only the target URL/app is required. Discover a local URL when the user asks to start the app. Focus on user-specified flows and high-risk paths within the requested scope. Use authenticated access covered by current or standing authorization; ask only when authentication actually requires the user's presence. Preserve caller-owned sessions.
 
 Honor requested evidence paths. Otherwise use a unique project-root `.dogfood/` run when that directory is ignored or the task permits updating `.gitignore`. If artifacts are permitted but tracked-file edits are not, use a unique directory outside the checkout and report its path. Never delete or overwrite evidence from an earlier run unless explicitly authorized.
 
@@ -31,13 +31,13 @@ Honor requested evidence paths. Otherwise use a unique project-root `.dogfood/` 
 
 - Never use `agent_browser` for Cloudflare's control plane, dashboard, documentation, APIs, or product properties. Use `cloudflare_api_docs` for documentation, `cloudflare_api_search` for endpoint discovery, and `cloudflare_api_execute` for authorized authenticated operations. Keep exploratory QA read-only; use a mutating API operation only with explicit user authorization and when broader production-control policy permits it. If those tools are unavailable, or the request needs dashboard-only visual QA, report the Cloudflare work as unavailable instead of falling back to a browser.
 - This guard does not apply when the target is customer code merely hosted by Cloudflare, including a customer app on its own domain or a `*.pages.dev` or `*.workers.dev` preview. Use the normal browser workflow directly against that app. Treat any flow that requires completing a Cloudflare Access, managed or bot challenge, or Turnstile interaction as a Cloudflare product property regardless of its domain. If the app redirects to one, stop and report that path as unavailable unless a caller-owned authenticated session opens directly to the app. An embedded Turnstile widget does not by itself block QA of the surrounding customer app, but do not interact with it; if it blocks the requested flow, report that path as unavailable unless a caller-owned authenticated session opens directly to the customer app after the challenge.
-- In Pi, use native `agent_browser` for permitted browser actions. Never shell out to `agent-browser`.
+- Use the separately installed `agent_browser` tool for permitted browser actions. It is not a built-in Pi capability on either official Pi or forks. If unavailable, report that prerequisite; never shell out to `agent-browser` as a substitute.
 - Use `open` → `snapshot -i` → visible refs or semantic actions → fresh snapshot after navigation, scrolling, or rerender.
 - Use absolute paths at the evidence location selected above.
 - Treat artifact paths as provisional until `details.artifactVerification` confirms them. Prefer exact `details.nextActions` payloads over guessed recovery commands.
 - The agent is the visual reviewer. Open generated screenshots, contact sheets, and anomaly frames with `read`; do not ask the user to interpret them.
 - Do not use target source code as evidence for a browser finding.
-- Do not cross irreversible purchase, order, delete, post, or submit boundaries without explicit permission.
+- Do not cross irreversible purchase, order, delete, post, or submit boundaries without applicable explicit permission. Honor existing standing authorization and explicit holds; a skill supplies neither new permission nor an exception.
 
 ## Session ownership
 
