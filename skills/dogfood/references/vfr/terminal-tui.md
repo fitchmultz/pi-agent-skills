@@ -19,7 +19,7 @@ Resolve helper paths against the dogfood skill directory, then run:
 ```bash
 python3 <dogfood-skill-dir>/scripts/vfr.py doctor
 python3 <dogfood-skill-dir>/scripts/vfr.py init \
-  .dogfood/runs/<timestamp>-terminal \
+  <absolute-run> \
   --viewport 1600x1000
 python3 <dogfood-skill-dir>/scripts/vfr.py terminal-start \
   <absolute-run> --cwd <project> -- <command-under-test>
