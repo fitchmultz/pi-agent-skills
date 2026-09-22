@@ -18,8 +18,8 @@
     },
     {
       "id": "success-standard-web-qa",
-      "prompt": "Dogfood the local app and focus on signup and settings.",
-      "expected_output": "Discovers or starts the app URL, honors requested evidence paths or chooses a unique ignored project run or permitted outside-checkout directory without deleting prior evidence, exercises requested signup/settings flows and relevant high-risk paths within scope through installed browser tools, opens its screenshots with an image-capable tool, captures reproducible evidence, reports coverage and blockers, cleans up run-owned processes, and does not fix or use source as evidence unless asked."
+      "prompt": "Dogfood the local app and focus on signup and settings. Save the report to qa-notes.md at the project root. The .dogfood/ directory is already ignored for screenshots and recordings.",
+      "expected_output": "Discovers or starts the app URL, honors requested evidence paths or chooses a unique ignored project run or permitted outside-checkout directory without deleting prior evidence, exercises requested signup/settings flows and relevant high-risk paths within scope through installed browser tools, opens its screenshots with an image-capable tool, captures reproducible evidence, writes the report directly to the requested project-root qa-notes.md without first trying the evidence run directory, reports coverage and blockers, cleans up run-owned processes, and does not fix or use source as evidence unless asked."
     },
     {
       "id": "edge-irreversible-boundary",

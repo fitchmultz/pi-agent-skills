@@ -68,6 +68,7 @@ Every recording start must have one successful recording stop before close. Neve
    - Use Visual Flight Recorder mode for flicker, streaming, animation, loading, redraw, or other transient behavior.
 
 5. **Report and clean up**
+   - If writing a report file, use the user's requested path without relocating it under the screenshot/video run directory.
    - Reconcile finding counts, coverage, blockers, and untested areas.
    - Name the exact visual artifacts the agent opened.
    - Stop recording before closing a run-owned session. Stop app and terminal processes started by the run.
