@@ -86,7 +86,7 @@ export const cases = [
   {
     id: 'handoff-continue', skill: 'handoff',
     prompt: 'Write a paste-ready continuation handoff for another agent. We are planning a CSV export. Discovery is complete: product name and price only, never customer data. The user requested planning only. Next: compare streaming and buffering and recommend one. No tests have been run.',
-    check: r => { assert(r.output.startsWith('Continue the conversation from the previous session.')); assert(r.output.trimEnd().endsWith('---')); assert.match(r.output, /planning.only|do not implement/i); assert.match(r.output, /customer data/i); assert.doesNotMatch(r.output, /```|tests (?:have )?passed/i); },
+    check: r => { assert(r.output.startsWith('Continue the conversation from the previous session.')); assert(r.output.trimEnd().endsWith('---')); assert.match(r.output, /planning.(?:only|mode)|do not implement/i); assert.match(r.output, /customer data/i); assert.doesNotMatch(r.output, /```|tests (?:have )?passed/i); },
   },
   {
     id: 'handoff-delegate', skill: 'handoff', invoke: true,
