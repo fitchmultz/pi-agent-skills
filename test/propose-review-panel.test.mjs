@@ -21,7 +21,15 @@ test("local reviews follow requirements and useful roles without a fixed panel",
 });
 
 test("owner rebuttals preserve requested reviews and repository requirements", () => {
-  assert.match(panel, /If an explicitly required reviewer is unavailable, report that specific missing review and continue independent authorized work/i);
+  for (const source of [skill, panel]) {
+    assert.match(source, /If an explicitly required reviewer is unavailable, report that specific missing review and continue independent authorized work/i);
+  }
+  assert.match(skill, /Required review coverage is complete under `references\/review-panel\.md`/i);
+  assert.doesNotMatch(skill, /required first wave|missing or disabled requested panel seat is a stop-and-report condition|an explicitly required local panel seat is unavailable/i);
+  const missingReviewer = evals.evals.find(({ id }) => id === "edge-required-panel-seat-missing");
+  assert.match(missingReviewer.prompt, /explicitly requires reviewer-ponytail/i);
+  assert.match(missingReviewer.expected_output, /continue[s]? independent authorized work/i);
+  assert.match(missingReviewer.expected_output, /Does not merge while the required review is incomplete/i);
   assert.match(panel, /The originating reviewer's agreement is not required/i);
   assert.match(skill, /originating reviewer agreement alone is not a gate/i);
   assert.match(skill, /Preserve explicitly requested reviews, required human approvals, repository protections/i);

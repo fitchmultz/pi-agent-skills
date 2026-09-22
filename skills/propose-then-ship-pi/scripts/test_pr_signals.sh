@@ -10,6 +10,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 cat >"$TMP/gh" <<'MOCK'
 #!/usr/bin/env bash
+if [ -n "${MOCK_POLL_LOG:-}" ]; then echo poll >>"$MOCK_POLL_LOG"; fi
 check() { printf '{"__typename":"CheckRun","name":"%s","status":"%s","conclusion":"%s"}' "$1" "$2" "$3"; }
 pr() { printf '{"number":1,"url":"https://example.test/pr/1","state":"%s","isDraft":false,"mergeable":"MERGEABLE","mergeStateStatus":"CLEAN","headRefOid":"deadbeef","statusCheckRollup":[%s]}' "$1" "$2"; }
 case "${MOCK_CASE:-}" in
@@ -46,6 +47,26 @@ if [ "$default_exit" -eq 2 ] && [ "$default_wait" -eq 300 ]; then
   printf 'ok   %-28s %s\n' "default parent wait budget" "exit=2 after 300s budget"
 else
   printf 'FAIL %-28s %s\n' "default parent wait budget" "exit=$default_exit budget=${default_wait}s"
+  fails=$((fails + 1))
+fi
+
+fail_polls="$TMP/fail-polls"
+fail_sleeps="$TMP/fail-sleeps"
+: >"$fail_polls"
+: >"$fail_sleeps"
+out=$(env PATH="$TMP:$PATH" GH_BIN="$TMP/gh" POLL_INTERVAL_SECONDS=101 MAX_WAIT_SECONDS=300 \
+  MOCK_CASE=fail_run MOCK_POLL_LOG="$fail_polls" MOCK_SLEEP_LOG="$fail_sleeps" "$TARGET" 1 2>&1)
+fail_exit=$?
+polls=$(awk 'END { print NR }' "$fail_polls")
+sleeps=$(awk 'END { print NR }' "$fail_sleeps")
+if [ "$fail_exit" -eq 1 ] && [ "$polls" -eq 1 ] && [ "$sleeps" -eq 0 ] \
+  && grep -q 'head:      deadbeef' <<<"$out" \
+  && grep -q 'state:     OPEN' <<<"$out" \
+  && grep -q 'checks:    2 total, 1 failed, 0 unknown, 1 unfinished' <<<"$out"; then
+  printf 'ok   %-28s %s\n' "failure stops polling" "exit=1 polls=1 sleeps=0 with head/state/checks"
+else
+  printf 'FAIL %-28s %s\n' "failure stops polling" "exit=$fail_exit polls=$polls sleeps=$sleeps"
+  printf '%s\n' "$out"
   fails=$((fails + 1))
 fi
 
