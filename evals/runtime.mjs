@@ -58,7 +58,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
   const events = [], commands = [], violations = [], requests = [], images = new Map();
   const state = {};
   const record = { id: testCase.id, skill: testCase.skill, mode: testCase.mode ?? 'task', host: host.identity, skillsDigest: beforeDigest, withoutSkills, requestedThinking: thinking, events, commands, requests, violations };
-  let session, timedOut = false, routingDecision = false, routingStopped = false, timer;
+  let session, timedOut = false, routingDecision, timer;
   const start = performance.now();
   const writable = new Set(testCase.writable ?? []);
   const put = async (path, content) => { const target = resolve(cwd, path); assert(inside(cwd, target), 'Fixture path required'); await mkdir(dirname(target), { recursive: true }); await writeFile(target, content); };
@@ -66,7 +66,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
   async function authorize(path, writing = false) {
     const absolute = resolve(cwd, path);
     const actual = await realpath(writing && !existsSync(absolute) ? dirname(absolute) : absolute);
-    const skillResource = inside(skillsDir, actual) && !relative(skillsDir, actual).split(sep).includes('evals');
+    const skillResource = !withoutSkills && inside(skillsDir, actual) && !relative(skillsDir, actual).split(sep).includes('evals');
     const allowed = writing ? inside(cwd, actual) && writable.has(relative(cwd, absolute))
       : inside(cwd, actual) || skillResource || inside(dirname(host.root), actual);
     if (!allowed) { violations.push({ path, writing }); throw new Error('This evaluation tool is limited to the declared fixture files and read-only skill/runtime sources'); }
@@ -88,8 +88,11 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
       ...['status --short', 'status --porcelain', 'diff', 'diff HEAD', 'diff main...HEAD', 'diff --stat', 'rev-parse --show-toplevel', 'rev-parse HEAD'].map(args => [`git ${args}`, ['git', args.split(' ')]]),
       ...['npm test', 'node --test'].map(command => [command, [process.execPath, ['--permission', `--allow-fs-read=${cwd}`, '--experimental-test-isolation=none', '--test']]]),
       ['pi --version', [process.execPath, [join(host.root, 'dist', 'cli.js'), '--version']]],
-      [`python3 ${join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py'), '--json']]],
     ]);
+    if (!withoutSkills) commandMap.set(`python3 ${join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py'), '--json']]);
+    const commandParts = command => command.split('&&').map(value => value.trim());
+    const isInspection = (name, args) => name === 'read' || name === 'ls' || (name === 'bash' && typeof args?.command === 'string'
+      && commandParts(args.command).every(part => commandMap.has(part) && part !== 'npm test' && part !== 'node --test'));
     const customTools = [
       sdk.createReadToolDefinition(cwd, { operations: {
         access: async path => access(await authorize(path)), readFile: async path => readFile(await authorize(path)),
@@ -108,7 +111,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
         writeFile: async (path, content) => writeFile(await authorize(path, true), content),
       } }),
       sdk.createBashToolDefinition(cwd, { exposeSessionEnvironment: false, operations: { exec: async (command, _cwd, options) => {
-        for (const part of command.split('&&').map(value => value.trim())) {
+        for (const part of commandParts(command)) {
           const invocation = commandMap.get(part);
           if (!invocation) throw new Error(`Supported fixture commands: ${[...commandMap.keys()].join('; ')}`);
           const entry = { command: part, files: await snapshot() };
@@ -132,7 +135,9 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
     ];
     customTools.find(tool => tool.name === 'bash').description += `\nThis synthetic workspace supports these exact commands only (optionally joined with &&): ${[...commandMap.keys()].join('; ')}. Use read for source inspection.`;
     if (testCase.mode === 'routing') for (const tool of customTools) {
-      if (tool.name !== 'read') tool.execute = async () => ({ content: [{ type: 'text', text: 'Routing action observed; task execution is outside this routing probe.' }], details: {} });
+      const execute = tool.execute;
+      tool.execute = async (...args) => isInspection(tool.name, args[1]) ? execute(...args)
+        : { content: [{ type: 'text', text: 'Routing action observed; task execution is outside this routing probe.' }], details: {} };
     }
     const settingsManager = sdk.SettingsManager.inMemory({ compaction: { enabled: false }, retry: { enabled: false }, providerRetry: { maxRetries: 0 }, cacheWarming: 'off', transport: 'sse' });
     const loader = new sdk.DefaultResourceLoader({ cwd, agentDir, settingsManager, noExtensions: true, noSkills: true,
@@ -166,11 +171,15 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
         events.push({ type: 'result', id: event.toolCallId, tool: event.toolName, isError: event.isError,
           text: event.result.content.filter(part => part.type === 'text').map(part => part.text).join('\n'),
           images: event.result.content.filter(part => part.type === 'image').length });
-        if (testCase.mode === 'routing' && !event.isError && (call?.toolName !== 'read' || loader.getSkills().skills.some(skill => resolve(cwd, call.args.path) === skill.filePath))) {
-          routingDecision = true;
+        if (testCase.mode === 'routing' && call) {
+          if (!event.isError && call.toolName === 'read' && loader.getSkills().skills.some(skill => skill.name === testCase.skill && resolve(cwd, call.args.path) === skill.filePath)) routingDecision = 'target-skill';
+          else if (!isInspection(call.toolName, call.args)) routingDecision ??= 'task-action';
         }
       }
-      if (event.type === 'turn_end' && routingDecision) { routingStopped = true; void session.abort(); }
+      if (event.type === 'turn_end' && routingDecision && !record.routingStop) {
+        record.routingStop = { reason: routingDecision, afterAssistantMessages: session.messages.filter(message => message.role === 'assistant').length - (testCase.previousAnswer ? 1 : 0) };
+        void session.abort();
+      }
     });
     timer = setTimeout(() => { timedOut = true; void session.abort(); }, timeoutMs);
     const prompt = testCase.prompt.replaceAll('{cwd}', cwd);
@@ -181,7 +190,13 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
     record.output = messages.at(-1)?.content.filter(part => part.type === 'text').map(part => part.text).join('\n') ?? '';
     record.stopReasons = messages.map(message => message.stopReason);
     record.responseModels = [...new Set(messages.map(message => message.responseModel ?? message.model))];
-    record.errors = messages.filter(message => message.stopReason === 'error' || (message.stopReason === 'aborted' && !routingStopped)).map(message => message.errorMessage ?? message.stopReason);
+    record.diagnostics = messages.flatMap((message, messageIndex) => {
+      if (message.stopReason !== 'error' && message.stopReason !== 'aborted') return [];
+      const controlledRoutingStop = !timedOut && !!record.routingStop && messageIndex >= record.routingStop.afterAssistantMessages
+        && (message.stopReason === 'aborted' || message.errorMessage === 'This operation was aborted');
+      return [{ messageIndex, stopReason: message.stopReason, errorMessage: message.errorMessage ?? message.stopReason, controlledRoutingStop }];
+    });
+    record.errors = record.diagnostics.filter(diagnostic => !diagnostic.controlledRoutingStop).map(diagnostic => diagnostic.errorMessage);
     record.usage = session.getSessionStats();
     record.files = await snapshot();
     record.skillsRead = events.filter(event => event.type === 'result' && event.tool === 'read' && !event.isError).flatMap(event => {
@@ -192,7 +207,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
     assert.equal(record.errors.length, 0, record.errors.join('\n'));
     assert.equal(violations.length, 0, 'Agent attempted an out-of-scope file operation');
     assert(messages.length > 0, 'No model response');
-    if (!routingStopped) assert.equal(messages.at(-1).stopReason, 'stop', 'Model did not finish the task');
+    if (!record.routingStop) assert.equal(messages.at(-1).stopReason, 'stop', 'Model did not finish the task');
     assert(requests.length > 0 && requests.every(request => request.model === model.id), 'The exact selected model must reach the provider request');
     if (testCase.mode === 'routing') assert.equal(record.skillsRead.includes(testCase.skill), testCase.shouldTrigger, `Routing mismatch: ${record.skillsRead.join(', ') || 'no skill'}`);
     else await testCase.check(record, { cwd, state, host });

@@ -18,6 +18,11 @@ test('structured verdicts distinguish incomplete fixes and rejected reviews', ()
   assert.doesNotThrow(() => check('ux-simple-success', JSON.stringify({ verdict: 'approve', findings: [] }), reads(['journey.md'])));
 });
 
+test('wrapper review accepts the human-readable adapter name but rejects unrelated findings', () => {
+  assert.doesNotThrow(() => check('review-concrete-wrapper', '**Request changes** src/service.js:1–2 — Remove the identity adapter and restore export const value = 1.'));
+  assert.throws(() => check('review-concrete-wrapper', 'src/service.js:1 — Remove the logging wrapper and use a direct call.'));
+});
+
 test('answers that skip explicitly required source reads do not pass', () => {
   assert.throws(() => check('discover-before-asking', 'Run npm test.'));
   assert.doesNotThrow(() => check('discover-before-asking', 'Run npm test.', reads(['package.json'])));

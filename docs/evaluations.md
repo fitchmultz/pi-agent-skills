@@ -52,15 +52,19 @@ Repeat the commands with each supported host. Use the same provider, thinking le
 
 The default profile has no ambient instructions, extensions, or skills. Add `--profile evals/profiles/authorized.md` to exercise the documented caller policy. It supplies scope, approval, review, and evidence-reuse rules without granting access to real remote systems. Intentional policy changes must be identified separately from wording optimizations; compare equivalent policies when claiming an optimization.
 
-`--no-skills-control` adds a behavior-suite control using the same tasks and tools without skill discovery or slash-command expansion. It helps distinguish useful skill instructions from behavior the model already provides. `--case ID` and `--skill NAME` narrow a run. Each case has a five-minute default deadline; set `--timeout` in milliseconds when needed and report the change.
+`--no-skills-control` adds a behavior-suite control using the same tasks and native tools without skill discovery, slash-command expansion, or bundle-file access. The bundled resolver command is omitted from its Bash command list and help. It helps distinguish useful skill instructions from behavior the model already provides. `--case ID` and `--skill NAME` narrow a run. Each case has a five-minute default deadline; set `--timeout` in milliseconds when needed and report the change.
 
 ## What the suites measure
 
 | Suite | Boundary |
 | --- | --- |
 | `behavior` | Task outcomes across all twelve skills: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits and RED/GREEN tests, truthful evidence, review findings, merge holds, and image inspection. |
-| `routing` | Existing `skills/*/evals/trigger-evals.json` prompts through native discovery. This measures skill selection, not complete task execution. |
+| `routing` | Existing `skills/*/evals/trigger-evals.json` prompts through native discovery. This measures initial skill selection after inspection and before task execution. |
 | `held-out` | Independently written routing prompts, kept separate from the existing trigger examples. `bro` is deliberately absent from automatic discovery and is tested by explicit invocation in the behavior suite. |
+
+Routing and held-out probes allow native `read`, `ls`, and the declared read-only Bash commands before a decision. Bash uses the same exact command list and `&&` splitting as behavior fixtures; `npm test`, `node --test`, and any unmapped command are task actions. Mixed inspection/action Bash calls remain wholly inert. Reading another skill may continue: observation ends after the first turn containing a successful target-skill read or a non-inspection task action, or when the agent answers naturally. All tool-call siblings in that decisive turn are observed; task actions are stubbed rather than executed. Later skill use during task execution is outside this initial-routing measure, and prompt labels are unchanged.
+
+A deliberate routing stop records its reason and assistant-message boundary. Only a subsequent native `aborted` result or the official host's exact `error: This operation was aborted` signature is treated as controlled cancellation. Raw stop reasons and error diagnostics remain in the report. Earlier or unrelated provider errors, file-boundary violations, and deadlines still fail.
 
 The native SDK and live provider are real. Browser, GitHub merge, delegation, and question tools are deterministic fixtures. Browser screenshots are generated locally and opened through Pi's native image-reading tool. They do not prove a live website, authenticated browser extension, remote reviewer, or GitHub operation works. The report retains the images actually read by the model in its adjacent `.artifacts` directory; temporary workspaces are removed. Existing helper tests and separate real integration checks cover those boundaries where applicable. Image cases require `rsvg-convert` from librsvg; missing prerequisites fail rather than count as passes.
 
