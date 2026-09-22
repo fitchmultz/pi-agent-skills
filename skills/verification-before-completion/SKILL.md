@@ -1,140 +1,67 @@
 ---
 name: verification-before-completion
-description: "Use this skill when the agent is about to claim work is complete, commit, open a PR, or say tests/lint/build pass. Verify the exact success claim with current evidence from diff cleanup, requirement checks, validation commands, runtime/manual checks, and contract/generated-surface alignment. Do not use for initial planning, speculative review, or root-cause debugging before a fix exists."
+description: "Verify evidence before claiming completion or passing checks, committing, opening a PR, or handing work back. Covers diff cleanup, requirements, runtime proof, and contract/generated-surface alignment. Not initial planning or diagnosis before a candidate fix."
 ---
 
 # Verification Before Completion
 
-## Purpose
+Make the exact status claim match current inspectable evidence. Do not broaden beyond the request or silently narrow acceptance such as “all,” “complete,” or “no tech debt.” A narrower proof warrants a narrower report, not a claim that the original request is done.
 
-Make the final status claim match current evidence. This skill is the last gate before saying work is done.
+Reviewer judgment does not replace validation. This skill requires no review or fresh opt-in; delegate substantive review when useful, while the original agent retains delivery ownership. Complete actual requested/standing reviews and address feedback already received.
 
-## Core rule
+## 1. State the claim and sweep the delta
 
-No completion claim without current verification evidence.
+Identify what you will claim: bug fixed, requirements met, checks pass, PR ready, or contracts/docs aligned. Inspect fresh `git status --short` and the relevant diff for unrelated churn, debug/scaffold leftovers, unapproved TODOs/stubs/shims, dead code, hard-coded test paths, and stale docs/examples/fixtures/generated output. Clean only in-scope issues and confirm no unrelated files are staged before delivery.
 
-Reviewer judgment does not replace validation evidence, and this skill does not require a review. Delegate substantive review when it saves time or improves quality; the original agent retains delivery ownership. Review findings that already exist still must be resolved or accurately reported.
+When an authority surface changes (API/schema, CLI, defaults, permissions, deployment, flags, generator inputs), check directly affected mirrors: clients/types, fixtures, examples, docs, generated artifacts, and alignment tests. Use the canonical generator or narrow obvious edits. Make routine alignment choices within the approved outcome; ask only when an unresolved product or compatibility decision is necessary. Report any remaining unverified alignment without inventing behavior or policy.
 
-Evidence freshness follows the code and environment it covers, not the turn boundary or wall clock. If you did not run or inspect the check in this work cycle, or cannot prove its recorded context still matches, do not claim it passes. If evidence proves only a narrower claim, report the narrower claim without pretending the original request is complete.
+## 2. Choose proof that reaches the claim
 
-## Use when
+| Claim | Closest meaningful proof |
+| --- | --- |
+| Tests/lint/type/build pass | Current command output and successful exit, with failures/skips/warnings inspected |
+| Bug fixed | The original reachable failure no longer reproduces |
+| UI works | Relevant rendered/interactive inspection |
+| Requirements met | Requirement-by-requirement evidence map |
+| No tech debt remains | Diff sweep and resolution of each known unapproved shortcut/stub |
 
-Use immediately before:
+Static review cannot prove runtime behavior; green tests cannot satisfy an unimplemented requirement.
 
-- claiming a task, goal, fix, feature, or review loop is complete
-- saying tests, lint, typecheck, build, smoke, or CI-equivalent checks pass
-- committing, opening/updating a PR, or handing work back as ready
-- marking a tracked goal/task complete
+### Regression proof
 
-Do not use for initial planning, speculative discussion, or root-cause debugging before a candidate fix exists.
+For non-trivial regression tests added or materially changed, demonstrate the expected failure against the broken implementation and pass against the fix when practical. Reuse original RED/GREEN evidence when the exact test reached the defect. Reconstruct missing proof in an isolated `git worktree` or with a targeted revert only when unrelated work cannot be affected.
 
-## Workflow
+If historical reproduction is impractical, provide convincing verification and disclose the gap; missing old-code failure proof alone does not block completion. Preserve available commands, code states, outputs, and results. Never substitute a source-text assertion, weakened assertion, or self-fulfilling mock for the real defect boundary. Do not claim an unperformed test-first cycle occurred.
 
-### 1. State the exact claim
+## 3. Run or reuse current evidence
 
-Write the claim you are about to make:
+Record command outputs, instrumented checks, CI results, and manual observations with enough context to establish what they prove: exact command/source and cwd, relevant code/environment/state, result, failures/skips/warnings, and inspectable output.
 
-- bug fixed
-- requirements satisfied
-- tests/lint/build pass
-- PR ready
-- no known tech debt remains in the touched scope
-- generated/contracts/docs are aligned
+For a clean Git tree, `git rev-parse HEAD^{tree}` survives metadata-only commits. CI and commit-bound reviews use the exact head SHA. Uncommitted work can also have valid evidence: identify its relevant staged, unstaged, untracked, and ignored inputs; unchanged `git status` paths alone prove nothing.
 
-Do not broaden the claim beyond the user request or evidence. Do not silently narrow broad acceptance criteria such as "all", "complete", "no tech debt", or "hard acceptance criteria".
+Reuse evidence only when:
 
-### 2. Sweep the local delta
+- its recorded code and input state establish that it still applies;
+- its command or source directly proves this claim and the output is inspectable;
+- relevant code, cwd, dependencies, toolchain, configuration, generated artifacts, services, environment, and observed state remain unchanged;
+- no later failure, flaky signal, base integration, or policy invalidated it.
 
-Run `git status --short` or the repo equivalent, then inspect changed files and relevant diff for:
+Repeat live observations when their relevant conditions cannot be established. The broken half of an ablation is historical evidence of a different state: preserve its command, result, and identified code. Reconstruct missing history when practical; otherwise disclose the gap with convincing current proof. The fixed half follows normal reuse rules.
 
-- accidental churn or unrelated formatting
-- debug logs, temporary flags, commented-out code, or hard-coded test paths
-- unapproved task markers, scaffolding, temporary stubs, or compatibility shims
-- unused imports/helpers or dead code
-- docs, examples, help text, fixtures, or generated outputs that no longer match behavior
-- staged or unstaged files that are unrelated to the claim
+Reviewer findings and verdicts are analysis, not validation evidence. Carry them into briefs without presenting old analysis as a review of changed code or skipping a required review. Deterministic checks run by reviewers follow the normal reuse rules.
 
-Clean only issues related to the work. Avoid unrelated style churn. Before commit/PR handoff, confirm no unrelated files are staged.
+Do not rerun a still-valid full suite merely because a reviewer finished, a turn ended, or a metadata-only commit preserved the tree. Refresh the lightweight status/diff sweep; run only missing/invalidated checks. With no valid evidence, run the relevant command or explain the concrete blocker. Inspect actual output and exit status. Fix issues needed for the authorized outcome or required checks, then rerun affected checks. Report unrelated, pre-existing nonblocking defects separately.
 
-### 3. Check authority/mirror alignment
+## 4. Resolve received feedback
 
-If an authority surface changed, verify directly affected mirrors.
+- Address every actionable finding with **Fix** or an evidence-backed **Rebut**, recorded in the review context. Fix valid in-scope defects regardless of effort; a follow-up alone does not resolve a finding.
+- The owning agent may clear incorrect, out-of-scope, or approved-behavior-conflicting agent findings without the originating reviewer's agreement. Preserve requested reviews, required human approvals, repository protections, and unresolved valid security findings.
+- Assess security notes against concrete impact and approved behavior. Context, praise, or risk without a defect/change can be informational regardless of reviewer role; include it in the user update only when material to the outcome or next action.
 
-Authority surfaces include APIs, schemas, OpenAPI/contracts, CLI flags, route contracts, config/env defaults, deploy templates, permission/policy manifests, feature flags, and generator inputs.
+## Report and finish
 
-Mirrors include generated clients/types, SDK artifacts, fixtures, schema bundles, examples, docs, and alignment tests.
+Follow the user's format. State what changed, whether the requested outcome is complete, the supporting verification, and any material gap or next action. Keep detailed commands and requirement-by-requirement evidence in the PR/work record when useful; do not force a simple update into an internal checklist.
 
-Use the repo's canonical generator or narrow obvious edits. Do not invent product behavior, business rules, or compatibility policy. Make routine alignment choices within the approved outcome. Ask only when an unresolved product or compatibility decision is necessary; report remaining unverified alignment.
+For failed or unavailable checks, name the concrete failure, what was verified, and what remains. “Should pass,” “probably fixed,” “looks good,” “for this scope,” and “good enough” are not evidence.
 
-### 4. Choose evidence that proves the claim
-
-Pick the closest meaningful proof:
-
-- tests pass → current test evidence with zero relevant failures
-- lint/type/build pass → current command output and exit code 0
-- bug fixed → original failing behavior no longer reproduces
-- UI works → rendered/interactive inspection when relevant
-- requirements met → requirement-by-requirement evidence map
-- no tech debt left behind → diff sweep plus removal/resolution of each known shortcut or temporary stub
-
-Static review does not prove runtime behavior. Green tests do not prove unmet requirements.
-
-For a non-trivial regression test added or materially changed by the work, confirm the expected failure against the broken implementation and the pass against the fix when practical. Reuse original RED/GREEN evidence when the exact test exercised the reachable defect. If historical proof is missing, use an isolated `git worktree` or a targeted revert that cannot affect unrelated work when practical. Otherwise provide convincing verification and disclose the gap; missing old-code failure proof alone does not block completion. Do not substitute source-text assertions, a self-fulfilling mock, or a weakened assertion for the reachable defect.
-
-### 5. Run, inspect, or reuse current verification
-
-Record relevant command outputs, runtime checks, CI results, and manual observations with enough context to establish what they prove. Reuse inspectable evidence only while its relevant code, environment, and observed state remain unchanged; repeat live observations when those conditions cannot be established.
-
-| Check or claim | Command or source | Scope identity | Result |
-| --- | --- | --- | --- |
-| `tests pass` | exact command and cwd | code plus relevant environment | exit code, failures, skips, warnings |
-
-Reviewer analysis is different. Findings, verdicts, and sign-off are review history, not reusable validation evidence. Carry that history into later briefs, but never use it to skip a reviewer pass required by the caller's explicit review policy. This skill creates no such requirement. Deterministic checks run by a reviewer may be reused under the normal rules; the reviewer's judgment may not.
-
-For a clean Git checkout, `git rev-parse HEAD^{tree}` identifies the tested file tree even when a later commit changes only metadata. Bind CI and commit-specific reviews to the exact head SHA. For uncommitted work, establish the input state covered by the check; `git status` paths alone are insufficient. Reuse the result only when relevant staged, unstaged, untracked, and ignored inputs are demonstrably unchanged. The broken half of an ablation receipt is historical evidence for a different state; preserve its command, result, and identified code state. Reconstruct missing historical proof when practical; otherwise disclose the gap and provide convincing verification. The fixed half follows the normal evidence-reuse rules.
-
-Reuse a final-tree ledger entry only when all are true:
-
-- the recorded code and input state is sufficient to establish that the evidence still applies
-- its command or source directly proves the current claim
-- its output is inspectable and records the result, failures, skips, and material warnings
-- the code, cwd, dependencies, toolchain, configuration, generated artifacts, services, and environment inputs relevant to the check are unchanged
-- no later failure, flaky signal, base integration, or policy has invalidated it
-
-Do not rerun a still-valid full suite solely because a reviewer finished, a turn ended, or a commit preserved the same tree. Re-run only missing or invalidated checks, choosing the narrowest command that restores evidence. Always refresh the lightweight status/diff sweep before the final claim.
-
-When no valid ledger entry exists, run the relevant command now or explain why it cannot run. Inspect its exit code, failures, skips, warnings, and whether the output actually proves the claim. If validation fails, own the triage. Fix high-confidence issues needed for the authorized outcome or required checks, then rerun affected checks. Report unrelated, pre-existing nonblocking defects separately.
-
-### 6. Report only what evidence supports
-
-If verification passed, cite the command/check.
-
-If verification failed or could not run, state:
-
-- exact blocker or failure
-- what was verified
-- what remains unverified
-- whether the requested work is complete, incomplete, or blocked
-
-Never use "should pass", "probably fixed", "looks good", "for this scope", or "good enough" as completion evidence.
-
-## Output contract
-
-Follow the user's requested format. State what changed, whether the requested outcome is complete, the verification that supports it, and any material gap or next action. Keep detailed commands and requirement-by-requirement evidence in the PR or work record when useful. Do not turn a simple completion update into an internal checklist.
-
-## Completion standard
-
-Verification is complete only when:
-
-- the exact claim is explicit
-- local changes were swept for accidental debt
-- authority/mirror surfaces are aligned, ruled out, or reported as blocked
-- relevant checks were run or reused from a still-valid ledger entry, or accurately blocked
-- output was read, not assumed
-- every actionable review finding already received in the claim's scope has a recorded **Fix** or **Rebut** verdict
-- before/after regression proof was obtained when practical; otherwise convincing verification and the historical-evidence gap are reported
-- final status does not exceed evidence
-
-These rules triage review feedback that already exists; they do not require starting a review. An actionable finding identifies a defect, regression, policy violation, or concrete change to the current diff at any severity; pure context, praise, and risk notes that identify no defect or change are informational. Assess security concerns against the approved behavior and concrete evidence. Address actionable findings with a fix or an evidence-backed rebuttal, recorded in the review context; a follow-up alone does not resolve a finding. The owning agent may clear an incorrect or approved-behavior-conflicting finding without the originating reviewer's agreement. Complete explicitly requested reviews and preserve actual repository merge requirements. Include informational observations in the user update only when they materially affect the outcome or the user's next action.
-
-Stop when evidence is sufficient for the exact claim. Continue when a missing check would materially affect correctness, buildability, user-visible behavior, data loss risk, or contract alignment.
+Stop when proof is sufficient for the exact claim and received actionable findings are resolved. Continue when missing evidence could materially affect correctness, buildability, user-visible behavior, data loss, or contract alignment.
