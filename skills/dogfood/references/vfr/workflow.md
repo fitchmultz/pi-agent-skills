@@ -24,12 +24,12 @@ Do not add HAR, observer telemetry, trace, profiler, or live stream capture unle
 
 Resolve relative helper paths against the directory containing the dogfood `SKILL.md`. Do not invent `VFR_ROOT` or ask the user where the skill is installed.
 
-Ensure the target project ignores `.dogfood/`, then run:
+Select the evidence location under the main skill's rules, then run:
 
 ```bash
 python3 <dogfood-skill-dir>/scripts/vfr.py doctor
 python3 <dogfood-skill-dir>/scripts/vfr.py init \
-  .dogfood/runs/<timestamp>-<slug> \
+  <absolute-run> \
   --target-url <target-url> \
   --viewport 1440x1000
 ```

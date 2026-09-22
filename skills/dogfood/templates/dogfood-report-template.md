@@ -34,8 +34,8 @@
 
 | Item | Status |
 |------|--------|
-| Artifact directory | `.dogfood/runs/{RUN}` |
-| `.gitignore` includes `.dogfood/` | yes / no / blocked: {reason} |
+| Artifact directory | `{ABSOLUTE_RUN_PATH}` |
+| Evidence excluded from version control | ignored / outside checkout / N/A: {reason} |
 | Existing evidence deleted | no / user-authorized: {summary} |
 | Recording stopped and verified | yes / no / N/A: {reason} |
 | Run-owned browser/app/terminal processes stopped | yes / no / N/A: {reason} |

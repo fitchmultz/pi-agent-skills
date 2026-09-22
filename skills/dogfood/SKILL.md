@@ -23,9 +23,9 @@ Explore a browser-visible product like a real user, find meaningful issues, and 
 
 ## Inputs and defaults
 
-Only the target URL/app is required. Discover a local URL when the user asks to start the app. Focus on user-specified flows first, then adjacent high-risk paths. Use no authentication unless the user provides or approves a profile/session.
+Only the target URL/app is required. Discover a local URL when the user asks to start the app. Focus on user-specified flows and high-risk paths within the requested scope. Use authenticated access covered by current or standing authorization; ask only when authentication actually requires the user's presence.
 
-Store generated evidence in a unique project-root `.dogfood/` run. Ensure `.gitignore` ignores `.dogfood/` before creating artifacts when the task permits that edit. In a read-only task, report the ignore-file blocker instead of silently changing tracked files. Never delete or overwrite evidence from an earlier run unless the user explicitly authorizes it.
+Honor requested evidence paths. Otherwise use a unique project-root `.dogfood/` run when that directory is ignored or the task permits updating `.gitignore`. If artifacts are permitted but tracked-file edits are not, use a unique directory outside the checkout and report its path. Never delete or overwrite evidence from an earlier run unless explicitly authorized.
 
 ## Tool and safety rules
 
@@ -33,7 +33,7 @@ Store generated evidence in a unique project-root `.dogfood/` run. Ensure `.giti
 - This guard does not apply when the target is customer code merely hosted by Cloudflare, including a customer app on its own domain or a `*.pages.dev` or `*.workers.dev` preview. Use the normal browser workflow directly against that app. Treat any flow that requires completing a Cloudflare Access, managed or bot challenge, or Turnstile interaction as a Cloudflare product property regardless of its domain. If the app redirects to one, stop and report that path as unavailable unless a caller-owned authenticated session opens directly to the app. An embedded Turnstile widget does not by itself block QA of the surrounding customer app, but do not interact with it; if it blocks the requested flow, report that path as unavailable unless a caller-owned authenticated session opens directly to the customer app after the challenge.
 - In Pi, use native `agent_browser` for permitted browser actions. Never shell out to `agent-browser`.
 - Use `open` → `snapshot -i` → visible refs or semantic actions → fresh snapshot after navigation, scrolling, or rerender.
-- Use exact user paths when provided. Otherwise use absolute paths under the target project’s `.dogfood/` directory.
+- Use absolute paths at the evidence location selected above.
 - Treat artifact paths as provisional until `details.artifactVerification` confirms them. Prefer exact `details.nextActions` payloads over guessed recovery commands.
 - The agent is the visual reviewer. Open generated screenshots, contact sheets, and anomaly frames with `read`; do not ask the user to interpret them.
 - Do not use target source code as evidence for a browser finding.
@@ -49,7 +49,7 @@ Every recording start must have one successful recording stop before close. Neve
 
 1. **Initialize**
    - Resolve the project root with `git rev-parse --show-toplevel` when available.
-   - Use a new `.dogfood/runs/<timestamp>-<slug>/` directory. Record target, viewport, browser/session, auth state, and scope.
+   - Use a new run directory at the selected evidence location. Record target, viewport, browser/session, auth state, and scope.
    - Start the app only with its normal command and a cleanup-safe process handle.
 
 2. **Orient**
@@ -95,4 +95,4 @@ Use `templates/dogfood-report-template.md` for larger passes. Use colons instead
 
 ## Stop rules
 
-Stop when main and high-risk flows in scope were exercised, each finding is reproducible, visual claims are backed by artifacts the agent actually opened, and blockers/untested areas are explicit. Continue only when an untested path could hide a high-impact issue in the requested scope.
+Stop when the requested QA scope is covered, each finding is reproducible, visual claims are backed by artifacts the agent actually opened, and blockers/untested areas are explicit. Continue for remaining requested coverage or evidence needed to substantiate a finding.
