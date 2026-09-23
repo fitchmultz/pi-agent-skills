@@ -292,39 +292,42 @@ def command_contact_sheet(args: argparse.Namespace) -> int:
         return 2
     reports = run / "reports"
     reports.mkdir(parents=True, exist_ok=True)
-    for old in reports.glob("contact_ffmpeg_*.jpg"):
-        old.unlink()
-    output = reports / "contact_ffmpeg_%03d.jpg"
-    result = subprocess.run(
-        [
-            ffmpeg,
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-y",
-            "-i",
-            str(video),
-            "-vf",
-            "fps=2,scale=480:-1,tile=4x4:padding=4:margin=4:color=0xE879F9",
-            "-fps_mode",
-            "vfr",
-            "-q:v",
-            "3",
-            str(output),
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode:
-        print(result.stderr.strip() or "error: ffmpeg contact-sheet generation failed", file=sys.stderr)
-        return 2
-    sheets = sorted(reports.glob("contact_ffmpeg_*.jpg"))
-    if not sheets:
-        print("error: ffmpeg produced no contact sheets", file=sys.stderr)
-        return 2
+    with tempfile.TemporaryDirectory(dir=reports) as stage:
+        output = Path(stage) / "contact_ffmpeg_%03d.jpg"
+        result = subprocess.run(
+            [
+                ffmpeg,
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-y",
+                "-i",
+                str(video),
+                "-vf",
+                "fps=2,scale=480:-1,tile=4x4:padding=4:margin=4:color=0xE879F9",
+                "-fps_mode",
+                "vfr",
+                "-q:v",
+                "3",
+                str(output),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            print(result.stderr.strip() or "error: ffmpeg contact-sheet generation failed", file=sys.stderr)
+            return 2
+        sheets = sorted(Path(stage).glob("contact_ffmpeg_*.jpg"))
+        if not sheets:
+            print("error: ffmpeg produced no contact sheets", file=sys.stderr)
+            return 2
+        for old in reports.glob("contact_ffmpeg_*.jpg"):
+            old.unlink()
+        for sheet in sheets:
+            sheet.replace(reports / sheet.name)
     print(json.dumps({
         "video": str(video),
-        "contactSheets": [str(path) for path in sheets],
+        "contactSheets": [str(reports / path.name) for path in sheets],
         "inspectWith": "read",
     }, indent=2))
     return 0
