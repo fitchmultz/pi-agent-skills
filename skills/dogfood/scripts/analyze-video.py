@@ -220,8 +220,8 @@ def initial_blank_sample_ids(samples: list[Sample], args: argparse.Namespace) ->
             # Also ignore the first normal frame after startup blanking; its
             # black/blank -> app transition is capture warmup, not app jank.
             ignored.add(sample.idx)
-        break
-    return ignored
+        return ignored
+    return set()
 
 
 def detect_anomalies(samples: list[Sample], args: argparse.Namespace) -> list[tuple[Sample, str, dict]]:
