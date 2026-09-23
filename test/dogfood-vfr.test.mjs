@@ -14,6 +14,36 @@ function run(args, env = process.env) {
   return spawnSync(python, [script, ...args], { encoding: "utf8", env });
 }
 
+test("video analysis flags all-blank recordings while preserving startup suppression", () => {
+  const result = spawnSync(python, ["-B", "-c", `
+import runpy
+import sys
+
+analyzer = runpy.run_path(sys.argv[1])
+sys.argv = ["analyze-video.py", "--video", "unused", "--out-dir", "unused"]
+args = analyzer["parse_args"]()
+Sample = analyzer["Sample"]
+
+def samples(means):
+    return [
+        Sample(i, i * 30, float(i), mean, 0.0 if mean in (0, 255) else 20.0,
+               0.0, 1.0, None, None)
+        for i, mean in enumerate(means)
+    ]
+
+for mean, kind in [(255, "white_blank"), (0, "black_blank")]:
+    blank = samples([mean] * 10)
+    assert analyzer["initial_blank_sample_ids"](blank, args) == set(), kind
+    assert [finding[1] for finding in analyzer["detect_anomalies"](blank, args)] == [kind] * 10
+
+    startup = samples([mean, mean, 128, 128, mean])
+    assert analyzer["initial_blank_sample_ids"](startup, args) == {0, 1, 2}
+    findings = analyzer["detect_anomalies"](startup, args)
+    assert [(sample.idx, detected) for sample, detected, _ in findings] == [(4, kind)]
+`, path.join(root, "skills/dogfood/scripts/analyze-video.py")], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+});
+
 function fixture() {
   const runDir = realpathSync(mkdtempSync(path.join(tmpdir(), "dogfood-vfr-")));
   mkdirSync(path.join(runDir, "frames"));
