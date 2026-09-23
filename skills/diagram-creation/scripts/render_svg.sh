@@ -153,9 +153,11 @@ external_refs=$(grep -Eo "(xlink:href|href)[[:space:]]*=[[:space:]]*[\"'][^\"']+
 [[ -z "$external_refs" ]] || fail "SVG contains an external resource or link; embed assets as data URIs"
 grep -Eiq '<foreignObject([[:space:]>])' "$input" \
   && fail "foreignObject content is not portable through librsvg; use SVG text elements"
-svg_source=$(tr '\n' ' ' < "$input") || fail "could not scan SVG active content"
-grep -Eiq '<script([[:space:]>])|javascript:|[[:space:]]on[a-z]+[[:space:]]*=' <<< "$svg_source" \
-  && fail "active SVG content is not allowed"
+if grep -Eiqz '<script([[:space:]>])|javascript:|[[:space:]]on[a-z]+[[:space:]]*=' "$input"; then
+  fail "active SVG content is not allowed"
+elif (( $? > 1 )); then
+  fail "could not scan SVG active content"
+fi
 grep -Eiq '@import' "$input" && fail "SVG contains an external CSS resource"
 external_css_refs=$(grep -Eo "url\\([[:space:]]*[\"']?[^)]*" "$input" \
   | grep -Ev "url\\([[:space:]]*[\"']?(#|data:)" || true)
