@@ -41,6 +41,9 @@ test("SVG renderer rejects active content split across lines", { skip: !toolsAva
     for (const [name, svg] of [
       ["onload", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
 onload="document.documentElement.setAttribute('data-executed','true')"></svg>`],
+      ["onload-equals", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
+onload
+="document.documentElement.setAttribute('data-executed','true')"></svg>`],
       ["script", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><script
 type="application/ecmascript">document.documentElement.setAttribute('data-executed','true')</script></svg>`],
     ]) {
