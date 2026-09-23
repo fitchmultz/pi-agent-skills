@@ -151,7 +151,7 @@ grep -Eq '<svg([[:space:]>])' "$input" || fail "input does not contain an SVG ro
 external_refs=$(grep -Eo "(xlink:href|href)[[:space:]]*=[[:space:]]*[\"'][^\"']+[\"']" "$input" \
   | grep -Ev "=[[:space:]]*[\"'](#|data:)" || true)
 [[ -z "$external_refs" ]] || fail "SVG contains an external resource or link; embed assets as data URIs"
-grep -Eiq '<foreignObject([[:space:]>])' "$input" \
+grep -Eiqz '<foreignObject([[:space:]>])' "$input" \
   && fail "foreignObject content is not portable through librsvg; use SVG text elements"
 if grep -Eiqz '<script([[:space:]>])|javascript:|[[:space:]]on[a-z]+[[:space:]]*=' "$input"; then
   fail "active SVG content is not allowed"

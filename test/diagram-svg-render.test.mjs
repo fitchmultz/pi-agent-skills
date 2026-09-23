@@ -35,10 +35,10 @@ test("SVG renderer creates verified review images and rejects truncated PNGs", {
   }
 });
 
-test("SVG renderer rejects active content split across lines", { skip: !toolsAvailable }, () => {
+test("SVG renderer rejects unsupported content split across lines", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-svg-active-test-"));
   try {
-    for (const [name, svg] of [
+    for (const [name, svg, error = /active SVG content is not allowed/] of [
       ["onload", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
 onload="document.documentElement.setAttribute('data-executed','true')"></svg>`],
       ["onload-equals", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
@@ -46,13 +46,15 @@ onload
 ="document.documentElement.setAttribute('data-executed','true')"></svg>`],
       ["script", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><script
 type="application/ecmascript">document.documentElement.setAttribute('data-executed','true')</script></svg>`],
+      ["foreignObject", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><foreignObject
+width="120" height="80"><div xmlns="http://www.w3.org/1999/xhtml">Essential label</div></foreignObject></svg>`, /foreignObject content is not portable/],
     ]) {
       const input = path.join(tmp, `${name}.svg`);
       const output = path.join(tmp, `${name}.png`);
       writeFileSync(input, svg);
       const result = spawnSync(renderer, ["--no-review-images", input, output], { encoding: "utf8" });
       assert.notEqual(result.status, 0, name);
-      assert.match(result.stderr, /active SVG content is not allowed/, name);
+      assert.match(result.stderr, error, name);
       assert.equal(existsSync(output), false, name);
     }
   } finally {
