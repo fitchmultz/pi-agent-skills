@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -106,17 +106,32 @@ test("doctor rejects ffmpeg without -fps_mode support", { skip: process.platform
   }
 });
 
-test("contact-sheet and structural validation need no telemetry ceremony", { skip: process.platform === "win32" }, () => {
+test("failed contact-sheet retry preserves earlier images; validation needs no telemetry", { skip: process.platform === "win32" }, () => {
   const runDir = fixture();
   const bin = mkdtempSync(path.join(tmpdir(), "dogfood-bin-"));
   const expected = path.join(runDir, "reports/contact_ffmpeg_001.jpg");
   const fakeFfmpeg = path.join(bin, "ffmpeg");
-  writeFileSync(fakeFfmpeg, `#!/bin/sh\ncase " $* " in *" -vsync "*) exit 9;; esac\ncase " $* " in *" -fps_mode vfr "*) ;; *) exit 10;; esac\nprintf jpg > '${expected}'\n`);
+  writeFileSync(fakeFfmpeg, `#!/bin/sh
+case " $* " in *" -vsync "*) exit 9;; esac
+case " $* " in *" -fps_mode vfr "*) ;; *) exit 10;; esac
+for arg do output=$arg; done
+if [ "\${MOCK_FFMPEG_FAIL:-}" = 1 ]; then
+  printf partial > "\${output%/*}/contact_ffmpeg_001.jpg"
+  echo 'decode error' >&2
+  exit 1
+fi
+printf jpg > "\${output%/*}/contact_ffmpeg_001.jpg"
+`);
   chmodSync(fakeFfmpeg, 0o755);
   try {
     const contact = run(["contact-sheet", runDir], { ...process.env, PATH: bin });
     assert.equal(contact.status, 0, contact.stderr);
     assert.deepEqual(JSON.parse(contact.stdout).contactSheets, [expected]);
+
+    const failed = run(["contact-sheet", runDir], { ...process.env, PATH: bin, MOCK_FFMPEG_FAIL: "1" });
+    assert.equal(failed.status, 2);
+    assert.match(failed.stderr, /decode error/);
+    assert.equal(readFileSync(expected, "utf8"), "jpg");
 
     const valid = run(["validate", runDir]);
     assert.equal(valid.status, 0, valid.stderr);
