@@ -35,6 +35,31 @@ test("SVG renderer creates verified review images and rejects truncated PNGs", {
   }
 });
 
+test("SVG renderer rejects active content split across lines", { skip: !toolsAvailable }, () => {
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-svg-active-test-"));
+  try {
+    for (const [name, svg] of [
+      ["onload", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
+onload="document.documentElement.setAttribute('data-executed','true')"></svg>`],
+      ["onload-equals", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"
+onload
+="document.documentElement.setAttribute('data-executed','true')"></svg>`],
+      ["script", `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><script
+type="application/ecmascript">document.documentElement.setAttribute('data-executed','true')</script></svg>`],
+    ]) {
+      const input = path.join(tmp, `${name}.svg`);
+      const output = path.join(tmp, `${name}.png`);
+      writeFileSync(input, svg);
+      const result = spawnSync(renderer, ["--no-review-images", input, output], { encoding: "utf8" });
+      assert.notEqual(result.status, 0, name);
+      assert.match(result.stderr, /active SVG content is not allowed/, name);
+      assert.equal(existsSync(output), false, name);
+    }
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test("SVG review publication failure preserves the prior final PNG", { skip: !toolsAvailable }, () => {
   const tmp = mkdtempSync(path.join(os.tmpdir(), "diagram-svg-publication-test-"));
   try {
