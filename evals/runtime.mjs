@@ -111,25 +111,36 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
         writeFile: async (path, content) => writeFile(await authorize(path, true), content),
       } }),
       sdk.createBashToolDefinition(cwd, { exposeSessionEnvironment: false, operations: { exec: async (command, _cwd, options) => {
-        for (const part of commandParts(command)) {
-          const invocation = commandMap.get(part);
-          if (!invocation) throw new Error(`Supported fixture commands: ${[...commandMap.keys()].join('; ')}`);
-          const entry = { command: part, files: await snapshot() };
-          commands.push(entry);
-          try {
-            const [program, args] = invocation;
-            const executable = program === 'python3' ? (await exec('python3', ['-c', 'import sys; print(sys.executable)'])).stdout.trim() : program;
-            const result = await exec(executable, args, { cwd, timeout: 15000, signal: options.signal, maxBuffer: 1024 * 1024,
-              env: { PATH: `${dirname(process.execPath)}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}`, HOME: temp, PI_PACKAGE_DIR: host.root, NODE_NO_WARNINGS: '1' } });
-            entry.exitCode = 0; entry.output = result.stdout + result.stderr;
-          } catch (error) {
-            if (typeof error.code !== 'number') throw error;
-            entry.exitCode = error.code; entry.output = (error.stdout ?? '') + (error.stderr ?? '');
+        try {
+          for (const part of commandParts(command)) {
+            const invocation = commandMap.get(part);
+            if (!invocation) throw new Error(`Supported fixture commands: ${[...commandMap.keys()].join('; ')}`);
+            const entry = { command: part, files: await snapshot() };
+            commands.push(entry);
+            let result;
+            try {
+              const [program, args] = invocation;
+              const executable = program === 'python3' ? (await exec('python3', ['-c', 'import sys; print(sys.executable)'])).stdout.trim() : program;
+              result = await exec(executable, args, { cwd, timeout: 15000, signal: options.signal, maxBuffer: 1024 * 1024, encoding: 'buffer',
+                env: { PATH: `${dirname(process.execPath)}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH}`, HOME: temp, PI_PACKAGE_DIR: host.root, NODE_NO_WARNINGS: '1' } });
+              entry.exitCode = 0;
+            } catch (error) {
+              if (typeof error.code !== 'number') throw error;
+              result = error;
+              entry.exitCode = error.code;
+            }
+            const stdout = result.stdout ?? Buffer.alloc(0);
+            const stderr = result.stderr ?? Buffer.alloc(0);
+            entry.output = stdout.toString() + stderr.toString();
+            options.onData(stdout, 'stdout');
+            options.onData(stderr, 'stderr');
+            if (entry.exitCode !== 0) return { exitCode: entry.exitCode };
           }
-          options.onData(Buffer.from(entry.output));
-          if (entry.exitCode !== 0) return { exitCode: entry.exitCode };
+          return { exitCode: 0 };
+        } finally {
+          options.onEnd?.('stdout');
+          options.onEnd?.('stderr');
         }
-        return { exitCode: 0 };
       } } }),
       ...(testCase.tools?.({ sdk, cwd, state, put }) ?? []),
     ];
