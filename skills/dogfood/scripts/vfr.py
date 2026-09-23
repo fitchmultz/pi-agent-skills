@@ -387,6 +387,7 @@ def command_terminal_start(args: argparse.Namespace) -> int:
         "-i", "127.0.0.1",
         "-p", str(port),
         "-W",
+        "-O",
         "-m", str(args.max_clients),
         "-q",
         "-t", f"fontSize={args.font_size}",
