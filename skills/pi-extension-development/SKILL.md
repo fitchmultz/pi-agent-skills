@@ -30,7 +30,7 @@ pi --version
 
 The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher, including mise/asdf. An override needs no `pi` on PATH and returns null launcher fields: verify runnable Pi separately. `--pi PATH` deliberately ignores the override.
 
-Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read selected Markdown files completely, follow relevant cross-references, and verify copied APIs against matching implementation/types. For upgrades, read every crossed changelog entry.
+Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. For upgrades, read every crossed changelog entry.
 
 Mitch runs `fitchmultz/pi`; public extensions must also support the latest official Pi release. `pi-posthorse` is the sole fork-only exception because official Pi cannot support it. Verify affected APIs and runtime behavior against both targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded above are inspected baselines, not a reason to skip a newer supported release.
 

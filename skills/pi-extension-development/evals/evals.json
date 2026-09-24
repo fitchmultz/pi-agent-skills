@@ -14,7 +14,7 @@
     {
       "id": "optional-tools-and-execution-cwd",
       "prompt": "I am using official Pi 0.87.0 without the companion skills. Move this task to its existing worktree, ask a required approval question in print mode, and start a child there.",
-      "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd and discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
+      "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd or verifies that the installed pi-subagents 0.39.0+ and pi-change-working-dir 0.5.0+ pair resolves the selected directory for new delegation; does not assume an ordinary continuation retargets a saved child. Discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
     },
     {
       "id": "edge-choose-prompt-template-not-extension",

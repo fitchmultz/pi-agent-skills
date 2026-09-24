@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Align extension guidance with relevant version-matched documentation sections and required contract links, retaining exact-host and official/fork verification.
+- Correct delegation directory guidance for `pi-subagents` 0.39.0+ with `pi-change-working-dir` 0.5.0+, preserving the distinction between execution directories and project context.
+
 ## [0.7.0] - 2026-09-22
 
 - Streamline skill selection and workflow instructions while preserving all twelve skills and their bundled scripts, references, and assets.
