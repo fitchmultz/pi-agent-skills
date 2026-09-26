@@ -26,9 +26,9 @@
     "eval:model": "node evals/run.mjs"
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.87.0"
+    "@earendil-works/pi-coding-agent": "0.87.1"
   },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=24.21.0"
   }
 }

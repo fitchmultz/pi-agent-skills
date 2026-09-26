@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Raise the package baseline to Pi 0.87.1 and Node 24.21.0, refresh source-qualified extension guidance for official Pi and the current fork, and keep the dependency lock scoped to the coordinated Pi release.
 - Align extension guidance with relevant version-matched documentation sections and required contract links, retaining exact-host and official/fork verification.
 - Correct delegation directory guidance for `pi-subagents` 0.39.0+ with `pi-change-working-dir` 0.5.0+, preserving the distinction between execution directories and project context.
 

@@ -1,10 +1,10 @@
 ---
 name: pi-extension-development
 description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
-compatibility: "Pi 0.84.2+; resolve APIs against the exact host. Current source checks cover official 0.87.0 and fitchmultz/pi afed789. Python 3.9+ for the bundled resolver."
+compatibility: "Pi 0.87.1+; resolve APIs against the exact host. Exact source checks are recorded in references/current-version-hazards.md. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "1.13.0"
-  last-verified-pi: "0.87.0"
+  version: "1.14.0"
+  last-verified-pi: "0.87.1"
 ---
 
 # Pi Extension Development
@@ -42,8 +42,9 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 
 | Changed surface | Current Pi sources | Bundled detail |
 | --- | --- | --- |
-| Tools, events, trust, load order, packages, SDK/RPC | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/environment-variables.md`, matching examples/types/source; add `docs/packages.md` or `docs/sdk.md`, `docs/rpc.md`, `docs/json.md` for that surface | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
-| Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations | `references/lifecycle-checklist.md` |
+| Tools, events, trust, load order, packages | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/configuration.md`, `docs/environment-variables.md`, `docs/packages.md`, matching examples/types/source | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
+| SDK, CLI integration, RPC, wire formats | `docs/sdk.md`, `docs/cli.md`, `docs/cli-integration.md`, `docs/rpc.md`, `docs/rpc-commands.md`, `docs/rpc-extension-ui.md`, `docs/json.md`, `docs/message-types.md`, matching examples/types/source | `references/runtime-authoring-guide.md` |
+| Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations; fork `docs/checkpoint.md` and `docs/restart.md` only when targeting those host APIs | `references/lifecycle-checklist.md` |
 | TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples and pi-tui exports/types | `references/tui-authoring-guide.md` |
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, pi-ai exports/types/source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
 | Skill/template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource-loader and package-manager | No runtime hook needed for content-only work |
@@ -57,7 +58,7 @@ For pi-agent-core harness or remote sessions, read their current READMEs, root e
 
 1. Define the user-visible outcome, runtime surface, authority, modes, and state boundaries; inspect the existing package and canonical validation.
 2. Design only applicable startup, reload/restart, resume/fork/tree/compact, cancellation, concurrency, and non-UI behavior. Reconstruct durable state and dispose owned resources. Use shared native APIs; fork additions must not become requirements for official-host users outside the Posthorse exception.
-3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the whole native batch.
+3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the current native batch; fork-native asynchronous work detached from earlier responses continues unless the global mode is sequential.
 4. Guard terminal-only UI with `ctx.mode === "tui"` and dialog flows with `ctx.hasUI`. Preserve non-interactive workflows with explicit policy rather than assuming dialogs exist. Visually inspect new/changed TUI controls and their native click/key paths across states affected by the task or shared root cause; report unrelated existing omissions separately.
 5. Type-check TypeScript with the repo command or `tsc --noEmit`. Use repo lint/format; otherwise an installed `npx --no-install @biomejs/biome check`, never fetch a formatter implicitly or invoke unrelated `biome`.
 6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Reuse checks whose relevant inputs remain valid.

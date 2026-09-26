@@ -58,7 +58,7 @@ The default profile has no ambient instructions, extensions, or skills. Add `--p
 
 | Suite | Boundary |
 | --- | --- |
-| `behavior` | Task outcomes across all twelve skills: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits and RED/GREEN tests, truthful evidence, review findings, merge holds, and image inspection. |
+| `behavior` | Task outcomes across the twelve skills with behavior fixtures: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits and RED/GREEN tests, truthful evidence, review findings, merge holds, and image inspection. |
 | `routing` | Existing `skills/*/evals/trigger-evals.json` prompts through native discovery. This measures initial skill selection after inspection and before task execution. |
 | `held-out` | Independently written routing prompts, kept separate from the existing trigger examples. `bro` is deliberately absent from automatic discovery and is tested by explicit invocation in the behavior suite. |
 

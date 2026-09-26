@@ -8,12 +8,12 @@
     },
     {
       "id": "official-fork-lifecycle-boundary",
-      "prompt": "My extension must run on official Pi 0.87.0 and fitchmultz/pi afed789. Use final-idle notifications, then reload after editing the extension. A teammate says to require newContext and session_checkpoint everywhere.",
-      "expected_output": "Uses shared agent_settled or AgentSession/ExtensionCommandContext waitForIdle for final settlement, not low-level agent_end. Does not require fork-only newContext/session_checkpoint on official Pi. Explains official reload refreshes extension source while afed789 requires a process restart for code changes, and verifies both actual host paths without adding no-op compatibility machinery."
+      "prompt": "My extension must run on the latest official Pi and current fitchmultz/pi. Use final-idle notifications, then reload after editing the extension. A teammate says to require newContext and session_checkpoint everywhere.",
+      "expected_output": "Uses shared agent_settled or AgentSession/ExtensionCommandContext waitForIdle for final settlement, not low-level agent_end. Does not require fork-only newContext/session_checkpoint on official Pi. Explains the verified official and fork reload behavior, and checks both actual host paths without adding no-op compatibility machinery."
     },
     {
       "id": "optional-tools-and-execution-cwd",
-      "prompt": "I am using official Pi 0.87.0 without the companion skills. Move this task to its existing worktree, ask a required approval question in print mode, and start a child there.",
+      "prompt": "I am using the latest official Pi without the companion skills. Move this task to its existing worktree, ask a required approval question in print mode, and start a child there.",
       "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd or verifies that the installed pi-subagents 0.39.0+ and pi-change-working-dir 0.5.0+ pair resolves the selected directory for new delegation; does not assume an ordinary continuation retargets a saved child. Discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
     },
     {
@@ -88,8 +88,8 @@
     },
     {
       "id": "llama-cpp-live-provider-management",
-      "prompt": "Use installed Pi 0.87.0's bundled llama.cpp support to manage and select a local model from my extension.",
-      "expected_output": "Resolves the exact target version and reads docs/llama-cpp.md plus hidden built-in extension/provider/manager source. Reuses native /login llama.cpp and /llama rather than adding a duplicate; keeps discovery live and non-persistent. For current 0.87 hosts, preserves loaded, sleeping, and autoloadable unloaded preset selection instead of copying the older loaded-only filter. Avoids shell mutation during ordinary discovery and validates server-down, unloaded, loaded, abort/timeout, and the host's reload/restart path."
+      "prompt": "Use installed current Pi's bundled llama.cpp support to manage and select a local model from my extension.",
+      "expected_output": "Resolves the exact target version and reads docs/llama-cpp.md plus hidden built-in extension/provider/manager source. Reuses native /login llama.cpp and /llama rather than adding a duplicate; keeps discovery live and non-persistent. For current hosts, preserves loaded, sleeping, and autoloadable unloaded preset selection instead of copying the older loaded-only filter. Avoids shell mutation during ordinary discovery and validates server-down, unloaded, loaded, abort/timeout, and the host's reload/restart path."
     },
     {
       "id": "model-runtime-sdk-auth-migration",
@@ -104,7 +104,7 @@
     {
       "id": "kimi-deferred-tool-loading",
       "prompt": "Add progressive tool search to my Pi 0.84.0 extension for Kimi K3 without sending every tool definition up front.",
-      "expected_output": "Reads the crossed deferred-tool/Kimi changelog entries and verifies exact provider/model IDs in current generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max, no deferredToolsMode) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, deferredToolsMode kimi, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, sets deferredToolsMode only on a verified compatible model, and validates the immediate next-turn definition path."
+      "expected_output": "Reads the crossed deferred-tool/Kimi changelog entries and verifies exact provider/model IDs in current generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, mid-conversation system/tool-addition support, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, uses the installed mid-conversation compatibility fields rather than a nonexistent deferredToolsMode, and validates the immediate next-turn definition path."
     },
     {
       "id": "pi-ai-compat-import-migration",
@@ -179,12 +179,12 @@
     {
       "id": "rpc-session-tree-access",
       "prompt": "Build an RPC host around pi that can show live session entries and tree state without scraping JSONL files.",
-      "expected_output": "Reads docs/rpc.md and rpc-types/source, uses get_entries/get_tree or the ./rpc-entry export when it matches the host boundary, keeps LF-delimited JSONL parsing strict, and validates the RPC request/response flow."
+      "expected_output": "Reads docs/rpc.md, docs/rpc-commands.md, and rpc-types/source, uses get_entries/get_tree or the ./rpc-entry export when it matches the host boundary, keeps LF-delimited JSONL parsing strict, and validates the RPC request/response flow."
     },
     {
       "id": "final-agent-settled-boundary",
       "prompt": "Notify my host only when a pi run is truly finished, including retries, overflow compaction, and queued follow-up messages.",
-      "expected_output": "Reads current agent-session, low-level agent, extension, and RPC implementation before docs/examples; uses agent_settled, AgentSession.waitForIdle, ExtensionCommandContext.waitForIdle, or a race-safe RPC helper for final settlement rather than agent_end. Explicitly rejects low-level session.agent.waitForIdle, subscribes before RPC prompting or uses promptAndWait, preserves per-run agent_end only if needed, and validates automatic-continuation and summarization-retry paths."
+      "expected_output": "Reads current agent-session, low-level agent, extension, and RPC implementation before docs/examples; uses agent_settled, AgentSession.waitForIdle, ExtensionCommandContext.waitForIdle, or a race-safe RPC helper for local settlement rather than agent_end. Explicitly rejects low-level session.agent.waitForIdle, uses promptAndWait or accounts for official RpcClient.waitForIdle waiting on a future event versus the fork's immediate idle-state command, preserves per-run agent_end only if needed, and validates automatic-continuation and summarization-retry paths. On hosts exposing detached native tool obligations, checks agent_settled.pendingToolCalls or ctx.getPendingToolCalls before claiming all external work finished."
     },
     {
       "id": "provider-outbound-header-hook",
@@ -249,12 +249,12 @@
     {
       "id": "kimi-coding-0810-compat",
       "prompt": "Proxy the installed Pi 0.84.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
-      "expected_output": "Reads active generated Kimi Coding model code and Anthropic request serialization before prose docs; preserves model-level forceAdaptiveThinking and endpoint-verified allowEmptySignature, maps only low/high/max as current metadata does, copies active catalog fields including pricing rather than guessing Moonshot values, does not put compat on legacy provider config or confuse Anthropic Kimi Coding metadata with Moonshot OpenAI thinkingFormat/supportsReasoningEffort/deferredToolsMode, and validates replay plus all three thinking levels."
+      "expected_output": "Reads active generated Kimi Coding model code and Anthropic request serialization before prose docs; preserves model-level forceAdaptiveThinking and endpoint-verified allowEmptySignature, maps only low/high/max as current metadata does, copies active catalog fields including pricing rather than guessing Moonshot values, does not put compat on legacy provider config or confuse Anthropic Kimi Coding metadata with Moonshot OpenAI thinkingFormat/supportsReasoningEffort/mid-conversation tool-addition fields, and validates replay plus all three thinking levels."
     },
     {
       "id": "qwen-token-plan-model-contract",
       "prompt": "Use the installed Pi 0.84.0 Qwen Token Plan provider and set qwen3.8-max to max thinking because its name says max.",
-      "expected_output": "Verifies current built-in provider source/model metadata rather than inferring behavior from names. Uses exact qwen-token-plan or qwen-token-plan-cn ids and the matching QWEN_TOKEN_PLAN_API_KEY or QWEN_TOKEN_PLAN_CN_API_KEY, rejects max thinking for qwen3.8-max because its verified map supports off, low, medium, and xhigh while rejecting minimal, high, and max, and validates with --list-models plus SDK or RPC thinking-level discovery without making a network request unless authorized."
+      "expected_output": "Verifies current built-in provider source/model metadata rather than inferring behavior from names. Uses exact qwen-token-plan or qwen-token-plan-cn ids and the matching QWEN_TOKEN_PLAN_API_KEY or QWEN_TOKEN_PLAN_CN_API_KEY, rejects max thinking for qwen3.8-max because its verified map supports low, medium, and xhigh while rejecting off, minimal, high, and max, and validates with --list-models plus SDK or RPC thinking-level discovery without making a network request unless authorized."
     },
     {
       "id": "constrained-tool-sampling",
@@ -273,8 +273,8 @@
     },
     {
       "id": "typebox-1-3-7-migration",
-      "prompt": "My extension written for Pi 0.84 stopped compiling on installed Pi 0.87.0 because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
-      "expected_output": "Resolves the exact target Pi and installed typebox exports (current official/fork 0.87.0 bundles 1.3.27, not the old 1.3.7), reads crossed changelog entries/types, migrates removed APIs to supported typebox APIs without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing."
+      "prompt": "My extension written for Pi 0.84 stopped compiling on installed current Pi because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
+      "expected_output": "Resolves the exact target Pi and installed typebox exports (the current inspected official and fork hosts bundle 1.3.27, not the old 1.3.7), reads crossed changelog entries/types, migrates removed APIs to supported typebox APIs without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing."
     },
     {
       "id": "scoped-model-extension-picker",
@@ -318,17 +318,17 @@
     },
     {
       "id": "agent-core-v4-session-repositories",
-      "prompt": "Upgrade my old pi-agent-core AgentHarness session code to current official Pi 0.87.0 and fitchmultz/pi afed789. Experimental imports and old repository names no longer resolve.",
+      "prompt": "Upgrade my old pi-agent-core AgentHarness session code to the latest official Pi and current fitchmultz/pi. Experimental imports and old repository names no longer resolve.",
       "expected_output": "Reads the exact current exports, session/storage types, and implementation on both hosts. Uses AgentHarness, Session, Storage, SessionRepo, JsonlSessionRepo, and MemorySessionRepo with current Branch/mutation and Context contracts; removes stale SessionStorage, InMemorySessionRepo, and session.view assumptions without shims. Keeps coding-agent SessionManager JSONL separate. Does not repeat the obsolete blanket HarnessNotImplemented warning; recognizes watchSession still throws SliceNotImplemented and validates only actual adopted operations."
     },
     {
       "id": "agent-core-filesystem-rename",
-      "prompt": "My custom pi-agent-core FileSystem stopped satisfying current Pi 0.87.0 when I switched to JsonlSessionRepo.",
+      "prompt": "My custom pi-agent-core FileSystem stopped satisfying current Pi when I switched to JsonlSessionRepo.",
       "expected_output": "Checks current FileSystem and Context types; implements renameFile(sourcePath, destinationPath, context) with atomic same-filesystem replacement, returns failures through Result without throwing, preserves the destination on failure, and validates staged publication, existing-destination replacement, cancellation, and cross-filesystem rejection. Does not copy the old optional AbortSignal signature."
     },
     {
       "id": "remote-session-metadata-snapshot",
-      "prompt": "Upgrade my old RemoteSession/PiClient dashboard to the published Pi 0.87.0 package. I need live runtime state, not only saved session metadata.",
+      "prompt": "Upgrade my old RemoteSession/PiClient dashboard to the latest published Pi package. I need live runtime state, not only saved session metadata.",
       "expected_output": "Checks actual package exports before copying the old remote API. Explains experimental coding-agent client/server surfaces are source-only from 0.85.1; uses supported local SDK/stdio RPC when that meets the dashboard contract, or identifies the explicit source-level integration requirement without pretending a published remote API exists. Distinguishes durable session listings from authoritative acquired/live state and validates the chosen protocol, replacement, and release lifecycle."
     },
     {
