@@ -69,7 +69,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - TUI-only UI checks `ctx.mode === "tui"`.
 - Dialog-capable flows check `ctx.hasUI`.
-- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events, each carrying the latest cumulative `usage` since 0.84.2, until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output. Fork `background_command` is checked separately because it bypasses `user_bash` and bash session-environment injection.
+- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events, each carrying the latest cumulative `usage` since 0.84.2, until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output. Fork `background_command` is checked separately because it bypasses `user_bash` while receiving the default session environment.
 - Source-targeted remote clients inspect their exact protocol and distinguish durable discovery metadata from acquired live state. Ordinary published integrations use the supported SDK/RPC contract.
 - Print/JSON behavior is explicit.
 - Non-interactive automation policy is explicit and not accidentally blocked by UI-only assumptions.

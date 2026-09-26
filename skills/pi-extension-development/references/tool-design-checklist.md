@@ -60,7 +60,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 
 - Prefer `create*ToolDefinition()` for extension tool overrides.
 - Prefer `create*Tool()` for SDK custom tools or when adapting an `AgentTool`.
-- Bash overrides that use `createBashToolDefinition`/`createBashTool` inherit session env injection (`PI_SESSION_ID`, `PI_SESSION_FILE`, `PI_PROVIDER`, `PI_MODEL`, `PI_REASONING_LEVEL`) unless `exposeSessionEnvironment: false` disables it or custom operations replace the env entirely; user-entered `!`/`!!` commands never receive these variables. Fork `background_command` is separate and receives neither this injection nor `user_bash` policy.
+- Bash overrides that use `createBashToolDefinition`/`createBashTool` inherit session env injection (`PI_SESSION_ID`, `PI_SESSION_FILE`, `PI_PROVIDER`, `PI_MODEL`, `PI_REASONING_LEVEL`) unless `exposeSessionEnvironment: false` disables it or custom operations replace the env entirely; user-entered `!`/`!!` commands never receive these variables. Fork `background_command` bypasses `user_bash` but receives this injection unless `exposeSessionEnvironment: false`.
 - Use built-in operation interfaces (`ReadOperations`, `BashOperations`, etc.) or `spawnHook` for remotes, sandboxes, and wrappers.
 - Use `createLocalBashOperations()` instead of reimplementing local shell/process-tree behavior.
 - Built-in result/details shape is preserved.
