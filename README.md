@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-Source-managed Pi package for Mitch's reusable agent workflows. Requires Pi 0.84.0 or later.
+Source-managed Pi package for Mitch's reusable agent workflows. Requires Pi 0.87.1 or later and Node 24.21.0 or later.
 
 ## Skills
 
@@ -32,9 +32,9 @@ npm run check:compat
 npm run smoke
 ```
 
-Asset/discovery validation uses the exact Pi 0.87.0 development baseline. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all thirteen skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on official Pi, a packed-skill smoke on the advertised minimum, and host-sensitive discovery and scripted runtime tests on the current fork.
+Asset/discovery validation uses the exact Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all thirteen skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on pinned official Pi and host-sensitive discovery and scripted runtime tests on the current fork.
 
-The minimum smoke uses Pi 0.84.0 and Node 22.19.0; the full suite uses Node 24. Extension API guidance was checked against official Pi 0.87.0 and `fitchmultz/pi` revision `afed789`, including emitted types and implementation. CI installs D2 and librsvg to run the diagram rendering tests.
+The suite uses Node 24. Exact official and fork source baselines are recorded in the Pi extension skill's version hazards reference. CI installs D2 and librsvg to run the diagram rendering tests.
 
 ## Model evaluations
 

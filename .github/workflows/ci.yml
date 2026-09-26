@@ -33,13 +33,6 @@ jobs:
           sudo install -m 755 "$(find "$RUNNER_TEMP/d2" -type f -name d2 -print -quit)" /usr/local/bin/d2
       - run: npm test
       - run: npm run pack:check
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '22.19.0'
-      - name: Verify minimum supported Pi and Node
-        run: |
-          npm install --prefix "$RUNNER_TEMP/pi-084" --ignore-scripts --no-audit --no-fund --package-lock=false @earendil-works/pi-coding-agent@0.84.0
-          PI_HOST_INDEX="$RUNNER_TEMP/pi-084/node_modules/@earendil-works/pi-coding-agent/dist/index.js" npm run smoke
 
   fork:
     runs-on: ubuntu-latest

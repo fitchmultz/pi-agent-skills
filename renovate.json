@@ -1,4 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>fitchmultz/.github:pi-extensions"]
+  "extends": ["github>fitchmultz/.github:pi-extensions"],
+  "packageRules": [
+    {
+      "description": "Node support changes require compatibility qualification",
+      "matchPackageNames": ["node"],
+      "matchDepTypes": ["engines", "uses-with"],
+      "enabled": false
+    }
+  ]
 }
