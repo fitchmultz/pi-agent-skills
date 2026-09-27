@@ -60,7 +60,7 @@ Use for provider registration, auth, dynamic catalogs, model metadata, or SDK mo
 
 The [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model) describes vendor API capabilities, not automatic Pi support. Verify model/endpoint, transport, accepted reasoning parameters, and Pi serialization before adopting async tools, WebSocket steering, reasoning configuration updates, or cache controls. API-key, subscription, and proxy routes may differ. Preserve the host's selected model/effort; this skill must not create a second model router or blindly copy vendor request examples.
 
-Fork integration discovery is an ordinary tool-loadout feature and can work without provider-native search; its provider allowlist records evaluated routes, not a capability flag. `registerToolSearch` and native Responses search remain separately gated. See `runtime-authoring-guide.md` before deferring instructions or assuming activation is cache-preserving.
+Fork integration discovery is an ordinary tool-loadout feature and can work without provider-native search. Eligibility uses the native API and model capabilities for mid-conversation tool additions and system messages, not a manual provider allowlist; unknown/custom APIs stay ordinary. `registerToolSearch` and native Responses search remain separately gated. See `runtime-authoring-guide.md` before deferring instructions or assuming activation is cache-preserving.
 
 ## Validation and safety
 

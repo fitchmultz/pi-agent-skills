@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.1] - 2026-09-27
+
+- Replace obsolete settings-inventory advice with extension-owned discovery metadata, native capability gating, complete deferred instructions and existing declaration-history recovery.
+- Keep official Pi exposure and explicit tool policy boundaries clear, including the shared post-bind SDK selection boundary where policy provenance is unavailable.
+
 ## [0.8.0] - 2026-09-26
 
 - Refresh all thirteen skills against current OpenAI and Agent Skills guidance: focused questions, authorized follow-through, explicit task boundaries, concise outputs, and proportional verification.
