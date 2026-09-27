@@ -45,7 +45,7 @@ Red flags:
 - Bypassing the owning interface when a public read path proves the same contract
 
 ```typescript
-// Prefer the public read path for a user-retrieval contract
+// Direct storage check: not the preferred proof of user retrieval
 test("createUser saves to database", async () => {
   await createUser({ name: "Alice" });
   const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
