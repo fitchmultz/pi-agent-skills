@@ -5,6 +5,8 @@ such as `extensions/telegram`, or one core area. The value bar, retention bar,
 candidate evidence, and validation in [SKILL.md](SKILL.md) apply to every
 lane. This file adds the order of work and the lessons of a full campaign.
 Each step ends on its completion criterion; do not start the next step early.
+Apply only steps authorized by the user and harness. For a read-only request,
+deliver the ledger and layer plan without proceeding to cutover or repairs.
 
 ## 1. Baseline
 
@@ -28,11 +30,12 @@ one lane.
 
 ## 3. Read-only ledger per lane
 
-Give each lane to its own read-only agent. The agent reads every assigned test
-in full, including parameter tables. It also reads the production owners and
-their entry points, callers, history, and CI routing. Each test declaration
-goes into a written **ledger** with one mark. An `it.each` is one declaration
-unless its rows need different marks; then mark each row.
+When useful and permitted by the harness, give independent lanes to bounded
+read-only agents; otherwise inspect them inline. Each lane review reads every
+assigned test in full, including parameter tables. It also reads the production
+owners and their entry points, callers, history, and CI routing. Each test
+declaration goes into a written **ledger** with one mark. An `it.each` is one
+declaration unless its rows need different marks; then mark each row.
 
 - `R`: retain, naming the contract and the bug it catches; a retained test that
   only moves to a better-named file stays `R` with the move noted;
@@ -87,11 +90,11 @@ every restored contract has a caught mutation.
 
 ## 7. Product defects
 
-A baseline failure that survives into a keeper is a bug report. Fix it at its
-owner as a separate commit, and prove it through the real user flow, with a
-**control** run that reverts the fix and shows the old behavior. Record
-unrelated product discrepancies you find as follow-ups instead of fixing them
-in the campaign.
+A baseline failure that survives into a keeper is a bug report. When repair
+is authorized, fix it at its owner, separately from pruning, and prove it
+through the real user flow, with a **control** run that reverts the fix and
+shows the old behavior. Record unrelated product discrepancies you find as
+follow-ups instead of fixing them in the campaign.
 
 Done when each repaired defect has a failing control and a passing candidate
 on the same harness.

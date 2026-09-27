@@ -23,15 +23,15 @@ Explore a browser-visible product like a real user, find meaningful issues, and 
 
 ## Inputs and defaults
 
-Only the target URL/app is required. Discover a local URL when the user asks to start the app. Focus on user-specified flows and high-risk paths within the requested scope. Use authenticated access covered by current or standing authorization; ask only when authentication actually requires the user's presence. Preserve caller-owned sessions.
+Only the target URL/app is required. Current user instructions control scope, evidence location, and reporting over skill defaults, within system and environment policy. QA does not authorize product fixes. Discover a local URL when the user asks to start the app. Focus on user-specified flows and high-risk paths within the requested scope. Use authenticated access covered by current or standing authorization; ask only when authentication actually requires the user's presence. Preserve caller-owned sessions.
 
 Honor requested evidence paths. Otherwise use a unique project-root `.dogfood/` run when that directory is ignored or the task permits updating `.gitignore`. If artifacts are permitted but tracked-file edits are not, use a unique directory outside the checkout and report its path. Never delete or overwrite evidence from an earlier run unless explicitly authorized.
 
 ## Tool and safety rules
 
-- Never use `agent_browser` for Cloudflare's control plane, dashboard, documentation, APIs, or product properties. Use `cloudflare_api_docs` for documentation, `cloudflare_api_search` for endpoint discovery, and `cloudflare_api_execute` for authorized authenticated operations. Keep exploratory QA read-only; use a mutating API operation only with explicit user authorization and when broader production-control policy permits it. If those tools are unavailable, or the request needs dashboard-only visual QA, report the Cloudflare work as unavailable instead of falling back to a browser.
+- Never use `agent_browser` for Cloudflare's control plane, dashboard, documentation, APIs, or product properties. Use `cloudflare_api_docs` for documentation, `cloudflare_api_search` for endpoint discovery, and `cloudflare_api_execute` for authorized authenticated operations. Keep exploratory QA read-only; use a mutating API operation only with explicit user authorization and when broader production-control policy permits it. Discover configured MCP tools before declaring them unavailable. If they remain unavailable, or the request needs dashboard-only visual QA, report the Cloudflare work as unavailable instead of falling back to a browser.
 - This guard does not apply when the target is customer code merely hosted by Cloudflare, including a customer app on its own domain or a `*.pages.dev` or `*.workers.dev` preview. Use the normal browser workflow directly against that app. Treat any flow that requires completing a Cloudflare Access, managed or bot challenge, or Turnstile interaction as a Cloudflare product property regardless of its domain. If the app redirects to one, stop and report that path as unavailable unless a caller-owned authenticated session opens directly to the app. An embedded Turnstile widget does not by itself block QA of the surrounding customer app, but do not interact with it; if it blocks the requested flow, report that path as unavailable unless a caller-owned authenticated session opens directly to the customer app after the challenge.
-- Use the separately installed `agent_browser` tool for permitted browser actions. It is not a built-in Pi capability on either official Pi or forks. If unavailable, report that prerequisite; never shell out to `agent-browser` as a substitute.
+- Use the separately installed `agent_browser` tool for permitted browser actions. The active Pi 0.87.1 fork can defer optional integrations behind `discover_tools`: inspect its catalog and enable the advertised browser group before declaring the tool unavailable. The activation result lists tool names; full schemas and instructions appear on the next model request. Use that updated catalog before acting or judging the tool unavailable. Discovery does not install a browser extension or grant access; `agent_browser` remains extension-provided on official Pi and forks. If still unavailable, report that prerequisite; never shell out to `agent-browser` as a substitute.
 - Use `open` → `snapshot -i` → visible refs or semantic actions → fresh snapshot after navigation, scrolling, or rerender.
 - Use absolute paths at the evidence location selected above.
 - Treat artifact paths as provisional until `details.artifactVerification` confirms them. Prefer exact `details.nextActions` payloads over guessed recovery commands.
@@ -64,7 +64,7 @@ Every recording start must have one successful recording stop before close. Neve
 
 4. **Capture findings immediately**
    - Retry a possible issue once when safe.
-   - One inspected screenshot is enough for a static issue.
+   - One inspected screenshot is enough for a static issue. Reuse existing evidence only when its build, session state, viewport, and tested flow still match; do not rerun unaffected flows merely to refresh timestamps.
    - Use Visual Flight Recorder mode for flicker, streaming, animation, loading, redraw, or other transient behavior.
 
 5. **Report and clean up**

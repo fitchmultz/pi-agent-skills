@@ -7,7 +7,7 @@ description: "Verify evidence before claiming completion or passing checks, comm
 
 Make the exact status claim match current inspectable evidence. Do not broaden beyond the request or silently narrow acceptance such as “all,” “complete,” or “no tech debt.” A narrower proof warrants a narrower report, not a claim that the original request is done.
 
-Reviewer judgment does not replace validation. This skill requires no review or fresh opt-in; delegate substantive review when useful, while the original agent retains delivery ownership. Complete actual requested/standing reviews and address feedback already received.
+Reviewer judgment does not replace validation. This skill adds no review or approval gate: complete requested/standing reviews and address feedback already received. Delegate a bounded review when useful and permitted by the harness, while the original agent retains delivery ownership. Verification is not authorization to commit, publish, or make external writes.
 
 ## 1. State the claim and sweep the delta
 
@@ -25,7 +25,7 @@ When an authority surface changes (API/schema, CLI, defaults, permissions, deplo
 | Requirements met | Requirement-by-requirement evidence map |
 | No tech debt remains | Diff sweep and resolution of each known unapproved shortcut/stub |
 
-Static review cannot prove runtime behavior; green tests cannot satisfy an unimplemented requirement.
+Static review cannot prove runtime behavior; green tests cannot satisfy an unimplemented requirement. Choose checks proportional to the changed behavior and risk, while completing all required gates. Reuse meaningful existing coverage; do not add tests that merely mirror source text for a reversible, low-impact edit.
 
 ### Regression proof
 

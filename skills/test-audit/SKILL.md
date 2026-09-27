@@ -11,7 +11,9 @@ duplicate stronger proof, couple behavior to implementation, or keep test-only
 production seams alive. Continue broad audits as separate coherent follow-up
 PRs; optimize for confidence, not deletion count. Campaign mode prunes one
 whole subsystem's test surface (every test file a plugin or core area owns);
-before starting one, read [CAMPAIGN.md](CAMPAIGN.md).
+before starting one, read [CAMPAIGN.md](CAMPAIGN.md). A review or audit request is
+read-only unless edits are authorized; neither mode grants permission to fix
+production bugs, launch agents, or land changes.
 
 ## Authoring gate
 
@@ -34,10 +36,12 @@ independently guards. A test that would break under behavior-preserving
 refactoring is asserting implementation, not behavior; rewrite it at the
 owning boundary before landing it.
 
-Bug regression tests must fail on the pre-fix code for the intended reason and
-pass after the owner-boundary repair. A regression test that never demonstrably
-failed proves the mock, not the fix. One regression at the owner boundary
-covers the bug; do not replay the same scenario at every layer it crosses.
+For bug regressions, demonstrate failure on the pre-fix code for the intended
+reason and a pass after the owner-boundary repair when practical. Reuse valid
+RED/GREEN evidence; if historical reproduction is unavailable, disclose the gap
+and provide other convincing verification rather than inventing proof. Honor
+explicit test-first requirements. One regression at the owner boundary covers
+the bug; another layer needs a distinct failure it can independently catch.
 
 ## Junk patterns
 
@@ -80,8 +84,10 @@ or types directly.
 
 ## Discovery
 
-Keep discovery read-only and report evidence before editing. For broad scope,
-run parallel discovery lanes when available:
+Keep discovery read-only and report evidence before editing; an already
+authorized cleanup needs no additional approval pause. For broad scope, use
+bounded parallel discovery lanes when the harness permits and the split is
+useful; otherwise inspect the same lanes inline:
 
 - core and packages (`src/`, `packages/`);
 - plugins (`extensions/`);
@@ -103,7 +109,8 @@ cross-language, package, release, or architecture contract. Also keep:
   the contract changes (the user-facing key, byte, or path) and survives an
   identifier-only refactor;
 - a retained test that fails on the baseline: treat it as a possible product
-  bug, reproduce it, and repair the owner rather than deleting it.
+  bug and reproduce it. Repair the owner only within authorized scope;
+  otherwise report the defect rather than deleting its test.
 
 Static or slow is not a deletion reason. A test that resembles implementation
 may still be the independent contract; prove otherwise before removing it.
@@ -135,7 +142,9 @@ to increase deletion counts.
 ## Validation
 
 Never edit source or tests while tests are running in the checkout. Follow
-the repository's testing instructions.
+the repository's testing instructions. Reuse checks only when their recorded
+inputs and environment still apply; broaden or repeat them for changed inputs,
+failures, or unresolved risks, not merely because another review finished.
 
 1. Run the smallest owner and sibling tests with the repository's test runner.
 2. For removed source greps or plan assertions, run the executable script or
@@ -155,7 +164,10 @@ read-only discovery for the next high-confidence batch.
 
 ## Handoff
 
-Report:
+Stop when the authorized batch has evidence-backed decisions and required
+validation, or the read-only findings are delivered. Do not turn a focused
+audit into a campaign. Follow the user's output format; otherwise report the
+applicable items:
 
 - root cause and removed low-value categories;
 - production owner simplifications;

@@ -9,7 +9,7 @@ Use this file when a **parent agent delegates** the review to a subagent. If the
 
 ## Input contract
 
-The parent already collected git output and changed-file contents. Your prompt is the **user message** with labeled sections:
+The parent supplies the review target/base, allowed scope, and collected git output and changed-file contents, normally with labeled sections:
 
 - `### Git / diff output`
 - `### Changed file contents`
@@ -18,7 +18,7 @@ The parent already collected git output and changed-file contents. Your prompt i
 ## Rubric
 
 1. Read `references/review-rubric.md` from the `thermo-nuclear-code-quality-review` skill directory completely.
-2. Treat `SKILL.md` plus the rubric as the full standard — tone, approval bar, output ordering, code-judo / 1k-line / spaghetti rules.
+2. Use `SKILL.md` plus the rubric for tone, approval bar, output ordering, code-judo / 1k-line / spaghetti rules, subject to the user's requested scope and harness instructions.
 3. If the skill is unavailable, fall back to a harsh maintainability audit with the same intent.
 
 ## Work
@@ -26,7 +26,7 @@ The parent already collected git output and changed-file contents. Your prompt i
 - Apply the rubric to the provided sections. If you have repo access, expand context per the scope contract in `SKILL.md` (one hop per rubric question, never whole-repo). Without repo access, review what was provided and name any evidence gap as a question rather than guessing.
 - Stay read-only. Do not edit files. Return findings, sign-off, and remediation guidance only.
 - Output in the **priority order** in the rubric's output expectations. Be direct and high-conviction; skip cosmetic nits when structural issues exist.
-- Delegate substantive work when it saves time or improves quality; the original agent retains integration and delivery ownership. Use ordinary tools for routine monitoring.
+- Delegate only if the harness permits nested agents and an independent slice benefits from it. Otherwise finish the assigned review inline; the original agent retains integration and delivery ownership.
 
 ## Parent orchestration (by harness)
 

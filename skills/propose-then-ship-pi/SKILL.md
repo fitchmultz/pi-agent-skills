@@ -3,7 +3,7 @@ name: propose-then-ship-pi
 description: "Research and rank repo improvements, stop for the user's direction, then implement in a worktree and deliver a verified PR through authorized merge. Use for the full propose-then-ship workflow, not research-only requests, an already-decided change, or an existing PR."
 compatibility: "Pi with a separately installed delegation extension and ask_question in TUI or dialog-capable RPC. Needs git worktrees, a configured GitHub CLI executable, Bash, and jq."
 metadata:
-  version: "1.5.9"
+  version: "1.5.10"
   owner: "local"
   source: "Port of propose-then-ship from Cursor to pi."
 ---
@@ -24,19 +24,12 @@ One open-ended request, one direction gate, one accountable writer through deliv
 
 ## Runtime and authorization preflight
 
+- **Capabilities:** use the live tool catalog and installed runtime docs, not the version number alone. The active Pi 0.87.1 fork supports optional integration discovery: if `discover_tools` is exposed, inspect and enable a relevant advertised group before declaring its tools absent. Use the schemas/instructions exposed on the next model request, not the activation receipt; discovery neither installs extensions nor grants authorization. Delegation, questions, directory switching, and browser implementations remain separately supplied capabilities.
 - **Shell:** every `bash` call is a new process. Print resolved values and use their literals in later calls, or recompute them.
 - **Directory:** `change_dir` is an optional separate extension on official Pi and forks. If available, call it before dependent tools, outside explicit parallel wrappers; native direct siblings then run in source order. Otherwise use `cd <absolute-worktree> && ...` and absolute file paths. It changes execution cwd, not session identity, project trust, AGENTS, skills, settings, or extension discovery. Read target guidance explicitly; start a session there if target-scoped resources must be loaded.
-- **Children:** pass absolute worktree `cwd`, including continuation overrides when moving a saved child. Current `delegate`/`agent_runs` routing does not automatically inherit the directory extension's override. Discover `delegate` and `agent_runs` first; use `agent_runs` profiles for effective names. Load advanced `subagent` through `load_subagent` only for parallel groups or controls the light tools lack. With only advanced tools, use `subagent({ action: "list" })`. Follow current model policy rather than pinning model IDs here. Missing required capability blocks dependent work, not independent authorized work.
+- **Children:** pass absolute worktree `cwd` for portable launches, including continuation overrides when moving a saved child. Ordinary continuation preserves the saved child's directory unless explicitly overridden. Discover `delegate` and `agent_runs` first; use `agent_runs` profiles for effective names. Load advanced `subagent` through `load_subagent` only for parallel groups or controls the light tools lack. With only advanced tools, use `subagent({ action: "list" })`. Follow current model policy rather than pinning model IDs here. Missing required capability blocks dependent work, not independent authorized work.
 - **Question gate:** `ask_question` is separately installed and needs TUI or RPC dialogs. Confirm it is usable before starting this pipeline. If unavailable, report the prerequisite; do not infer approval or silently substitute a default/plain-print answer. A returned proceed answer resumes implementation in the same assistant turn.
-- **GitHub:** use the executable/account required by current policy. In Mitch's configured environment, `workos` remotes use `gh-work`, all others `gh-personal`; never substitute bare `gh` or run `gh auth switch`. Elsewhere verify the user's configured executable/account rather than imposing personal aliases. Check `command -v <gh>` before GitHub calls; report a missing executable with its recovery action. Pass it literally as `GH_BIN=<gh>` to helpers.
-
-Resolve the remote owner portably when applying the configured alias policy:
-
-```bash
-git -C <repo-path> remote get-url origin | sed -E 's#\.git$##; s#.*[:/]([^/]+)/[^/]+$#\1#'
-```
-
-BSD `sed` does not support lazy quantifiers such as `[^/]+?`; strip `.git` separately as above.
+- **GitHub:** use `gh` unless current policy selects another executable/account. Do not infer personal aliases from the repository owner or historical skill instructions. Check `command -v <gh>` and the authenticated account before GitHub calls; report a missing executable or account mismatch with its recovery action. Do not run `gh auth switch` without authorization. Pass the verified executable literally as `GH_BIN=<gh>` to helpers.
 
 Historical standing authorization from Mitch:
 
@@ -70,7 +63,7 @@ Record CI as `required` (default) or `waived-if-absent`, with the exact live-use
 Zero repo writes: no edits, installs, commits, or pushes. An accidental invocation costs only a proposal and local worktree.
 
 1. Research changing external concepts from current sources.
-2. Launch parallel `scout` tasks with absolute `cwd` and `output: false`; add `researcher` only when external evidence matters. Scan concrete repo instances with path/line evidence, including prior follow-ups, accepted tradeoffs, and out-of-scope rebuttals. Stale tradeoffs are eligible for #1.
+2. Use parallel `scout` tasks when independent recon benefits from them, with absolute `cwd` and `output: false`; keep a small, tightly coupled scan local. Add `researcher` only when external evidence matters. Scan concrete repo instances with path/line evidence, including prior follow-ups, accepted tradeoffs, and out-of-scope rebuttals. Stale tradeoffs are eligible for #1.
 3. Rank by blast radius, recurrence, reader/maintainer cost, and fix risk. Lead with one #1, not an equal-choice menu.
 4. Present the Proposal contract below, then call `ask_question`: proceed with #1, named runners-up, narrow scope, stop, in that order.
 5. Wait for the answer. Stop ends the run; narrowed/materially changed scope gets a new proposal. Proceed enters Phase 2 immediately.
@@ -83,8 +76,8 @@ The returned `ask_question` answer is the user's choice. State the chosen direct
 
 1. Restore required ignored configuration and dependencies that a new worktree lacks, following repo policy and preserving unrelated work. Reuse valid installations.
 2. Implement the approved outcome and necessary supporting fixes. Make routine reversible improvements within scope, update the plan, and continue; report unrelated pre-existing nonblocking defects separately.
-3. Run or reuse applicable affected tests/lint/build. Do not duplicate a full remote matrix locally without a concrete need. With absent CI explicitly waived, run canonical local validation on the exact head before merge.
-4. Commit, push, and create/update the PR with the verified GitHub executable. Mark drafts ready after implementation/local validation; some checks do not run for drafts. Task/direction approval authorizes routine delivery in WorkOS and personal repos unless explicitly excluded. It does not authorize tags, releases, publication, release credential reads, or production control outside the repository-defined deployment.
+3. Run or reuse applicable affected tests/lint/build with recorded revision, environment, and results. Complete required checks; broaden or repeat only for changed inputs, failures, or unresolved concerns. Do not duplicate a full remote matrix locally without a concrete need. With absent CI explicitly waived, run canonical local validation on the exact head before merge.
+4. Commit, push, and create/update the PR with the verified GitHub executable. Mark drafts ready after implementation/local validation; some checks do not run for drafts. An explicit request for the full propose-then-ship workflow authorizes its declared commit, push, and PR steps after direction approval, subject to current policy and explicit exclusions. An arbitrary implementation request or this skill's presence alone does not grant external-write permission. It does not authorize tags, releases, publication, release credential reads, or production control outside the repository-defined deployment.
 5. Link/update a relevant Linear issue to review. Personal repositories do not acquire a Linear requirement from this skill.
 
 ## Phase 4: Validate and address feedback

@@ -2,7 +2,7 @@
 name: diagram-creation
 description: "Create rendered technical diagrams with editable SVG or D2 source and PNG/SVG exports: architecture, sequence, data flow, dependency, lifecycle, state, and before/after. Not statistical charts, slide decks, illustrations, image editing, or product screenshots."
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
   owner: "local"
   status: "active"
 ---
@@ -29,14 +29,14 @@ Decide in order: verified semantic model → composition → renderer → art di
 | Dense dependency/topology/data flow | Graph layout, often D2 |
 | State machine | Transitions first; no surrounding architecture unless requested |
 
-These are choices, not fixed templates. Follow explicit user renderer/style choices.
+These are choices, not fixed templates. Current user requirements override this skill's renderer, style, and delivery defaults within system and environment policy. Use reasonable defaults for unspecified choices; do not add a design-approval pause unless the answer changes meaning or required deliverables.
 
 - **SVG-native:** default for professional, modern, polished, editorial, cinematic, presentation-ready, or visually striking requests; also for precise hierarchy, icons, depth, and routing. Read `references/svg-native.md` before authoring. `assets/modern-svg-starter.svg` is an optional token/component starter, never a mandated composition.
 - **D2:** use when explicitly requested, density benefits from automatic layout, or rapid graph editing matters more than bespoke art direction. Read `references/style-guide.md`, including publication and renderer constraints. A clean default render does not automatically meet a bespoke visual request; switch to SVG if D2's ceiling prevents it and D2 was not required.
 
 ## Workflow
 
-1. Inspect the real source and trace ordering, ownership, conditions, concurrency, terminal outcomes, retry identity, and unknowns. Separate verified current behavior from proposals.
+1. Inspect the real source and trace ordering, ownership, conditions, concurrency, terminal outcomes, retry identity, and unknowns relevant to the requested view. Reuse supplied source evidence when it still matches the current revision; retrieve missing facts rather than inventing them. Separate verified current behavior from proposals.
 2. Establish reader, destination/display width, visual question, and explicit style constraints. Ask only if ambiguity changes truth or deliverables.
 3. Write a composition contract: aspect ratio, reading order, zones/phases, dominant subject, connector lanes, and a readable typography floor at destination width.
 4. List every essential path and boundary relationship. Each directed edge asserts causality/order/dependency. Distinguish association, conditions, success/failure, current/proposed state, and independent branches. Recheck this list after every reflow; never remove a required edge merely to remove a crossing.
@@ -63,7 +63,7 @@ d2 validate diagram.d2
 <skill-dir>/scripts/render_diagram.sh --preview-width 900 diagram.d2 diagram
 ```
 
-Both scripts fully decode final/preview/crop PNGs, checking CRCs and IDAT data; `scripts/verify_png.mjs IMAGE.png [...]` exposes that check directly. Open every image in the printed review directory before removing it. Then prove final source/export alignment with the clean rerender above.
+Both scripts fully decode final/preview/crop PNGs, checking CRCs and IDAT data; `scripts/verify_png.mjs IMAGE.png [...]` exposes that check directly. Open every image in the printed review directory before removing it. Then prove final source/export alignment with the clean rerender above. Once these checks pass, stop; repeat inspection only for changed source, renderer settings, exports, or an unresolved visual concern.
 
 ## Delivery
 

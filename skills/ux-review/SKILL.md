@@ -15,7 +15,7 @@ For live exploratory QA, use the bundled `../dogfood/SKILL.md`; this review of c
 
 ## Scope contract
 
-Start with the promised user outcome, not the implementation.
+Start with the promised user outcome, not the implementation. Current user scope and output requirements override skill defaults within system and environment policy. Infer routine review choices from the request; ask only when a missing decision would materially change the verdict or scope.
 
 - **PR or branch:** inspect `git diff <base>...HEAD` from the user-stated base or repository integration branch and the full changed files, then follow only the relevant entrypoint, user-visible states, work lifecycle, side effects and receipts when present, and final result. Expand far enough to prove the journey; do not scan the whole repo.
 - **Design or plan:** inspect the stated audience, scope, channel, discoverability, interaction, and applicable happy, working, empty, retry, resumed, awaiting-user, persistent-error, permission, and completed states.
@@ -112,7 +112,7 @@ For every finding, identify:
 - the smallest fix at the shared cause
 - one acceptance check that would fail before the fix
 
-Do not turn hypothetical edge cases into findings. If evidence is missing, ask a focused review question or list the gap instead of inventing evidence or a defect.
+Do not turn hypothetical edge cases into findings. Reuse inspectable tests, screenshots, and traces whose revision, environment, and journey remain applicable; independently judge what they prove. Run or request only missing or invalidated checks, plus explicitly required validation. Before asking for evidence, retrieve it from available artifacts and discover optional tools when needed. If a material gap remains, ask a focused review question or list the gap instead of inventing evidence or a defect. Lack of a browser tool alone does not block a code or design review.
 
 ## Approval bar
 

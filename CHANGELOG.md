@@ -1,10 +1,16 @@
 # Changelog
 
-## Unreleased
+## [0.8.0] - 2026-09-26
 
+- Refresh all thirteen skills against current OpenAI and Agent Skills guidance: focused questions, authorized follow-through, explicit task boundaries, concise outputs, and proportional verification.
 - Raise the package baseline to Pi 0.87.1 and Node 24.21.0, refresh source-qualified extension guidance for official Pi and the current fork, and keep the dependency lock scoped to the coordinated Pi release.
+- Document the active fork's deferred integration discovery and model-only live-result hooks without treating them as official Pi or provider capabilities.
 - Align extension guidance with relevant version-matched documentation sections and required contract links, retaining exact-host and official/fork verification.
 - Correct delegation directory guidance for `pi-subagents` 0.39.0+ with `pi-change-working-dir` 0.5.0+, preserving the distinction between execution directories and project context.
+- Add the portable `test-audit` skill, retaining its upstream attribution and license.
+- Reject active SVG content and `foreignObject` elements split across lines.
+- Keep terminal capture on its own origin, detect entirely blank recordings, and preserve existing contact sheets when retries fail.
+- Run pull-request compatibility checks on both official Pi and the current fork; keep live-model comparisons opt-in and historical evaluation results unchanged.
 
 ## [0.7.0] - 2026-09-22
 
@@ -116,6 +122,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.8.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.0...v0.5.1

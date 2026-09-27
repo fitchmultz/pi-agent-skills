@@ -11,7 +11,7 @@ Remove noise from the diff with minimal behavior-preserving edits. Keep unrelate
 
 1. Read `git status --short` and inspect uncommitted changes. Treat dirty files as user-owned until proven otherwise.
 2. Use the user's comparison base; otherwise prefer `main`, then the repository integration branch. Ask only if choosing the base materially changes the diff.
-3. Inspect `git diff <base>...HEAD` for committed changes since divergence, plus the worktree diff. Edit changed hunks only; read surrounding code to understand their behavior and style.
+3. Inspect `git diff <base>...HEAD` for committed changes since divergence, plus staged (`git diff --cached`) and unstaged (`git diff`) changes. Edit only requested changed hunks; read surrounding code to understand their behavior and style. Treat untracked files separately; their presence does not authorize cleanup.
 
 ## What to cut
 
@@ -40,6 +40,6 @@ Trace table values to their real boundary and type before simplifying:
 
 ## Verify and finish
 
-Prefer deletion and local-style simplification over rewrites. Recheck the diff for behavior changes, unrelated churn, and remaining noise. Run relevant tests/type checks for code or type edits; comment-only cleanup needs diff inspection.
+Prefer deletion and local-style simplification over rewrites. Recheck the diff for behavior changes, unrelated churn, and remaining noise. Run relevant tests/type checks for code or type edits and complete repository-required checks; comment-only cleanup otherwise needs diff inspection. Reuse still-valid evidence and existing tests rather than adding assertions that merely freeze the cleaned-up source.
 
 Stop when the changed hunks are clean or further cleanup would change behavior, expand scope, or require a team/product decision. Report the base, files changed, validation, and any skipped cleanup with its reason.

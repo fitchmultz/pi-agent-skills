@@ -30,7 +30,7 @@ Ship one observable behavior at a time with a failing test that proves the next 
 
 ### 2. RED
 
-- Add or update one test for one behavior.
+- Add or update one test for one behavior. Extend existing meaningful coverage when possible; do not add a second test that proves the same contract.
 - Run the narrowest meaningful command and confirm the test fails for the expected reason.
 - If the test passes before code changes, sharpen the test or report that the behavior already exists.
 
@@ -54,16 +54,18 @@ Run or reuse current evidence for the relevant narrow tests and the project’s 
 
 ## Stop rules
 
-Stop and report the blocker only when:
+Pause the affected cycle and report the blocker only when:
 
 - the public interface or expected behavior cannot be inferred safely;
 - no reliable test command or runnable environment is available;
 - RED fails for an unrelated cause that must be triaged first;
 - continuing would overwrite unrelated user work or require a product choice.
 
-Complete only when the explicit test-first workflow was followed for every requested behavior, refactoring is done or intentionally skipped, and current validation supports the claim. Missing historical RED/GREEN proof alone is not a completion blocker when convincing verification and the gap are reported.
+Continue independent authorized work while a cycle is blocked; do not implement that cycle's behavior before its RED step. Complete only when the explicit test-first workflow was followed for every requested behavior, refactoring is done or intentionally skipped, and current validation supports the claim. Missing historical RED/GREEN proof alone is not a completion blocker when convincing verification and the gap are reported.
 
 ## Output
+
+Use the user's requested format; otherwise use this compact evidence summary:
 
 ```md
 Behavior:

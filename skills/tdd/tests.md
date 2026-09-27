@@ -20,7 +20,7 @@ Characteristics:
 - Uses public API only
 - Survives internal refactors
 - Describes WHAT, not HOW
-- One logical assertion per test
+- One coherent behavior per test; multiple assertions may establish its outcome
 
 ## Bad Tests
 
@@ -39,13 +39,13 @@ Red flags:
 
 - Mocking internal collaborators
 - Testing private methods
-- Asserting on call counts/order
+- Asserting on internal call counts/order with no observable contract
 - Test breaks when refactoring without behavior change
 - Test name describes HOW not WHAT
-- Verifying through external means instead of interface
+- Bypassing the owning interface when a public read path proves the same contract
 
 ```typescript
-// BAD: Bypasses interface to verify
+// Direct storage check: not the preferred proof of user retrieval
 test("createUser saves to database", async () => {
   await createUser({ name: "Alice" });
   const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
@@ -59,3 +59,5 @@ test("createUser makes user retrievable", async () => {
   expect(retrieved.name).toBe("Alice");
 });
 ```
+
+Direct storage assertions are appropriate when persistence or schema compatibility is itself the contract. Likewise, call ordering can be observable protocol or lifecycle behavior. Keep these checks when a public read alone cannot catch the distinct failure.

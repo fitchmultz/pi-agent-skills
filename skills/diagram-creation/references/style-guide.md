@@ -163,7 +163,9 @@ second -> third: { style.opacity: 0 }
 | Outer label clipped | Container title on the canvas edge | Use an internal headline node or add measured margin |
 | Unexpected panel order | Column-major grid fill or disconnected objects | Verify declaration order, use `grid-rows`, or add invisible ordering edges |
 | Long label pinched | Semantic queue, database, or cylinder geometry | Shorten the label or use a rounded rectangle with a role label |
-| Nested direction ignored | Root and child directions conflict under D2 0.7.1/ELK | Use explicit grid rows/columns, compatible root direction, or another engine |
+| Nested direction ignored | ELK and Dagre support global direction, not independent per-container directions | Use explicit grid rows/columns, compatible root direction, or TALA when available |
+
+The [D2 layout documentation](https://d2lang.com/tour/layouts/#directions-per-container-tala-only) describes the per-container direction limitation. Check the installed engine before attributing an observed layout problem to an old D2 release.
 
 ## D2 publication
 
@@ -174,7 +176,7 @@ D2 publication uses Python 3's standard-library `fcntl.flock` on macOS/Linux. A 
 - Direct D2 PNG output can depend on Playwright. The bundled renderer emits SVG first, then rasterizes with librsvg.
 - Remote resources are rejected. Use D2 shapes or embedded data URIs.
 - Markdown D2 labels use SVG `foreignObject`, which librsvg drops. Use plain text.
-- D2 0.7.1 does not support `shape: note`; use a document shape or plain node.
+- D2 v0.9.0 (the repository CI baseline) rejects `shape: note` during rendering; use a document shape or plain node. `d2 validate` alone can accept this input, so it does not replace a render.
 - Group and boundary titles are collision surfaces. A connector through one is a blocking defect.
 - Deleting a connector may clean the render while making topology false. Re-run the traceability checklist after every reflow.
 

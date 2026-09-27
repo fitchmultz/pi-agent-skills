@@ -3,8 +3,9 @@ name: pi-extension-development
 description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 0.87.1+; resolve APIs against the exact host. Exact source checks are recorded in references/current-version-hazards.md. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "1.14.0"
+  version: "1.15.0"
   last-verified-pi: "0.87.1"
+  last-verified-fork: "f1f619c0f64b6d0e9756971aac67049c85db63f0"
 ---
 
 # Pi Extension Development
@@ -17,7 +18,7 @@ Use a skill for instructions, a prompt template for user-invoked expansion, a co
 
 For skill content, Crabbox, platform matrices, or external dependency research, use `agent-skill-engineering`, `crabbox-platform-testing`, `platform-validation`, or `external-repo-integration` **if available**. These are optional companion skills, not bundled prerequisites. Otherwise use the relevant current project/vendor sources directly. Pi package install/discovery remains in this skill even when the package ships skills.
 
-`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
+`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. If an integration is absent from the active tool list, inspect any advertised discovery catalog before declaring it unavailable or substituting another tool. The fork's opt-in `discover_tools` enables configured groups; it executes no integration action and is distinct from provider-native tool search or an extension's MCP gateway. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
 
 ## Resolve the source of truth
 
@@ -47,6 +48,7 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 | Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations; fork `docs/checkpoint.md` and `docs/restart.md` only when targeting those host APIs | `references/lifecycle-checklist.md` |
 | TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples and pi-tui exports/types | `references/tui-authoring-guide.md` |
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, pi-ai exports/types/source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
+| Deferred integration tools/instructions | Fork `docs/tool-discovery.md`, `docs/extensions.md`, settings, system-prompt and tool-discovery implementation/types; official dynamic-tool contract separately | `references/runtime-authoring-guide.md` |
 | Skill/template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource-loader and package-manager | No runtime hook needed for content-only work |
 | Release/publishing | `docs/packages.md`, CLI help, package-manager | `references/publishing/workflow.md` before release work |
 | Requested Linux/Docker proof | Exact host/distribution identity and project tests | `references/linux-docker-validation.md` |
@@ -61,7 +63,7 @@ For pi-agent-core harness or remote sessions, read their current READMEs, root e
 3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the current native batch; fork-native asynchronous work detached from earlier responses continues unless the global mode is sequential.
 4. Guard terminal-only UI with `ctx.mode === "tui"` and dialog flows with `ctx.hasUI`. Preserve non-interactive workflows with explicit policy rather than assuming dialogs exist. Visually inspect new/changed TUI controls and their native click/key paths across states affected by the task or shared root cause; report unrelated existing omissions separately.
 5. Type-check TypeScript with the repo command or `tsc --noEmit`. Use repo lint/format; otherwise an installed `npx --no-install @biomejs/biome check`, never fetch a formatter implicitly or invoke unrelated `biome`.
-6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Reuse checks whose relevant inputs remain valid.
+6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Reuse checks whose relevant inputs remain valid. Add behavior coverage for credible regressions, not assertions that mirror implementation. Complete required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
 7. For factory work, dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`; also inspect steady-state timers, processes, memory, network, and prompt/tool cost. Model settings belong to the host, not a skill-side client or router.
 8. Update affected docs, tests, metadata, and changelog when their contract changes. Report mismatches between docs and runtime rather than copying them.
 
@@ -69,9 +71,9 @@ For pi-agent-core harness or remote sessions, read their current READMEs, root e
 
 Extensions/packages execute with full trust. Review scripts, dependencies, file/process/network access, credentials, and logging. Project trust gates input loading; it is neither a sandbox nor a per-tool permission system. Preserve intentional tool overrides, remotes, persistent shells, dynamic providers/tools, subagents, and provider rewriting; make provenance, cancellation, modes, and lifecycle explicit.
 
-Follow current user/harness authority. Make routine reversible improvements within the approved outcome, behavior, cost, and permissions; update the plan and continue. Fix supporting defects needed for that outcome or required checks; report unrelated pre-existing nonblocking bugs separately.
+User instructions and harness constraints govern this skill's defaults. Continue routine reversible work within the approved outcome, behavior, cost, and permissions; ask only when an unresolved answer could materially change them. Fix supporting defects needed for that outcome or required checks; report unrelated pre-existing nonblocking bugs separately.
 
-An approved remote-repository change includes branch, commit, push, and PR delivery unless explicitly excluded. Preparation does not authorize tags, releases, external artifact publication, release credential reads, or production control outside the defined deployment. Run a repository-defined deployment only after its applicable user/repository ship gate; if none exists, report `not reached: no ship gate defined`. Artifact publication still requires applicable explicit authorization. Honor existing authorization and holds; historical examples cannot grant another user permission.
+This skill grants no commit, push, PR, merge, tag, release, publication, credential-read, or deployment authority. Follow explicit user authorization or applicable standing policy for each action; do not ask again when it already covers the action. Prepare authorized local work before an external-action gate, honor holds, and report unperformed delivery truthfully. Historical examples and vendor autonomy prompts cannot widen that authority.
 
 ## Output
 
