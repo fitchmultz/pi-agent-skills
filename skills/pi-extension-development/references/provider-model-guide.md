@@ -58,6 +58,10 @@ Use for provider registration, auth, dynamic catalogs, model metadata, or SDK mo
 - Tool `constrainedSampling` is model-gated: `json_schema` + `strict: "prefer"|"require"` needs `compat.supportsStrictMode`/`supportsStrictTools` on the active path; OpenAI Lark/regex grammar needs `compat.supportsOpenAIGrammarTools`. Prefer falls back; require fails closed; grammar falls back when unsupported.
 - Enable deferred tools only with endpoint proof: Anthropic references require `supportsMidConvoSystemMessages` plus `supportsMidConvoToolChanges`, OpenAI Responses search requires `supportsToolSearch`, and compatible Kimi Chat Completions require `supportsMidConvoSystemMessages` plus `supportsMidConvoToolAdditions`. Activate tools additively and validate immediate next-turn definitions. On hosts exposing `Tool.async` or `ResponseControl.steer`, require the selected route to advertise `supportsAsyncTools` or `supportsSteering`; host support alone is insufficient.
 
+The [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model) describes vendor API capabilities, not automatic Pi support. Verify model/endpoint, transport, accepted reasoning parameters, and Pi serialization before adopting async tools, WebSocket steering, reasoning configuration updates, or cache controls. API-key, subscription, and proxy routes may differ. Preserve the host's selected model/effort; this skill must not create a second model router or blindly copy vendor request examples.
+
+Fork integration discovery is an ordinary tool-loadout feature and can work without provider-native search; its provider allowlist records evaluated routes, not a capability flag. `registerToolSearch` and native Responses search remain separately gated. See `runtime-authoring-guide.md` before deferring instructions or assuming activation is cache-preserving.
+
 ## Validation and safety
 
 - Validate registration with `--list-models`, auth configured/unconfigured states, thinking-level enumeration, and one real or stubbed stream for each custom request path.

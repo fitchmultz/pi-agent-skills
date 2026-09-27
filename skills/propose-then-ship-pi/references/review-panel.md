@@ -13,7 +13,7 @@ Complete every explicitly requested review. Otherwise choose distinct roles for 
 | `reviewer-security` | Relevant authentication, authorization, secrets, injection, or data-exposure concerns. |
 | `reviewer-claude` | Optional second-provider review when deliberately selected. |
 
-Follow current model policy and standing review requirements. Mitch's roles use Astra except for the optional Claude review; do not hard-code model IDs or add reviewers from a registry category alone. Run deslop and verification in the parent; use the bundled UX review for changes affecting people.
+Follow current model policy, effective installed profiles, and standing review requirements; do not infer provider/model routing from a role name, hard-code model IDs, or add reviewers from a registry category alone. Run deslop and verification in the parent; use the bundled UX review for changes affecting people.
 
 Discover available delegation tools first. Prefer `agent_runs({ action: "profiles" })` for effective profiles and `delegate` for a single review; use `load_subagent` only for advanced controls the light tools lack. If only the advanced tool exists, list with `subagent({ action: "list" })`. If an explicitly required reviewer is unavailable, report that missing review and continue independent authorized work; do not silently substitute or skip it.
 

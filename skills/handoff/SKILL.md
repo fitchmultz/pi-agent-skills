@@ -7,7 +7,7 @@ description: "Write a paste-ready continuation or bounded delegation prompt when
 
 Output only a self-contained handoff the user can paste verbatim, without code fences or commentary unless the user explicitly asks for surrounding explanation. Address the receiving agent directly in second-person imperative voice, as if the user is instructing it.
 
-Use the current conversation, decisions, constraints, repo state, and evidence. Preserve relevant user and communication preferences. Summarize useful state, not the transcript or abandoned branches.
+Use the current conversation, decisions, constraints, repo state, and evidence. Preserve relevant user and communication preferences. Summarize useful state, not the transcript or abandoned branches. Distinguish observed facts, user decisions, assumptions, and proposed next steps; never turn a proposal into authorization.
 
 ## Choose the mode
 
@@ -22,7 +22,7 @@ Ask only if the wrong mode would materially change the result. This skill needs 
 
 - Start with exactly: `Continue the conversation from the previous session.`
 - Include the goal, important decisions, constraints, relevant repo/worktree state, files or systems inspected, open questions, risks, and the most useful context for resuming.
-- Include commands and verification status only when relevant to continuation.
+- Include commands and verification status only when relevant to continuation. Give inspectable evidence paths and the code/environment state they cover; label stale or missing proof so the receiver can reuse valid checks without assuming all checks passed.
 - Optimize for continuity. Do not turn a planning conversation into an immediate execution order unless the user wants that.
 - End with a plain separator line: `---`. End immediately after it, with no label, note, or placeholder.
 
@@ -30,7 +30,7 @@ Ask only if the wrong mode would materially change the result. This skill needs 
 
 - State the exact task first so the receiver can begin without more user text.
 - Include necessary context, scope, non-goals, constraints, acceptance criteria, and verification requirements. If delegating from a plan, isolate only that slice.
-- Preserve repo and architecture constraints. Give concrete paths and current evidence where needed.
+- Preserve repo and architecture constraints. Give concrete paths and current evidence where needed. State allowed edits or read-only scope, unresolved approval boundaries, and who owns integration. Do not grant the receiver tools, nested delegation, or external-write authority beyond the user and harness permissions.
 - Require a concise, task-appropriate completion reply:
   - Always: outcome summary.
   - `Files changed`: only if files were modified.

@@ -10,7 +10,7 @@ Read this reference when performing the review. Apply every section.
 > Be ambitious: if a clear path improves the implementation via restructuring, name it clearly.
 > Be extremely thorough and rigorous. Measure twice, cut once.
 
-This is a review standard. Stay read-only: return findings, sign-off, and remediation guidance only. If the user wants fixes, use a separate implementation step after the review.
+This is a review standard. Keep the review phase read-only: return findings, sign-off, and remediation guidance. If fixes are also explicitly requested, continue authorized implementation separately after recording the findings; do not ask again merely because the review ended. A review-only assignment does not authorize edits.
 
 ## Non-negotiable standards
 

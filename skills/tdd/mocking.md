@@ -14,13 +14,13 @@ Don't mock:
 - Anything you control
 - Production code paths just because they are inconvenient to test
 
-## Designing for Mockability
+## Using existing boundaries
 
-At system boundaries, design interfaces that are easy to replace in tests. Do not change the public API only for a test:
+Prefer the repository's existing test transport, fixture, or dependency boundary. Do not change the public API or introduce a wrapper only for a test.
 
-**1. Use dependency injection**
+**1. Reuse dependency injection where the production design needs it**
 
-Pass external dependencies in rather than creating them internally:
+An existing explicit dependency can make an external operation replaceable:
 
 ```typescript
 // Easy to mock
@@ -35,9 +35,9 @@ function processPayment(order) {
 }
 ```
 
-**2. Prefer SDK-style interfaces over generic fetchers**
+**2. Model the actual external contract**
 
-Create specific functions for each external operation instead of one generic function with conditional logic:
+When production already uses operation-specific interfaces, keep each fake's request and response faithful to that operation. Do not replace a generic transport solely to avoid conditional test setup:
 
 ```typescript
 // GOOD: Each function is independently mockable
@@ -47,14 +47,10 @@ const api = {
   createOrder: (data) => fetch('/orders', { method: 'POST', body: data }),
 };
 
-// BAD: Mocking requires conditional logic inside the mock
+// Also valid when this is the production transport boundary
 const api = {
   fetch: (endpoint, options) => fetch(endpoint, options),
 };
 ```
 
-The SDK approach means:
-- Each mock returns one specific shape
-- No conditional logic in test setup
-- Easier to see which endpoints a test exercises
-- Type safety per endpoint
+A fake may return controlled responses, but must not implement the behavior being tested. If transport behavior is the contract, exercise it through a fake server or real test transport rather than mocking it away.

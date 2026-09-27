@@ -2,6 +2,11 @@
   "skill_name": "dogfood",
   "evals": [
     {
+      "id": "edge-browser-deferred-by-fork-discovery",
+      "prompt": "Dogfood only my local settings page; do not fix it or submit deletion. The active Pi 0.87.1 fork initially exposes read, bash, and discover_tools, whose catalog advertises browser. agent_browser is not initially visible.",
+      "expected_output": "Enables the advertised browser integration and reads its returned schemas and instructions before declaring browser access unavailable. Uses the extension tool if exposed, tests only authorized settings flows, inspects evidence, and preserves the no-fix and no-delete boundaries. Does not assume discovery installs an extension, grants permission, or makes browser actions built-in Pi capabilities."
+    },
+    {
       "id": "edge-read-only-qa-evidence-outside-checkout",
       "prompt": "Dogfood only the settings form, not billing or signup. Browser access is already authorized. Do not edit tracked files; .dogfood is not ignored, but screenshots and recordings outside the checkout are permitted.",
       "expected_output": "Tests the requested settings scope using existing authorization and a unique absolute evidence directory outside the checkout. Does not require a .gitignore edit, stop merely because .dogfood is unignored, or expand into billing/signup. Inspects and reports artifacts and cleans up only run-owned resources."

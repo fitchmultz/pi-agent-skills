@@ -1,6 +1,6 @@
 # Version and Distribution Hazards
 
-Verify the exact installed package's exports, emitted types, implementation, and relevant runtime path before copying examples. These source checks cover official **0.87.1** (`f07218c4d4bbc12bef056a7058c3dd49dfe41abe`) and **fitchmultz/pi 3131bc2** (`3131bc2e94122eac80dd1684ee2e7b50ad5025d4`), which also reports 0.87.1. They do not requalify every older version or platform.
+Verify the exact installed package's exports, emitted types, implementation, and relevant runtime path before copying examples. These source checks cover official **0.87.1** (`f07218c4d4bbc12bef056a7058c3dd49dfe41abe`) and **fitchmultz/pi f1f619c** (`f1f619c0f64b6d0e9756971aac67049c85db63f0`), which also reports 0.87.1. They do not requalify every older version or platform.
 
 ## Shared contracts and fork boundaries
 
@@ -10,6 +10,13 @@ Verify the exact installed package's exports, emitted types, implementation, and
 - Fork `ctx.newContext`, native asynchronous tool/result events, extension `recordUsage`, `session_before_auto_compact`, `session_checkpoint`, checkpoint disposal, and restart/recovery additions are absent from the official host. The fork's auto-compaction event includes `retainedToolResultIds`, and its `ContextUsage.source` is required. Verify fork types before use. Public extensions still support both targets; optional fork enhancements must preserve official-host behavior. `pi-posthorse` is the sole fork-only public exception. Do not add no-op shims or block ordinary official workflows on fork APIs.
 - `change_dir`, browser tools, question tools, and delegation tools are separate extensions, not core features of either host. Directory overrides affect execution, not the parent's session identity, project settings, trust, AGENTS.md, or loaded skills. Since `pi-subagents` 0.39.0, new delegation resolves the selected execution directory through `pi-change-working-dir` 0.5.0+'s public interface; relative cwd overrides use that directory. Older consumers did not inherit it automatically. Verify the installed pair; use explicit absolute child cwd when targeting a different directory. Ordinary continuation preserves the saved child's directory unless explicitly overridden.
 - TUI-only features need `ctx.mode === "tui"`; dialogs can use `ctx.hasUI` in TUI or a servicing RPC client. Print mode cannot answer `ask_question` dialogs. Unsupported UI must not silently grant approval.
+
+## Fork discovery and continuation additions
+
+- Fork `toolDiscovery` settings, native `discover_tools`, and `BuildSystemPromptOptions.sectionTools` are experimental, opt-in host features absent from official 0.87.1. They defer configured integration schemas and full custom instructions, not extension execution, safeguards, core instructions, or skills. Read the discovery section in `runtime-authoring-guide.md` before adopting them; public extensions retain ordinary official-host exposure.
+- Fork `registerToolSearch()` is a separate extension API. A sole active callback can become provider-native client `tool_search` on capable Responses routes; multiple callbacks or unsupported routes remain named functions. `discover_tools` itself is an ordinary host loader, not that native search callback, and neither is an MCP extension gateway.
+- Fork `live_tool_result` supplies `{ content }` for native WebSocket continuation frames that bypass context hooks. It runs after a finalized result is saved; handlers receive an isolated model-facing copy and compose. It does not change saved results, terminal output, or ordinary requests. Keep `context`/`context_with_system` decoration for ordinary requests; use this additional hook only for the fork's live path.
+- Fork `pi update --fork` targets immutable fork installations and pins fetched main before validation/activation. It is not an extension-package updater or an official-host flag. Inspect `docs/cli.md`, the installed help and `FORK.md` before authorized runtime updates; this skill does not authorize running one.
 
 ## Context, tools, and event migration
 
@@ -49,6 +56,12 @@ Verify the exact installed package's exports, emitted types, implementation, and
 - Dynamic providers need a static/stored baseline for cache-only startup. Cache recovery may pass no credential; filtering can receive raw stored/runtime credentials rather than materialized ambient auth. Test offline, refresh, cancellation, persistence, generation, and removal paths.
 - `TranscriptContext` carries system prompts and tools in `messages` on current provider streams. Use current helpers such as `getCurrentSystemPrompt()` and `getCurrentTools()`; old separate context fields are obsolete.
 - Verify model catalogs, effort maps, pricing, transport, strict-schema/grammar, and deferred-tool capabilities at the actual endpoint. A vendor's maximum context is not necessarily Pi's effective configured cap; API-key and subscription routes need separate validation. Pi async tools/queued steering do not imply provider-side asynchronous tools or mid-generation steering.
+
+## Sources for this refresh
+
+- [Official Pi 0.87.1 source](https://github.com/earendil-works/pi/tree/f07218c4d4bbc12bef056a7058c3dd49dfe41abe): coding-agent extension/package docs and extension types; compare installed emitted types for the target API.
+- [Active fork source](https://github.com/fitchmultz/pi/tree/f1f619c0f64b6d0e9756971aac67049c85db63f0): coding-agent `docs/tool-discovery.md`, `docs/extensions.md`, `docs/cli.md`, `src/core/tool-discovery.ts`, `system-prompt.ts`, `agent-session.ts`, and extension runner/types, checked against installed `dist` JS/types. Changes since the prior baseline include discovery PR #139, live-result isolation #137, Fireworks catalog correction #138, and the fork updater #135/#136. Fireworks now defaults to Kimi K3; do not restore retired K2.6 catalog assumptions.
+- [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model) and [Agent Skills best practices](https://agentskills.io/skill-creation/best-practices), consulted 2026-09-26: bounded initiative, explicit skill authority, proportional verification, and progressive disclosure. Vendor API features still need Pi route/type/runtime proof; these guides do not authorize external actions or prescribe host model settings.
 
 ## pi-agent-core and remote-host migration
 
