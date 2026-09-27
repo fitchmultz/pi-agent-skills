@@ -3,9 +3,9 @@ name: pi-extension-development
 description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 0.87.1+; resolve APIs against the exact host. Exact source checks are recorded in references/current-version-hazards.md. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "1.15.0"
+  version: "1.15.1"
   last-verified-pi: "0.87.1"
-  last-verified-fork: "f1f619c0f64b6d0e9756971aac67049c85db63f0"
+  last-verified-fork: "89c2398adbf13107b20cb0d312ec412d4d4f1275"
 ---
 
 # Pi Extension Development
@@ -18,7 +18,7 @@ Use a skill for instructions, a prompt template for user-invoked expansion, a co
 
 For skill content, Crabbox, platform matrices, or external dependency research, use `agent-skill-engineering`, `crabbox-platform-testing`, `platform-validation`, or `external-repo-integration` **if available**. These are optional companion skills, not bundled prerequisites. Otherwise use the relevant current project/vendor sources directly. Pi package install/discovery remains in this skill even when the package ships skills.
 
-`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. If an integration is absent from the active tool list, inspect any advertised discovery catalog before declaring it unavailable or substituting another tool. The fork's opt-in `discover_tools` enables configured groups; it executes no integration action and is distinct from provider-native tool search or an extension's MCP gateway. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
+`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. If an integration is absent from the active tool list, inspect any advertised discovery catalog before declaring it unavailable or substituting another tool. The fork derives `discover_tools` groups from extension-owned registration metadata on capable native models, without a user-maintained settings inventory. Enabling a group executes no integration action and is distinct from provider-native tool search or an extension's MCP gateway. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
 
 ## Resolve the source of truth
 
@@ -48,7 +48,7 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 | Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations; fork `docs/checkpoint.md` and `docs/restart.md` only when targeting those host APIs | `references/lifecycle-checklist.md` |
 | TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples and pi-tui exports/types | `references/tui-authoring-guide.md` |
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, pi-ai exports/types/source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
-| Deferred integration tools/instructions | Fork `docs/tool-discovery.md`, `docs/extensions.md`, settings, system-prompt and tool-discovery implementation/types; official dynamic-tool contract separately | `references/runtime-authoring-guide.md` |
+| Deferred integration tools/instructions | Fork `docs/tool-discovery.md`, `docs/extensions.md`, tool-definition, system-prompt and discovery implementation/types; official dynamic-tool contract separately | `references/runtime-authoring-guide.md` |
 | Skill/template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource-loader and package-manager | No runtime hook needed for content-only work |
 | Release/publishing | `docs/packages.md`, CLI help, package-manager | `references/publishing/workflow.md` before release work |
 | Requested Linux/Docker proof | Exact host/distribution identity and project tests | `references/linux-docker-validation.md` |
