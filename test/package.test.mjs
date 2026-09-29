@@ -15,6 +15,7 @@ const expectedSkills = [
   "handoff",
   "pi-extension-development",
   "propose-then-ship-pi",
+  "ssh-unix-ops",
   "tdd",
   "test-audit",
   "thermo-nuclear-code-quality-review",

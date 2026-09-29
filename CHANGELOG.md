@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Bundle `ssh-unix-ops` with its SSH helper, references, integration scripts, and evaluation corpora; replace standalone installation guidance with the canonical Pi package workflow and clarify remote-write authority and file-safety limits.
+- Fix inherited SSH helper bugs: use non-login shells for tree-transfer streams and decode stdin diffs with the requested encoding.
+
 ## [0.8.1] - 2026-09-27
 
 - Replace obsolete settings-inventory advice with extension-owned discovery metadata, native capability gating, complete deferred instructions and existing declaration-history recovery.

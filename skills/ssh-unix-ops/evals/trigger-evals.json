@@ -1,0 +1,62 @@
+[
+  {
+    "query": "SSH into a Linux box, inspect /etc/nginx/nginx.conf, back it up, and apply a safe exact edit.",
+    "should_trigger": true,
+    "reason": "Remote Unix-like file inspection, backup, and exact mutation over SSH are core scope."
+  },
+  {
+    "query": "Compare a local config file to the version on a remote Ubuntu host before deploying it.",
+    "should_trigger": true,
+    "reason": "Remote-vs-local diffing before SSH deployment is a primary workflow."
+  },
+  {
+    "query": "Download a remote log file over SSH, verify its checksum, and inspect it locally.",
+    "should_trigger": true,
+    "reason": "Single-file SSH transfer and hash verification are in scope."
+  },
+  {
+    "query": "Safely read and edit files on a remote WSL2 Ubuntu host via SSH.",
+    "should_trigger": true,
+    "reason": "WSL2 host operations over SSH are explicitly covered."
+  },
+  {
+    "query": "Administer a remote macOS machine over SSH and change launchd settings.",
+    "should_trigger": true,
+    "reason": "macOS is a Unix-like SSH target and should use the same inspect/mutate/verify workflow."
+  },
+  {
+    "query": "Upload a local build artifact tree to a Unix-like server over SSH without fragile quoting.",
+    "should_trigger": true,
+    "reason": "One-off tree transfer and SSH quoting avoidance are covered."
+  },
+  {
+    "query": "Sync this entire repo to the remote host with rsync and delete files that no longer exist locally.",
+    "should_trigger": false,
+    "reason": "Large exact delete-sync should use rsync/deployment workflow; this skill may only support preflight or verification."
+  },
+  {
+    "query": "Open a browser, log into a website, and click through the admin dashboard.",
+    "should_trigger": false,
+    "reason": "Browser automation is unrelated to SSH Unix-like operations."
+  },
+  {
+    "query": "Help me debug a failing React hydration issue in my local app.",
+    "should_trigger": false,
+    "reason": "Local app debugging alone should not invoke this SSH-focused skill."
+  },
+  {
+    "query": "Use the AWS API to rotate an EC2 security group rule for a production instance.",
+    "should_trigger": false,
+    "reason": "Cloud-provider API operations are outside this SSH host workflow unless paired with SSH inspection or verification."
+  },
+  {
+    "query": "SSH into the server and set up passwordless sudo so future edits can run as root automatically.",
+    "should_trigger": false,
+    "reason": "Privilege escalation policy and root access setup must be handled separately before using file primitives."
+  },
+  {
+    "query": "Use SSH to change registry keys on a Windows server.",
+    "should_trigger": false,
+    "reason": "Native Windows administration is outside this Unix-like host workflow."
+  }
+]
