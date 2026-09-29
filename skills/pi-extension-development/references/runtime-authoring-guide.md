@@ -6,7 +6,7 @@ Use for the selected runtime surface after resolving the exact official/fork pac
 
 Before changing runtime code, record:
 
-- installed pi version, exact package root, relevant implementation and emitted types, and safe CLI/runtime probes
+- each supported target's distribution, version/revision, launcher, exact package root, Node executable, relevant implementation and emitted types, and safe CLI/runtime probes
 - crossed changelog entries plus complete relevant docs/examples from that same active package root
 - existing extension/package files inspected
 - chosen abstraction and rejected alternatives
@@ -178,7 +178,7 @@ When embedding pi with `AgentSessionRuntime`:
 - Pi 0.84.0 exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
 - `input` runs after extension commands are checked and before skill/template expansion. Transforms chain; `handled` short-circuits.
 - `before_agent_start` can inspect `systemPromptOptions` and chain system-prompt changes.
-- On the inspected hosts, `context` receives conversation messages without system messages; Pi restores prompt/tool declarations afterward. Use `context_with_system` for intentional full-transcript transformations. `SessionManager` owns future provider context: append through it and refresh, rather than assigning low-level agent message arrays.
+- On the inspected hosts, `context` receives conversation messages without system messages; Pi restores prompt/tool declarations afterward. Use `context_with_system` for intentional full-transcript transformations while preserving the leading system/tool declaration. Fork 9430ac7 restores its marked native head's position, marker, timestamp, and initial tool state after each handler; content/section edits remain supported. Official 0.87.1 has no equivalent restoration guard, so validate the resulting transcript on each host rather than relying on fork recovery. `SessionManager` owns future provider context: append through it and refresh, rather than assigning low-level agent message arrays.
 - `before_provider_headers` mutates assembled outbound `ProviderHeaders` in place: a string adds/overrides and `null` removes. `ModelRegistry.getApiKeyAndHeaders()` preserves those `string | null` values; forwarding code passes null markers through unchanged. Return values are ignored, and provider-internal retries reuse the resulting headers without rerunning the hook. Do not log auth headers or remove required auth/transport headers accidentally.
 - `before_provider_request` mutates provider payloads after serialization; these changes are not reflected by `ctx.getSystemPrompt()`.
 - `after_provider_response` observes response status and headers before stream consumption; use it for response diagnostics rather than stream parsing.
@@ -244,7 +244,7 @@ for i in 1 2 3; do /usr/bin/time -p pi --list-models zzznomatch --offline -ne -e
 
 ## Validation menu
 
-Pick validation that proves the changed contract:
+Pick validation that proves the changed contract. Run applicable host-sensitive checks with explicitly selected official and fork launchers/package roots in isolated profiles, following the main skill's target selection. The `pi` examples below stand for the selected launcher, not whichever installation wins PATH. Type-checking against one installed dependency tree is not a substitute for loading through both hosts:
 
 - type-check (`tsc --noEmit` or repo script) as a required gate for any TypeScript change; tests for extension code
 - `pi -e ./extension.ts` quick runtime load

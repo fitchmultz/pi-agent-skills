@@ -15,7 +15,7 @@ Preparation is not permission to release or publish external artifacts.
 
 ## Current source of truth
 
-Resolve `PI_ROOT` from the active `pi` command as shown in `SKILL.md`, then fully read:
+Resolve `PI_ROOT` separately for each supported official/fork target as shown in `SKILL.md`, then read the relevant version-matched contracts:
 
 - `$PI_ROOT/docs/packages.md`
 - `$PI_ROOT/docs/extensions.md`
@@ -23,7 +23,17 @@ Resolve `PI_ROOT` from the active `pi` command as shown in `SKILL.md`, then full
 - matching package examples such as `examples/extensions/with-deps/package.json`
 - crossed `CHANGELOG.md` entries when Pi support changed
 
-Confirm current CLI shape with `pi install --help`, `pi update --help`, `pi list --help`, `pi config --help`, and `pi --version`.
+Confirm each target's CLI shape with its explicit launcher: `install --help`, `update --help`, `list --help`, `config --help`, and `--version`.
+
+Set a Bash array in the same shell before the recipes below, using the resolved absolute launchers (not PATH shims):
+
+```bash
+PI_TARGET_BINS=(/absolute/official/bin/pi /absolute/fork/bin/pi)
+```
+
+Use both targets for public extensions except the documented Posthorse exception. Record each launcher/package/revision and ensure the selected Node runtime supports both. The loops below use separate HOME, agent state, and projects per target. Build and pack once; repeat only host-sensitive install/resource/behavior checks against the same artifact. Never repeat publication to prove compatibility. If a target is unavailable, report the gap rather than substituting the active `pi`.
+
+The install/list loops are templates, not complete behavior gates. Before running a preparation, release, or post-release recipe, insert the task's real checks at its marked location using **that iteration's** `"${target_env[@]}" "$PI_BIN"`, working directory, and installed artifact. Apply step 7 below inside every target subshell. A bare `pi`, a test harness still bound to another host, or one check run after the loop is not evidence for both targets. Record a separate behavior result for each launcher; missing or failed results block readiness, publication, and successful post-release cleanup as applicable.
 
 ## Package contract
 
@@ -80,16 +90,14 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
    set -e
    NODE_BIN="$(command -v node)"
    NPM_BIN="$(command -v npm)"
-   PI_BIN="$(command -v pi)"
+   PI_BIN="${PI_TARGET_BINS[0]:?Set PI_TARGET_BINS to the resolved target launchers}"
    if command -v mise >/dev/null 2>&1; then
      [[ "$NODE_BIN" != *"/mise/shims/"* ]] || NODE_BIN="$(mise which node)"
      [[ "$NPM_BIN" != *"/mise/shims/"* ]] || NPM_BIN="$(mise which npm)"
-     [[ "$PI_BIN" != *"/mise/shims/"* ]] || PI_BIN="$(mise which pi)"
    fi
    if command -v asdf >/dev/null 2>&1; then
      [[ "$NODE_BIN" != *"/.asdf/shims/"* && "$NODE_BIN" != *"/asdf/shims/"* ]] || NODE_BIN="$(asdf which node)"
      [[ "$NPM_BIN" != *"/.asdf/shims/"* && "$NPM_BIN" != *"/asdf/shims/"* ]] || NPM_BIN="$(asdf which npm)"
-     [[ "$PI_BIN" != *"/.asdf/shims/"* && "$PI_BIN" != *"/asdf/shims/"* ]] || PI_BIN="$(asdf which pi)"
    fi
    safe_path="$(dirname "$NODE_BIN"):$(dirname "$NPM_BIN"):$(dirname "$PI_BIN"):/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -177,18 +185,32 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
    ```bash
    package_name="$("${clean_env[@]}" "$NODE_BIN" -p 'require(process.argv[1]).name' "$PWD/package.json")"
    package_source="npm:${package_name}@file:${tarball}"
-   mkdir -p "$clean_home/smoke"
-   (
-     set -e
-     cd "$clean_home/smoke"
-     "${clean_env[@]}" "$PI_BIN" install -l --approve "$package_source"
-     "${clean_env[@]}" "$PI_BIN" list --approve
-   )
+   target_index=0
+   for PI_BIN in "${PI_TARGET_BINS[@]}"; do
+     target_home="$clean_home/target-$target_index"
+     mkdir -p "$target_home/project"
+     (
+       set -e
+       cd "$target_home/project"
+       target_env=("${clean_env[@]}" HOME="$target_home" PI_CODING_AGENT_DIR="$target_home/agent")
+       "${target_env[@]}" "$PI_BIN" --version
+       "${target_env[@]}" "$PI_BIN" install -l --approve "$package_source"
+       "${target_env[@]}" "$PI_BIN" list --approve
+       # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+       # Save this target's commands and outcomes before leaving this subshell.
+     )
+     target_index=$((target_index + 1))
+   done
    ```
 
    Add a separate absolute-directory smoke only when linked local development is part of the contract. Add a `--no-approve` check only when ignored trust-gated project inputs are part of the contract. Context files are separate from project trust.
 
-7. Verify expected resources through their real surface: RPC `get_commands`, `pi --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`, command/tool execution, resource listing/config, or TUI inspection as applicable. `pi config -l` starts in project overrides; Tab switches global/project scopes.
+7. **Inside each target subshell above, before it exits**, verify expected resources and changed behavior through their real surface. Use the same requirement in the release and post-release loops below:
+
+   - Provider checks: `"${target_env[@]}" "$PI_BIN" --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`; assert the expected model/provider result and exercise a request when streaming/auth behavior changed.
+   - RPC/command/tool checks: configure the repository's existing harness to launch this exact `$PI_BIN` with `target_env` in `$target_home/project`. Drive the changed operation, assert its result, and inspect RPC `get_commands` when command discovery matters. Do not let the harness rediscover Pi on PATH or import another host's SDK.
+   - TUI checks: launch `"${target_env[@]}" "$PI_BIN" --approve` from this target's project and exercise the changed controls; record that target's visual evidence. For configuration, `"${target_env[@]}" "$PI_BIN" config -l` starts in project overrides; Tab switches scopes.
+   - Record one result per target with launcher/package/revision, artifact identity, exact command or manual flow, expected/observed outcome, and evidence path. Install/list success alone never marks behavior verified. A missing check remains pending; a failed check stops the gate. Keep the per-target results in the work/PR record before temporary directories are removed.
 
 8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, and complete repository delivery only when authorized. Stop before tags, releases, publication, or release credential reads unless authorization covers those actions; preparation alone grants none.
 
@@ -226,16 +248,14 @@ Do not repack after step 3. Run the artifact-preparation shell before any push, 
   registry="https://registry.npmjs.org/"
   NODE_BIN="$(command -v node)"
   NPM_BIN="$(command -v npm)"
-  PI_BIN="$(command -v pi)"
+  PI_BIN="${PI_TARGET_BINS[0]:?Set PI_TARGET_BINS to the resolved target launchers}"
   if command -v mise >/dev/null 2>&1; then
     [[ "$NODE_BIN" != *"/mise/shims/"* ]] || NODE_BIN="$(mise which node)"
     [[ "$NPM_BIN" != *"/mise/shims/"* ]] || NPM_BIN="$(mise which npm)"
-    [[ "$PI_BIN" != *"/mise/shims/"* ]] || PI_BIN="$(mise which pi)"
   fi
   if command -v asdf >/dev/null 2>&1; then
     [[ "$NODE_BIN" != *"/.asdf/shims/"* && "$NODE_BIN" != *"/asdf/shims/"* ]] || NODE_BIN="$(asdf which node)"
     [[ "$NPM_BIN" != *"/.asdf/shims/"* && "$NPM_BIN" != *"/asdf/shims/"* ]] || NPM_BIN="$(asdf which npm)"
-    [[ "$PI_BIN" != *"/.asdf/shims/"* && "$PI_BIN" != *"/asdf/shims/"* ]] || PI_BIN="$(asdf which pi)"
   fi
   safe_path="$(dirname "$NODE_BIN"):$(dirname "$NPM_BIN"):$(dirname "$PI_BIN"):/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
   umask 077
@@ -317,12 +337,21 @@ Do not repack after step 3. Run the artifact-preparation shell before any push, 
   process.stdout.write(crypto.createHash("sha256").update(fs.readFileSync(process.argv[1])).digest("hex"));
   ' "$tarball")"
 
-  mkdir -p "$publish_home/smoke"
-  (
-    cd "$publish_home/smoke"
-    "${base_env[@]}" PI_OFFLINE=1 "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@file:${tarball}"
-    "${base_env[@]}" PI_OFFLINE=1 "$PI_BIN" list --approve
-  )
+  target_index=0
+  for PI_BIN in "${PI_TARGET_BINS[@]}"; do
+    target_home="$publish_home/target-$target_index"
+    mkdir -p "$target_home/project"
+    (
+      cd "$target_home/project"
+      target_env=("${base_env[@]}" HOME="$target_home" PI_CODING_AGENT_DIR="$target_home/agent" PI_OFFLINE=1)
+      "${target_env[@]}" "$PI_BIN" --version
+      "${target_env[@]}" "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@file:${tarball}"
+      "${target_env[@]}" "$PI_BIN" list --approve
+      # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+      # Save this target's commands and outcomes; install/list alone cannot pass this gate.
+    )
+    target_index=$((target_index + 1))
+  done
   post_smoke_sha256="$("${base_env[@]}" "$NODE_BIN" -e '
   const fs = require("node:fs");
   const crypto = require("node:crypto");
@@ -457,16 +486,14 @@ Verify public release/install/update behavior through another clean environment 
   registry="https://registry.npmjs.org/"
   NODE_BIN="$(command -v node)"
   NPM_BIN="$(command -v npm)"
-  PI_BIN="$(command -v pi)"
+  PI_BIN="${PI_TARGET_BINS[0]:?Set PI_TARGET_BINS to the resolved target launchers}"
   if command -v mise >/dev/null 2>&1; then
     [[ "$NODE_BIN" != *"/mise/shims/"* ]] || NODE_BIN="$(mise which node)"
     [[ "$NPM_BIN" != *"/mise/shims/"* ]] || NPM_BIN="$(mise which npm)"
-    [[ "$PI_BIN" != *"/mise/shims/"* ]] || PI_BIN="$(mise which pi)"
   fi
   if command -v asdf >/dev/null 2>&1; then
     [[ "$NODE_BIN" != *"/.asdf/shims/"* && "$NODE_BIN" != *"/asdf/shims/"* ]] || NODE_BIN="$(asdf which node)"
     [[ "$NPM_BIN" != *"/.asdf/shims/"* && "$NPM_BIN" != *"/asdf/shims/"* ]] || NPM_BIN="$(asdf which npm)"
-    [[ "$PI_BIN" != *"/.asdf/shims/"* && "$PI_BIN" != *"/asdf/shims/"* ]] || PI_BIN="$(asdf which pi)"
   fi
   safe_path="$(dirname "$NODE_BIN"):$(dirname "$NPM_BIN"):$(dirname "$PI_BIN"):/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
   verify_home="$(mktemp -d)"
@@ -499,19 +526,24 @@ Verify public release/install/update behavior through another clean environment 
     GIT_CONFIG_GLOBAL=/dev/null
     GIT_CONFIG_NOSYSTEM=1
   )
-  mkdir -p "$verify_home/project"
-  cd "$verify_home/project"
-  "${verify_env[@]}" "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@${AUTHORIZED_NPM_VERSION}" > "$verify_home/pi-install.log" 2>&1
-  "${verify_env[@]}" "$PI_BIN" list --approve > "$verify_home/pi-list.log" 2>&1
+  target_index=0
+  for PI_BIN in "${PI_TARGET_BINS[@]}"; do
+    target_home="$verify_home/target-$target_index"
+    mkdir -p "$target_home/project"
+    (
+      cd "$target_home/project"
+      target_env=("${verify_env[@]}" HOME="$target_home" PI_CODING_AGENT_DIR="$target_home/agent")
+      "${target_env[@]}" "$PI_BIN" --version > "$target_home/pi-version.log" 2>&1
+      "${target_env[@]}" "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@${AUTHORIZED_NPM_VERSION}" > "$target_home/pi-install.log" 2>&1
+      "${target_env[@]}" "$PI_BIN" list --approve > "$target_home/pi-list.log" 2>&1
+      # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+      # Save this target's commands/outcomes before cleanup; include any documented Git install path.
+    )
+    target_index=$((target_index + 1))
+  done
+  cd "$verify_home"
   "${verify_env[@]}" "$NPM_BIN" view "${AUTHORIZED_NPM_NAME}@${AUTHORIZED_NPM_VERSION}" version readme keywords license author --json --registry="$registry" > "$verify_home/npm-version.json" 2> "$verify_home/npm-version.err"
   "${verify_env[@]}" "$NPM_BIN" view "$AUTHORIZED_NPM_NAME" dist-tags.latest --json --registry="$registry" > "$verify_home/npm-latest.json" 2> "$verify_home/npm-latest.err"
-
-  # Run only when the public Git URL is a documented install path:
-  # "${verify_env[@]}" "$PI_BIN" install -l --approve https://github.com/<owner>/<repo>
-  # "${verify_env[@]}" "$PI_BIN" list --approve
-
-  # Run only when one-package update behavior is part of the release gate:
-  # "${verify_env[@]}" "$PI_BIN" update --extension "npm:${AUTHORIZED_NPM_NAME}" --approve
 
   artifact_dir="$(env -i PATH="$safe_path" "$NODE_BIN" -e 'process.stdout.write(require("node:fs").realpathSync(process.argv[1]))' "$RELEASE_ARTIFACT_DIR")"
   temp_root="$(env -i PATH="$safe_path" "$NODE_BIN" -e 'process.stdout.write(require("node:fs").realpathSync(process.argv[1]))' "${TMPDIR:-/tmp}")"
