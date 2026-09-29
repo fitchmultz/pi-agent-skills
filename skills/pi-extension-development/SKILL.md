@@ -1,16 +1,16 @@
 ---
 name: pi-extension-development
-description: "Build, debug, review, or package Pi extensions: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
+description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 0.87.1+; resolve APIs against the exact host. Exact source checks are recorded in references/current-version-hazards.md. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "1.15.1"
+  version: "1.16.0"
   last-verified-pi: "0.87.1"
   last-verified-fork: "89c2398adbf13107b20cb0d312ec412d4d4f1275"
 ---
 
 # Pi Extension Development
 
-Build against the exact installed Pi contract, preserving requested power-user behavior. A matching version number does not make official Pi and a fork identical.
+Develop for both official Pi releases (`earendil-works/pi`) and Mitch's `fitchmultz/pi` fork, preserving requested power-user behavior and checking each exact target contract. A matching version number does not make official Pi and a fork identical.
 
 ## Scope and prerequisites
 
@@ -34,6 +34,15 @@ The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher
 Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. For upgrades, read every crossed changelog entry.
 
 Mitch runs `fitchmultz/pi`; public extensions must also support the latest official Pi release. `pi-posthorse` is the sole fork-only exception because official Pi cannot support it. Verify affected APIs and runtime behavior against both targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded above are inspected baselines, not a reason to skip a newer supported release.
+
+Select the targets before implementing:
+
+- Check the latest stable official release (`gh release view --repo earendil-works/pi --json tagName,url`) and pin that version for validation. Use its official package/source, not a fork artifact with the same version.
+- Identify the intended fork revision from its checkout or immutable release manifest. Record installed versus requested revisions separately; do not update the user's runtime merely to validate a change.
+- Resolve each runnable target with `python3 <skill-dir>/scripts/resolve_pi.py --pi /absolute/path/to/target/pi --json` and run that launcher's `--version`. A package-only `PI_PACKAGE_DIR` override proves source identity, not which host will execute tests.
+- Keep a small evidence table: distribution, version/revision, launcher/package root, Node executable, affected checks/results. Use separate temporary projects and agent directories so one host's resources, credentials, or cached state cannot stand in for the other.
+
+Prefer APIs exported by both targets. Optional fork enhancements must leave a complete official-host path; inspect actual capabilities rather than branching on the shared version string. Do not import fork-only symbols at module load in a portable extension or add no-op shims that disguise missing behavior. If a required capability has no supported official equivalent, report that specific blocker rather than silently dropping it or declaring the whole extension fork-only.
 
 When install/runtime identity matters, compare `type -a pi`, `pi --version`, `command -v node`, and `node --version` inside and outside the project in clean shells. Duplicate installations can share `~/.pi/agent` unless `PI_CODING_AGENT_DIR` differs. Report shadowing; remove a stale installation only with explicit authorization and its exact runtime prefix, never a plain global uninstall. Reshim/rehash and reverify afterward.
 
@@ -62,8 +71,8 @@ For pi-agent-core harness or remote sessions, read their current READMEs, root e
 2. Design only applicable startup, reload/restart, resume/fork/tree/compact, cancellation, concurrency, and non-UI behavior. Reconstruct durable state and dispose owned resources. Use shared native APIs; fork additions must not become requirements for official-host users outside the Posthorse exception.
 3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the current native batch; fork-native asynchronous work detached from earlier responses continues unless the global mode is sequential.
 4. Guard terminal-only UI with `ctx.mode === "tui"` and dialog flows with `ctx.hasUI`. Preserve non-interactive workflows with explicit policy rather than assuming dialogs exist. Visually inspect new/changed TUI controls and their native click/key paths across states affected by the task or shared root cause; report unrelated existing omissions separately.
-5. Type-check TypeScript with the repo command or `tsc --noEmit`. Use repo lint/format; otherwise an installed `npx --no-install @biomejs/biome check`, never fetch a formatter implicitly or invoke unrelated `biome`.
-6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Reuse checks whose relevant inputs remain valid. Add behavior coverage for credible regressions, not assertions that mirror implementation. Complete required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
+5. Type-check TypeScript with the repo command or `tsc --noEmit`, recording which target supplies the types. Check affected imports and signatures against both targets; a successful build against fork types alone does not prove official compatibility. Use repo lint/format; otherwise an installed `npx --no-install @biomejs/biome check`, never fetch a formatter implicitly or invoke unrelated `biome`.
+6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the fork and latest official host, except `pi-posthorse`; a shared version number is insufficient. Exercise each target's real loader and changed behavior against the same extension source or packed artifact; a PATH-selected smoke only proves that one host. Repeat host-sensitive checks, not artifact creation or publication. Report an unavailable target as a validation gap. Reuse checks whose relevant inputs remain valid. Add behavior coverage for credible regressions, not assertions that mirror implementation. Complete required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
 7. For factory work, dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`; also inspect steady-state timers, processes, memory, network, and prompt/tool cost. Model settings belong to the host, not a skill-side client or router.
 8. Update affected docs, tests, metadata, and changelog when their contract changes. Report mismatches between docs and runtime rather than copying them.
 
