@@ -33,6 +33,8 @@ PI_TARGET_BINS=(/absolute/official/bin/pi /absolute/fork/bin/pi)
 
 Use both targets for public extensions except the documented Posthorse exception. Record each launcher/package/revision and ensure the selected Node runtime supports both. The loops below use separate HOME, agent state, and projects per target. Build and pack once; repeat only host-sensitive install/resource/behavior checks against the same artifact. Never repeat publication to prove compatibility. If a target is unavailable, report the gap rather than substituting the active `pi`.
 
+The install/list loops are templates, not complete behavior gates. Before running a preparation, release, or post-release recipe, insert the task's real checks at its marked location using **that iteration's** `"${target_env[@]}" "$PI_BIN"`, working directory, and installed artifact. Apply step 7 below inside every target subshell. A bare `pi`, a test harness still bound to another host, or one check run after the loop is not evidence for both targets. Record a separate behavior result for each launcher; missing or failed results block readiness, publication, and successful post-release cleanup as applicable.
+
 ## Package contract
 
 Prefer conventional publishable directories:
@@ -194,7 +196,8 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
        "${target_env[@]}" "$PI_BIN" --version
        "${target_env[@]}" "$PI_BIN" install -l --approve "$package_source"
        "${target_env[@]}" "$PI_BIN" list --approve
-       # Exercise the expected resources/changed behavior here (step 7).
+       # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+       # Save this target's commands and outcomes before leaving this subshell.
      )
      target_index=$((target_index + 1))
    done
@@ -202,7 +205,12 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
    Add a separate absolute-directory smoke only when linked local development is part of the contract. Add a `--no-approve` check only when ignored trust-gated project inputs are part of the contract. Context files are separate from project trust.
 
-7. Verify expected resources through their real surface: RPC `get_commands`, `pi --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`, command/tool execution, resource listing/config, or TUI inspection as applicable. `pi config -l` starts in project overrides; Tab switches global/project scopes.
+7. **Inside each target subshell above, before it exits**, verify expected resources and changed behavior through their real surface. Use the same requirement in the release and post-release loops below:
+
+   - Provider checks: `"${target_env[@]}" "$PI_BIN" --list-models "$PROVIDER_ID"` after validating `PROVIDER_ID`; assert the expected model/provider result and exercise a request when streaming/auth behavior changed.
+   - RPC/command/tool checks: configure the repository's existing harness to launch this exact `$PI_BIN` with `target_env` in `$target_home/project`. Drive the changed operation, assert its result, and inspect RPC `get_commands` when command discovery matters. Do not let the harness rediscover Pi on PATH or import another host's SDK.
+   - TUI checks: launch `"${target_env[@]}" "$PI_BIN" --approve` from this target's project and exercise the changed controls; record that target's visual evidence. For configuration, `"${target_env[@]}" "$PI_BIN" config -l` starts in project overrides; Tab switches scopes.
+   - Record one result per target with launcher/package/revision, artifact identity, exact command or manual flow, expected/observed outcome, and evidence path. Install/list success alone never marks behavior verified. A missing check remains pending; a failed check stops the gate. Keep the per-target results in the work/PR record before temporary directories are removed.
 
 8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, and complete repository delivery only when authorized. Stop before tags, releases, publication, or release credential reads unless authorization covers those actions; preparation alone grants none.
 
@@ -339,7 +347,8 @@ Do not repack after step 3. Run the artifact-preparation shell before any push, 
       "${target_env[@]}" "$PI_BIN" --version
       "${target_env[@]}" "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@file:${tarball}"
       "${target_env[@]}" "$PI_BIN" list --approve
-      # Exercise the expected resources/changed behavior before accepting this target.
+      # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+      # Save this target's commands and outcomes; install/list alone cannot pass this gate.
     )
     target_index=$((target_index + 1))
   done
@@ -527,7 +536,8 @@ Verify public release/install/update behavior through another clean environment 
       "${target_env[@]}" "$PI_BIN" --version > "$target_home/pi-version.log" 2>&1
       "${target_env[@]}" "$PI_BIN" install -l --approve "npm:${AUTHORIZED_NPM_NAME}@${AUTHORIZED_NPM_VERSION}" > "$target_home/pi-install.log" 2>&1
       "${target_env[@]}" "$PI_BIN" list --approve > "$target_home/pi-list.log" 2>&1
-      # Exercise the published resources/behavior here, including any documented Git install path.
+      # REQUIRED: insert step 7 checks using "${target_env[@]}" "$PI_BIN".
+      # Save this target's commands/outcomes before cleanup; include any documented Git install path.
     )
     target_index=$((target_index + 1))
   done
