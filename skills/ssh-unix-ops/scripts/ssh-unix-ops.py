@@ -15,7 +15,7 @@ import sys
 import tempfile
 from textwrap import dedent
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 HELP_EPILOG = dedent(
     """
@@ -25,6 +25,10 @@ HELP_EPILOG = dedent(
       python3 ./scripts/ssh-unix-ops.py upload --host user@example-host --local-path ./app.conf --remote-path /tmp/app.conf --verify-sha256
       cat new.conf | python3 ./scripts/ssh-unix-ops.py diff --host user@example-host --remote-path /srv/app/app.conf --stdin
       python3 ./scripts/ssh-unix-ops.py backup --host user@example-host --path /srv/app/app.conf
+
+    Exit codes:
+      0 success; 1 semantic difference (diff/tree-diff); 2 usage or safety refusal;
+      3 local operational failure. SSH and remote-command failures propagate.
     """
 ).strip()
 
@@ -1141,7 +1145,7 @@ def command_diff(args: argparse.Namespace) -> int:
         local_text = read_local_text(pathlib.Path(args.local_path), encoding=args.encoding, follow_symlinks=args.follow_symlinks)
     else:
         local_label = args.stdin_label
-        local_text = sys.stdin.read()
+        local_text = sys.stdin.buffer.read().decode(args.encoding, errors="replace")
 
     remote_lines = remote_text.splitlines(keepends=True)
     local_lines = local_text.splitlines(keepends=True)
@@ -1199,7 +1203,7 @@ def command_upload_tree(args: argparse.Namespace) -> int:
     producer_env = os.environ.copy()
     producer_env.setdefault("COPYFILE_DISABLE", "1")
     remote_script = 'set -euo pipefail; mkdir -p -- "$1"; tar --no-same-owner -C "$1" -xf -'
-    consumer = build_ssh_argv(args.host, shell_join(["bash", "-lc", remote_script, "bash", args.remote_path]), args.ssh_option)
+    consumer = build_ssh_argv(args.host, shell_join(["bash", "-c", remote_script, "bash", args.remote_path]), args.ssh_option)
     return stream_pipe(producer, consumer, verbose=args.verbose, producer_env=producer_env)
 
 
@@ -1209,7 +1213,7 @@ def command_download_tree(args: argparse.Namespace) -> int:
         die(f"expected a local directory destination, got a file: {local_path}")
     local_path.mkdir(parents=True, exist_ok=True)
     remote_script = 'set -euo pipefail; test -d "$1"; tar -C "$1" -cf - .'
-    producer = build_ssh_argv(args.host, shell_join(["bash", "-lc", remote_script, "bash", args.remote_path]), args.ssh_option)
+    producer = build_ssh_argv(args.host, shell_join(["bash", "-c", remote_script, "bash", args.remote_path]), args.ssh_option)
     consumer = ["tar", "--no-same-owner", "-C", str(local_path), "-xf", "-"]
     consumer_env = os.environ.copy()
     consumer_env.setdefault("COPYFILE_DISABLE", "1")

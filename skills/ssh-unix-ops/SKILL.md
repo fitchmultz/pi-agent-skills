@@ -4,7 +4,7 @@ description: "Operate on Linux, macOS, or WSL2 hosts over SSH: commands, inspect
 license: MIT
 compatibility: "Local: OpenSSH, Python 3, and tar. Remote: SSH access to a Linux, macOS, or WSL2 host. bash, python3, and tar unlock the full workflow; sh-only fallback is supported for basic command execution."
 metadata:
-  version: 0.3.0
+  version: "0.3.1"
   release-stage: public-beta
 ---
 

@@ -1,6 +1,6 @@
 # Changelog
 
-Historical archive notes. Bundled changes are recorded in the [repository changelog](../../CHANGELOG.md); the helper retains its own 0.3.0 version.
+Historical archive notes. Bundled changes are recorded in the [repository changelog](../../CHANGELOG.md); the helper reports its version through `--version`.
 
 ## Unreleased
 

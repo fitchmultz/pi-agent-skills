@@ -259,7 +259,7 @@ python3 ./scripts/ssh-unix-ops.py \
 
 ## Maintenance
 
-The original MIT license, helper 0.3.0, references, integration scripts, and evaluation corpora are retained. Bundle maintenance replaces the archive's standalone release workflow; do not publish this package to npm. Instruction changes are recorded in the repository changelog, independently of the helper's `--version`.
+The original MIT license, helper, references, integration scripts, and evaluation corpora are retained. Helper 0.3.1 fixes login-profile output corrupting tree downloads and honors `--encoding` for stdin diffs. Bundle maintenance replaces the archive's standalone release workflow; do not publish this package to npm. Instruction changes are recorded in the repository changelog, independently of the helper's `--version`.
 
 ## Further reference
 

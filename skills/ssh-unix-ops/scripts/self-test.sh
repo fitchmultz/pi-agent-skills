@@ -7,6 +7,9 @@ Usage: ./scripts/self-test.sh --host user@example-host [--workdir /tmp/ssh-unix-
 
 --workdir must be an absolute remote scratch path matching:
   /tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+
+
+Example: ./scripts/self-test.sh --host user@example-host
+Exit codes: 0 success/help; 2 argument refusal; other nonzero values indicate failed checks or commands.
 EOF
 }
 

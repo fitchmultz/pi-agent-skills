@@ -4,6 +4,9 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage: ./tests/negative-tests.sh --host user@example-host
+
+Example: ./tests/negative-tests.sh --host user@example-host
+Exit codes: 0 success/help; 2 argument refusal; other nonzero values indicate failed checks or commands.
 EOF
 }
 
