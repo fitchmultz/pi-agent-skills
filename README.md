@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-Source-managed Pi package for Mitch's reusable agent workflows. Requires Pi 1.0.0 or later and Node 24.21.0 or later.
+Source-managed Pi package for Mitch's reusable agent workflows. Version 0.9.0 requires Pi 1.0.0 or later and Node 24.21.0 or later.
 
 Guidance covers both official Pi and Mitch's active `fitchmultz/pi` fork; the same version string does not imply the same APIs. See [maintaining the skills](docs/maintaining-skills.md) for current sources and authoring policy, and [version hazards](skills/pi-extension-development/references/current-version-hazards.md) for the inspected host revisions.
 

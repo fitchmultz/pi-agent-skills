@@ -1,12 +1,12 @@
 # Changelog
 
-## Unreleased
+## [0.9.0] - 2026-10-01
 
 - Raise the supported SDK and current-host qualification to Pi 1.0.0; keep Git/GitHub-only delivery and every bundled skill/resource.
 - Replace removed experimental agent-core and old fork runtime advice with public session/boundary/model/tool/TUI contracts. Document portable Posthorse, the confirmed minimal-fork collector and its unqualified candidate boundary, disposition-aware completion, same-file queue limits and fullscreen behavior.
 - Use the bundled CLI in evaluation fixtures and explicitly disable model-network refresh; preserve paid-evaluation scope and historical results.
 
-- Qualify current official Pi separately from the minimum supported development baseline, preserving minimum-version coverage and local SDK footprint; track the current-host CI pin with Renovate.
+- Qualify current official Pi separately from the declared supported development baseline; track the current-host CI pin with Renovate.
 - Bundle `ssh-unix-ops` with its SSH helper, references, integration scripts, and evaluation corpora; replace standalone installation guidance with the canonical Pi package workflow and clarify remote-write authority and file-safety limits.
 - Fix inherited SSH helper bugs: use non-login shells for tree-transfer streams and decode stdin diffs with the requested encoding.
 - Make extension development and validation explicitly target both official Pi releases and the `fitchmultz/pi` fork, with separate host identity, API, and loading evidence.
