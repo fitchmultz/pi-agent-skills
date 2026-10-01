@@ -62,11 +62,13 @@ test('selected SDK owns native documentation despite an inherited package overri
     if (inheritedPackageDir === undefined) delete process.env.PI_PACKAGE_DIR;
     else process.env.PI_PACKAGE_DIR = inheritedPackageDir;
   });
-  const { host, contexts } = await scriptedHost(t, [answer('Selected host documentation inspected.')]);
+  const { host, contexts } = await scriptedHost(t, [call('bash', { command: 'pi --version' }), answer('Selected host documentation inspected.')]);
   const result = await runCase(host, { id: 'host-docs', skill: 'pi-extension-development', prompt: 'Locate the native SDK documentation.', check() {} }, { skillsDir });
   assert.equal(result.passed, true, result.failure);
   assert.equal(host.sdk.getPackageDir(), host.root);
   assert.equal(result.host.resourceRoot, host.root);
+  assert.equal(result.commands[0].exitCode, 0);
+  assert.equal(result.commands[0].output.trim(), host.identity.version);
   assert(contexts[0].includes(join(host.root, 'docs')));
   assert(contexts[0].includes(join(host.root, 'README.md')));
   assert(!contexts[0].includes(unrelatedRoot));

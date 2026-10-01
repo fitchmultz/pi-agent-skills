@@ -35,7 +35,7 @@ export async function createHost({ index = process.env.PI_HOST_INDEX, provider =
   const resourceRoot = await realpath(sdk.getPackageDir());
   assert.equal(resourceRoot, root, 'Native SDK resources must belong to the selected host');
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
-  const modelRuntime = await sdk.ModelRuntime.create({ authPath: authPath ?? join(sdk.getAgentDir(), 'auth.json'), modelsPath: null, refreshOnCreate: false });
+  const modelRuntime = await sdk.ModelRuntime.create({ authPath: authPath ?? join(sdk.getAgentDir(), 'auth.json'), modelsPath: null, allowModelNetwork: false, refreshOnCreate: false });
   const model = modelRuntime.getModel(provider, modelId);
   assert(model, `Model unavailable in this host: ${provider}/${modelId}; no fallback is allowed`);
   const receiptPath = resolve(root, '../../..', 'fork-release.json');
@@ -87,7 +87,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
       ['pwd', [process.execPath, ['-e', 'console.log(process.cwd())']]],
       ...['status --short', 'status --porcelain', 'diff', 'diff HEAD', 'diff main...HEAD', 'diff --stat', 'rev-parse --show-toplevel', 'rev-parse HEAD'].map(args => [`git ${args}`, ['git', args.split(' ')]]),
       ...['npm test', 'node --test'].map(command => [command, [process.execPath, ['--permission', `--allow-fs-read=${cwd}`, '--experimental-test-isolation=none', '--test']]]),
-      ['pi --version', [process.execPath, [join(host.root, 'dist', 'cli.js'), '--version']]],
+      ['pi --version', [process.execPath, [join(host.root, 'dist', 'bundle', 'cli.js'), '--version']]],
     ]);
     if (!withoutSkills) commandMap.set(`python3 ${join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py'), '--json']]);
     const commandParts = command => command.split('&&').map(value => value.trim());

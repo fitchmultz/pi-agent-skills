@@ -22,6 +22,8 @@ Pick the smallest good UI surface:
 
 ## TUI component rules
 
+Pi 1.0 defaults to fullscreen. Use the supplied host TUI, not a second terminal or private render loop. Test default fullscreen and regular mode, narrow/wide/CJK, resize, focus, keyboard/mouse, cancellation and disposal. Use `queryTerminalColors()` for palette queries; the old color-scheme/background helpers are removed.
+
 - `ctx.ui.custom()` takes a factory and returns a `Promise<T>`. Close by calling `done(value)`.
 - For overlays, use `options.onHandle` to receive `OverlayHandle`. Non-overlay custom UI has no public handle.
 - Every rendered line must fit the supplied width. Use `visibleWidth`, `truncateToWidth`, and `wrapTextWithAnsi`.
