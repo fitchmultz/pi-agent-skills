@@ -35,7 +35,7 @@ npm run check:compat
 npm run smoke
 ```
 
-Asset/discovery validation uses the exact Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all fourteen skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on pinned official Pi and host-sensitive discovery and scripted runtime tests on the current fork.
+Asset/discovery validation uses the minimum supported Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all fourteen skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on the minimum official Pi baseline and host-sensitive discovery and scripted runtime tests on both current official Pi and the current fork. Current official Pi is installed separately: qualifying a newer host does not replace the minimum-support check or the local development baseline.
 
 The suite uses Node 24. Exact official and fork source baselines are recorded in the Pi extension skill's version hazards reference. CI installs D2 and librsvg to run the diagram rendering tests.
 

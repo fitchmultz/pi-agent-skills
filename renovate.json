@@ -3,10 +3,26 @@
   "extends": ["github>fitchmultz/.github:pi-extensions"],
   "packageRules": [
     {
+      "description": "The minimum supported Pi baseline changes only with a qualified support-policy change; automate the current-host CI pin instead.",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchPackageNames": ["@earendil-works/pi-coding-agent"],
+      "enabled": false
+    },
+    {
       "description": "Node support changes require compatibility qualification",
       "matchPackageNames": ["node"],
       "matchDepTypes": ["engines", "uses-with"],
       "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": ["PI_CURRENT_VERSION: '(?<currentValue>[0-9.]+)'"],
+      "depNameTemplate": "@earendil-works/pi-coding-agent",
+      "datasourceTemplate": "npm"
     }
   ]
 }

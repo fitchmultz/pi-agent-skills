@@ -34,6 +34,29 @@ jobs:
       - run: npm test
       - run: npm run pack:check
 
+  official-current:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PI_CURRENT_VERSION: '0.99.2'
+      PI_COMPAT_HOST: official-current
+      PI_OFFLINE: '1'
+      PI_TELEMETRY: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Install current official host separately from the minimum baseline
+        run: npm install --prefix "$RUNNER_TEMP/pi-current" --ignore-scripts --no-audit --no-fund "@earendil-works/pi-coding-agent@$PI_CURRENT_VERSION"
+      - name: Verify native skill and SDK behavior
+        env:
+          PI_HOST_INDEX: ${{ runner.temp }}/pi-current/node_modules/@earendil-works/pi-coding-agent/dist/index.js
+          PI_COMPAT_EXPECTED_VERSION: ${{ env.PI_CURRENT_VERSION }}
+        run: node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs
+
   fork:
     runs-on: ubuntu-latest
     timeout-minutes: 8
