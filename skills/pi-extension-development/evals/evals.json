@@ -3,28 +3,28 @@
   "evals": [
     {
       "id": "fork-native-head-context-preservation",
-      "prompt": "My context_with_system hook prepends a policy message and replaces the first tools declaration. It worked on official Pi 0.87.1, but fitchmultz/pi 9430ac7 warns that it restored the native initial declaration. Make the hook portable without losing my policy.",
-      "expected_output": "Inspects each target's context hook and native-head contracts. Preserves the marked leading system declaration, marker, timestamp, and initial tools, uses supported content/section edits or policy after the head, and preserves later activations rather than replacing initial tools. Does not rely on fork restoration to repair official-host output or promise verbatim arbitrary transforms. Recognizes already-bound unmarked fork sessions retain their existing window until a native new window/checkpoint, and validates the intended policy and declaration ordering on both hosts."
+      "prompt": "My context_with_system hook prepends a policy message and replaces the first tools declaration. An old fork repaired that automatically; make it portable on official Pi 1.0 and the minimal maintained fork without losing my policy.",
+      "expected_output": "Inspects exact context hook types/source. Preserves the leading system declaration and later tool updates in their positions, edits supported sections/content deliberately, and does not rely on the retired fork native-head guard or mutate private agent state. Validates the actual provider transcript on each available target."
     },
     {
       "id": "fork-integration-discovery-boundary",
-      "prompt": "Reduce browser tool and instruction overhead on my active fitchmultz/pi fork, but keep this public extension usable on official Pi 0.87.1. Can I just suppress browser instructions until active and enable discovery on every provider, including Cursor?",
-      "expected_output": "Reads the exact fork discovery docs/types/runtime; uses optional ToolDefinition.discovery at actual registrations with shared group descriptors and entry/advanced roles, never a user-maintained toolDiscovery inventory, provider allowlist, staging path or second activation journal. Distinguishes discover_tools/sectionTools from official dynamic activation, registerToolSearch, provider-native search and MCP gateways. Preserves ordinary official-host exposure through structural metadata, generates complete custom sections for generic prompts when their own sectionTools key exists, and lets the host reveal them before first same-run execution without rerunning hooks. Keeps guards and recovery live. Uses known native API and model tool/system capabilities; custom Cursor stays ordinary even with copied flags. Validates late registrations, restrictions, lifecycle/model switches and metadata retirement; measures task outcomes and cumulative cost rather than claiming quality from smaller initial prompts. Performs no implementation or settings mutation for a review-only request."
+      "prompt": "Review browser instruction discovery for official Pi 1.0 and the minimal maintained fork. Can I just suppress instructions while tools are inactive or turn them all into deferred tools?",
+      "expected_output": "Checks the confirmed synchronous session_start pi:instruction-groups collector with register(group)/isManaged and group name/description/tools/instructions(ctx), plus optional discover_tools enable string array. Distinguishes confirmed design from a qualified candidate. Keeps full official prompt sections when absent/unmanaged, instruction-before-effect guards, restrictions and recovery. Rejects retired ToolDefinition.discovery/sectionTools metadata and a settings inventory. Native deferred tools are callable when inactive; tool_search/provider search/MCP gateways do not enforce group instructions. Performs no edits for review-only scope."
     },
     {
       "id": "fork-live-result-decoration",
-      "prompt": "My context_with_system hook decorates tool results for the model, but native Responses WebSocket continuations on fitchmultz/pi miss it. Fix this without changing saved results or requiring fork APIs on official Pi.",
-      "expected_output": "Inspects live_tool_result types, runner isolation, and continuation implementation on the exact fork. Uses that fork-only additional hook to return content for live continuation frames after persistence, preserves context_with_system for ordinary requests, and does not mutate saved history or terminal output. Keeps official-host functionality and validates ordinary versus live model content separately."
+      "prompt": "My extension used live_tool_result on an older fork. Modernize its model-facing result decoration for both Pi 1.0 targets without changing saved history or reviving dropped APIs.",
+      "expected_output": "Checks the actual public tool_result/context boundaries and provider path. Removes the obsolete fork event branch, preserves saved data and result/error/structured-content semantics, and validates model-facing decoration instead of adding an unsupported shim."
     },
     {
       "id": "public-extension-shared-host-policy",
-      "prompt": "Update a public Pi extension for Mitch. His installed fork supports an API absent from the latest official Pi. Both report 0.87.1, PI_PACKAGE_DIR points to the fork, and the PATH-selected smoke passes. Can the extension require the fork or count that as both-host verification? Do old results need repeating?",
-      "expected_output": "Keeps the public extension compatible with both fitchmultz/pi and latest official Pi using shared native behavior; pi-posthorse is the sole fork-only exception. Checks the current stable official release and intended fork revision, resolves distinct absolute launchers/package roots with --pi when PI_PACKAGE_DIR would override discovery, records distribution/revision/Node identity, and exercises each actual loader and affected path in isolated state against the same source/artifact. Does not count matching semver, package-only resolution, or one PATH-selected smoke as two-host proof. Avoids hard fork imports and no-op shims; reports a missing target or unavailable required capability as a gap. Reuses still-valid evidence without repeating unrelated checks or publication."
+      "prompt": "Update a public Pi extension for Mitch. His installed fork supports an API absent from the latest official Pi. Both report 1.0.0, PI_PACKAGE_DIR points to the fork, and the PATH-selected smoke passes. Can the extension require the fork or count that as both-host verification? Do old results need repeating?",
+      "expected_output": "Keeps the public extension compatible with both fitchmultz/pi and latest official Pi using shared native behavior; Posthorse retain-none compaction is portable. Checks the current stable official release and intended fork revision, resolves distinct absolute launchers/package roots with --pi when PI_PACKAGE_DIR would override discovery, records distribution/revision/Node identity, and exercises each actual loader and affected path in isolated state against the same source/artifact. Does not count matching semver, package-only resolution, or one PATH-selected smoke as two-host proof. Avoids hard fork imports and no-op shims; reports a missing target or unavailable required capability as a gap. Reuses still-valid evidence without repeating unrelated checks or publication."
     },
     {
       "id": "official-fork-lifecycle-boundary",
       "prompt": "My extension must run on the latest official Pi and current fitchmultz/pi. Use final-idle notifications, then reload after editing the extension. A teammate says to require newContext and session_checkpoint everywhere.",
-      "expected_output": "Uses shared agent_settled or AgentSession/ExtensionCommandContext waitForIdle for final settlement, not low-level agent_end. Does not require fork-only newContext/session_checkpoint on official Pi. Explains the verified official and fork reload behavior, and checks both actual host paths without adding no-op compatibility machinery."
+      "expected_output": "Uses shared agent_settled or AgentSession/ExtensionCommandContext waitForIdle for final settlement, not low-level agent_end. Does not require dropped newContext/session_checkpoint contracts on either target. Uses cache-clearing reload and returns without stale ctx/pi actions after replacement, and checks both actual host paths without adding no-op compatibility machinery."
     },
     {
       "id": "optional-tools-and-execution-cwd",
@@ -129,7 +129,7 @@
     {
       "id": "agent-core-shell-exec-options-migration",
       "prompt": "Fix my embedded pi SDK harness TypeScript errors after upgrading: ExecutionEnvExecOptions is missing.",
-      "expected_output": "Reads the current changelog and root-exported @earendil-works/pi-agent-core harness .d.ts files, updates type-checked source to use ShellExecOptions for ExecutionEnv.exec options, checks no old ExecutionEnvExecOptions or removed experimental-subpath imports remain, and validates TypeScript plus the SDK/runtime path."
+      "expected_output": "Checks agent-core 1.0 root/exports: the experimental harness ExecutionEnv and its option types are removed, not renamed. Chooses the public coding-agent SDK/tool operations for ordinary extension work; explicit durable/remote requirements need their own complete contract. Preserves cancellation/result semantics and validates types plus the real host."
     },
     {
       "id": "custom-provider-chat-template-thinking",
@@ -199,7 +199,7 @@
     {
       "id": "final-agent-settled-boundary",
       "prompt": "Notify my host only when a pi run is truly finished, including retries, overflow compaction, and queued follow-up messages.",
-      "expected_output": "Reads current agent-session, low-level agent, extension, and RPC implementation before docs/examples; uses agent_settled, AgentSession.waitForIdle, ExtensionCommandContext.waitForIdle, or a race-safe RPC helper for local settlement rather than agent_end. Explicitly rejects low-level session.agent.waitForIdle, uses promptAndWait or accounts for official RpcClient.waitForIdle waiting on a future event versus the fork's immediate idle-state command, preserves per-run agent_end only if needed, and validates automatic-continuation and summarization-retry paths. On hosts exposing detached native tool obligations, checks agent_settled.pendingToolCalls or ctx.getPendingToolCalls before claiming all external work finished."
+      "expected_output": "Reads current agent-session, low-level agent, extension, and RPC implementation before docs/examples; uses agent_settled, AgentSession.waitForIdle, ExtensionCommandContext.waitForIdle, or a race-safe RPC helper for local settlement rather than agent_end. Explicitly rejects low-level session.agent.waitForIdle, subscribes before RPC prompting and handles started/queued/handled disposition; notes promptAndWait ignores handled and can timeout, preserves per-run agent_end only if needed, and validates automatic-continuation and summarization-retry paths. Checks extension-owned detached-job completion separately; does not require dropped pending-native-tool/RPC APIs."
     },
     {
       "id": "provider-outbound-header-hook",
@@ -334,12 +334,12 @@
     {
       "id": "agent-core-v4-session-repositories",
       "prompt": "Upgrade my old pi-agent-core AgentHarness session code to the latest official Pi and current fitchmultz/pi. Experimental imports and old repository names no longer resolve.",
-      "expected_output": "Reads the exact current exports, session/storage types, and implementation on both hosts. Uses AgentHarness, Session, Storage, SessionRepo, JsonlSessionRepo, and MemorySessionRepo with current Branch/mutation and Context contracts; removes stale SessionStorage, InMemorySessionRepo, and session.view assumptions without shims. Keeps coding-agent SessionManager JSONL separate. Does not repeat the obsolete blanket HarnessNotImplemented warning; recognizes watchSession still throws SliceNotImplemented and validates only actual adopted operations."
+      "expected_output": "Checks exact 1.0 exports: agent-core removed AgentHarness/session/storage/repos/node/pico3. Ordinary extensions use coding-agent SessionManager/AgentSession/runtime, not a replacement experimental harness. Explicit durable semantics require inspecting pi-durable and preserving its separate storage/recovery contract; never relabel saved schemas or lose recovery. Validates the adopted public API and actual runtime."
     },
     {
       "id": "agent-core-filesystem-rename",
       "prompt": "My custom pi-agent-core FileSystem stopped satisfying current Pi when I switched to JsonlSessionRepo.",
-      "expected_output": "Checks current FileSystem and Context types; implements renameFile(sourcePath, destinationPath, context) with atomic same-filesystem replacement, returns failures through Result without throwing, preserves the destination on failure, and validates staged publication, existing-destination replacement, cancellation, and cross-filesystem rejection. Does not copy the old optional AbortSignal signature."
+      "expected_output": "Identifies that agent-core 1.0 removed JsonlSessionRepo/FileSystem rather than renaming a method. Inspects the chosen supported storage API before implementing; preserves atomic replacement, destination-on-failure, cancellation, cross-filesystem and saved-data recovery guarantees. Does not invent removed types or substitute same-file queues for multi-file publication safety."
     },
     {
       "id": "remote-session-metadata-snapshot",

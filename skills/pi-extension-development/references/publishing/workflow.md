@@ -31,7 +31,7 @@ Set a Bash array in the same shell before the recipes below, using the resolved 
 PI_TARGET_BINS=(/absolute/official/bin/pi /absolute/fork/bin/pi)
 ```
 
-Use both targets for public extensions except the documented Posthorse exception. Record each launcher/package/revision and ensure the selected Node runtime supports both. The loops below use separate HOME, agent state, and projects per target. Build and pack once; repeat only host-sensitive install/resource/behavior checks against the same artifact. Never repeat publication to prove compatibility. If a target is unavailable, report the gap rather than substituting the active `pi`.
+Use both targets for public extensions, including portable Posthorse. Record each launcher/package/revision and ensure the selected Node runtime supports both. The loops below use separate HOME, agent state, and projects per target. Build and pack once; repeat only host-sensitive install/resource/behavior checks against the same artifact. Never repeat publication to prove compatibility. If a target is unavailable, report the gap rather than substituting the active `pi`.
 
 The install/list loops are templates, not complete behavior gates. Before running a preparation, release, or post-release recipe, insert the task's real checks at its marked location using **that iteration's** `"${target_env[@]}" "$PI_BIN"`, working directory, and installed artifact. Apply step 7 below inside every target subshell. A bare `pi`, a test harness still bound to another host, or one check run after the loop is not evidence for both targets. Record a separate behavior result for each launcher; missing or failed results block readiness, publication, and successful post-release cleanup as applicable.
 
@@ -215,6 +215,8 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 8. Remove the clean environment (`cleanup; trap - EXIT`), report release readiness, and complete repository delivery only when authorized. Stop before tags, releases, publication, or release credential reads unless authorization covers those actions; preparation alone grants none.
 
 ## Explicit release flow
+
+Follow the repository's established channel first. Git/GitHub-only or private packages (including pi-agent-skills and pi-workflows) must not run the npm publication recipe or borrow a foreign npm name. Check actual tags/releases and select a non-reused version; GitHub-only delivery retains source/tag/artifact evidence without inventing a registry channel. The npm steps below apply only to an explicitly authorized, historically owned npm channel.
 
 Run only the authorized actions, in order, and verify each before continuing:
 

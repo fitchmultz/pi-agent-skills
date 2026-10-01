@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -50,7 +50,19 @@ test("native discovery finds all packed skills and retains their scripts and ref
     }
     assert.deepEqual(loader.getExtensions().errors, []);
     assert.equal(loader.getExtensions().extensions.length, 0, "This is a skills bundle, not a runtime extension");
-    t.diagnostic(`${skills.length} packed skills discovered by Pi ${host.version}`);
+    // The bundled CLI has a different loader/alias boundary from the public SDK.
+    writeFileSync(join(agentDir, "settings.json"), JSON.stringify({ packages: [join(temp, "package")] }));
+    const env = { HOME: temp, PATH: `${dirname(process.execPath)}:/opt/homebrew/bin:/usr/bin:/bin`,
+      PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: "1", PI_TELEMETRY: "0", PI_PACKAGE_DIR: packageDir };
+    const output = execFileSync(process.execPath, [join(packageDir, "dist/bundle/cli.js"), "--offline", "--mode", "rpc",
+      "--no-session", "--no-approve", "-ne", "-np", "-nc", "--no-themes"], {
+      cwd, env, encoding: "utf8", timeout: 30000, input: '{"id":"skills","type":"get_commands"}\n',
+    });
+    const response = output.split("\n").filter(Boolean).map(line => JSON.parse(line)).find(event => event.id === "skills");
+    assert.equal(response?.success, true, output);
+    assert.deepEqual(response.data.commands.filter(command => command.source === "skill").map(command => command.name).sort(),
+      expected.map(name => `skill:${name}`).sort());
+    t.diagnostic(`${skills.length} packed skills discovered by SDK and bundled CLI Pi ${host.version}`);
   } finally {
     if (previousHome === undefined) delete process.env.HOME; else process.env.HOME = previousHome;
     if (previousAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR; else process.env.PI_CODING_AGENT_DIR = previousAgentDir;

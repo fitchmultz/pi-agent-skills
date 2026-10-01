@@ -7,7 +7,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - project trust before trust-gated project inputs load (project config resources/packages/extensions and project `.agents/skills`; not AGENTS.md/CLAUDE.md context files)
 - extension factory load vs bound runtime
 - startup and each low-level `agent_end`
-- local-idle `agent_settled` / `AgentSession.waitForIdle()` / `ExtensionCommandContext.waitForIdle()` after retries, compaction/summarization retry, and queued continuations; never low-level `session.agent.waitForIdle()`; on the fork, detached `pendingToolCalls` are a separate completion boundary
+- local-idle `agent_settled` / `AgentSession.waitForIdle()` / `ExtensionCommandContext.waitForIdle()` after retries, compaction/summarization retry, and queued continuations; never low-level `session.agent.waitForIdle()`; extension-owned detached jobs have a separate completion boundary
 - dynamic tool/provider registration after startup, including native-provider replacement and removal
 - `/reload` / `ctx.reload()`
 - `/new` and `/resume`
@@ -17,7 +17,6 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - process exit / `ctx.shutdown()`
 - model or thinking-level changes
 - SDK/RPC `AgentSessionRuntime` replacement, including `importFromJsonl()`
-- current pi-agent-core Branch/session mutation, lane execution, and durable operation recovery
 - acquired live-state replacement for explicitly source-targeted remote hosts; experimental coding-agent client/server surfaces are not published SDK prerequisites
 - session replacement into another cwd with its trust decision; execution-only `change_dir` does not reload trust, context files, or skills
 - TUI component/overlay/widget disposal
@@ -40,7 +39,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - `session_start` rehydrates from `ctx.sessionManager.getBranch()` or `getEntries()` intentionally.
 - `session_info_changed` updates any UI/state that depends on the current display name.
 - `session_tree` rehydrates if branch navigation changes meaning.
-- `agent_end` is per-low-level-run. Local-run notifications use shared `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` after continuations/retries, never low-level `session.agent.waitForIdle()`. On the inspected hosts, actionable final-boundary work uses `agent_before_settle`; settlement is notification-only. Fork-native detached obligations remain pending when `agent_settled.pendingToolCalls` or `ctx.getPendingToolCalls()` reports them.
+- `agent_end` is per-low-level-run. Local-run notifications use shared `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` after continuations/retries, never low-level `session.agent.waitForIdle()`. On the inspected hosts, actionable final-boundary work uses `agent_before_settle`; settlement is notification-only. Extension-owned detached jobs are not completed by local settlement.
 - `session_shutdown` cleans timers, watchers, processes, subscriptions, raw input listeners, overlays/widgets, and handles.
 
 ## Runtime mutation
@@ -48,12 +47,12 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.
 - Runtime `pi.setActiveTools()` changes are persisted or reconstructed when needed.
 - Provider register/unregister timing is clear and validated if model availability matters. Dynamic refresh uses read-only `context.stored` and generation-checked `context.publish()`; no state mutates before successful publication. `createProvider({ fetchModels })` and config callbacks that only return models keep factory-owned publication. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
-- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. The inspected official host reloads source; the inspected fork requires a process restart for extension code updates. Validate the distribution actually used.
+- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Official 1.0 clears factory caches; the minimal fork targets that path, not older restart-only loaders. Validate the distribution actually used.
 
 ## Replacement footguns
 
 - Code after `await ctx.reload()` returns immediately and does not use stale state.
-- Compaction handlers use `reason` and `willRetry` to distinguish manual compaction, threshold auto-compaction, and overflow retry flows; fork `session_before_auto_compact` also consumes `retainedToolResultIds`; custom compaction and branch-summary provider usage is returned and persisted.
+- Compaction handlers use `reason` and `willRetry` to distinguish manual compaction, threshold auto-compaction, and overflow retry flows; custom compaction and branch-summary provider usage is returned and persisted.
 - Same-directory session switches may reuse imported modules while still creating fresh extension instances and lifecycle events; per-session mutable state resets from `session_start`, not top-level module initialization.
 - `withSession` callbacks use only the fresh replacement context.
 - Old `ctx`, session-bound `pi` methods, and captured `SessionManager` objects are not used after replacement.
@@ -79,6 +78,6 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - Sibling tool calls may run concurrently.
 - `tool_call` does not rely on sibling tool results from the same assistant response.
-- File mutations use `withFileMutationQueue()` across the whole mutation window.
-- `executionMode: "sequential"` serializes the entire sibling-call batch in source order when any sibling is sequential; use it only for a truly shared state machine. Fork-native asynchronous work detached from earlier responses continues unless the global mode is sequential.
+- Same-file mutations use `withFileMutationQueue()` across the whole mutation window; it is process-local, not a multi-file transaction or cross-process lock. Preserve missing-path/symlink safeguards.
+- `executionMode: "sequential"` serializes the entire sibling-call batch in source order when any sibling is sequential; use it only for a truly shared state machine. Detached extension jobs still need explicit ownership and cancellation.
 - Independent resources use keyed queues where finer-grained concurrency matters.

@@ -32,9 +32,11 @@ function filesUnder(dir) {
 
 test("package exposes the source-managed skills", () => {
   const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
+  const lock = JSON.parse(readFileSync(path.join(root, "package-lock.json"), "utf8"));
   assert.deepEqual(manifest.pi.skills, ["./skills"]);
   assert.equal(manifest.private, true);
-  assert.equal(manifest.version, "0.8.1");
+  assert.equal(lock.version, manifest.version);
+  assert.equal(lock.packages[""].version, manifest.version);
   assert.match(manifest.devDependencies["@earendil-works/pi-coding-agent"], /^\d+\.\d+\.\d+$/, "Pin an exact discovery-test baseline, independently of skill guidance verification");
   assert.deepEqual(readdirSync(skillsDir).sort(), expectedSkills);
 });
