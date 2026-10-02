@@ -50,7 +50,16 @@ test("bundled skills have valid source surfaces", () => {
 
     for (const file of filesUnder(dir)) {
       assert.notEqual(path.basename(file), ".DS_Store");
-      if (file.endsWith(".json")) JSON.parse(readFileSync(file, "utf8"));
+      if (file.endsWith(".json")) {
+        const data = JSON.parse(readFileSync(file, "utf8"));
+        if (path.basename(file) === "evals.json") {
+          assert.equal(new Set(data.evals.map(({ id }) => id)).size, data.evals.length, `${file}: duplicate eval IDs`);
+          for (const entry of data.evals) {
+            assert.ok(entry.prompt.trim(), `${file}: missing prompt: ${entry.id}`);
+            assert.ok(entry.expected_output.trim(), `${file}: missing expectation: ${entry.id}`);
+          }
+        }
+      }
       if (/\.(?:py|sh)$/.test(file)) assert.notEqual(statSync(file).mode & 0o111, 0, `${file} must be executable`);
       if (/\.(?:js|json|md|mjs|py|sh|ya?ml)$/.test(file)) {
         const text = readFileSync(file, "utf8");
