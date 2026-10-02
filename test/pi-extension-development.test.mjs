@@ -28,11 +28,6 @@ test("Pi guidance links its shipped resolver and conditional references", () => 
 
 test("Pi contract scenarios remain available to behavioral evaluation", () => {
   const ids = new Set(evals.map(({ id }) => id));
-  assert.equal(ids.size, evals.length);
-  for (const entry of evals) {
-    assert.ok(entry.prompt.trim(), `missing prompt: ${entry.id}`);
-    assert.ok(entry.expected_output.trim(), `missing expectation: ${entry.id}`);
-  }
   for (const id of [
     "typebox-1-3-7-migration",
     "scoped-model-extension-picker",

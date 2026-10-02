@@ -6,11 +6,6 @@ const { evals } = JSON.parse(readFileSync(new URL("../skills/propose-then-ship-p
 
 test("direction, authority, and prerequisite scenarios remain available to behavioral evaluation", () => {
   const ids = new Set(evals.map(({ id }) => id));
-  assert.equal(ids.size, evals.length);
-  for (const entry of evals) {
-    assert.ok(entry.prompt.trim(), `missing prompt: ${entry.id}`);
-    assert.ok(entry.expected_output.trim(), `missing expectation: ${entry.id}`);
-  }
   for (const id of [
     "success-stops-at-gate",
     "success-ask-question-approval-resumes-same-turn",

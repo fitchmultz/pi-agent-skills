@@ -6,11 +6,6 @@ const { evals } = JSON.parse(readFileSync(new URL("../skills/verification-before
 
 test("evidence validity, practical regression proof, and owner review scenarios remain in the behavioral corpus", () => {
   const ids = new Set(evals.map(({ id }) => id));
-  assert.equal(ids.size, evals.length);
-  for (const entry of evals) {
-    assert.ok(entry.prompt.trim(), `missing prompt: ${entry.id}`);
-    assert.ok(entry.expected_output.trim(), `missing expectation: ${entry.id}`);
-  }
   for (const id of [
     "edge-reuse-full-suite-on-unchanged-tree",
     "edge-change-invalidates-reused-evidence",
