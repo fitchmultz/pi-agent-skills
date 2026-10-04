@@ -89,7 +89,7 @@
     {
       "id": "extension-tax-and-code-quality",
       "prompt": "Review my pi extension for startup slowdown, linting, formatting, and TypeScript correctness.",
-      "expected_output": "Reads current pi docs/source for lifecycle/startup behavior, treats a clean TypeScript type-check (repo script or tsc --noEmit) as a required gate, runs the repo lint/format script or an already-installed Biome via npx --no-install @biomejs/biome (not bare biome), measures startup tax with a with/without-extension A/B rather than only estimating, and reports extension tax with concrete validation evidence."
+      "expected_output": "Reads current pi docs/source for lifecycle/startup behavior, treats a clean TypeScript type-check (repo script or tsc --noEmit) as a required gate, runs the repo lint/format script or uses maintained @biomejs/biome under applicable environment policy, installing it when needed without re-asking for covered permission (not bare biome), measures startup tax with a with/without-extension A/B rather than only estimating, and reports extension tax with concrete validation evidence."
     },
     {
       "id": "provider-auth-env",
