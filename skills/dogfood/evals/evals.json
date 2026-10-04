@@ -39,7 +39,7 @@
     {
       "id": "edge-vfr-missing-ffmpeg",
       "prompt": "Record the streaming answer and check for flicker, but ffmpeg is not installed.",
-      "expected_output": "Stops before record start when preflight fails, does not install software or leave an open recording, captures and inspects steady-state screenshots when useful, explicitly reports low motion confidence, and never claims screenshots prove streaming or flicker quality."
+      "expected_output": "Stops before record start when preflight fails, installs or updates ffmpeg under current or standing environment policy without re-asking for covered permission, reruns preflight and records only after it passes, and never leaves an open recording. If installation is prohibited or unavailable, captures and inspects steady-state screenshots when useful, explicitly reports low motion confidence, and never claims screenshots prove streaming or flicker quality."
     },
     {
       "id": "edge-vfr-postprocessing-failure",

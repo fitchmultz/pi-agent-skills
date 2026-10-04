@@ -88,7 +88,7 @@ Before recording, read `references/vfr/workflow.md` and follow its single native
 
 Read `references/vfr/terminal-tui.md` before terminal/TUI capture. The same verification and self-inspection contract applies.
 
-If ffmpeg is unavailable, do not start recording. Continue with inspected screenshots only and state that motion confidence is low; do not imply that steady-state evidence proves flicker or streaming quality.
+If ffmpeg is unavailable, do not start recording. Install or update it when current or standing environment policy permits, then rerun preflight and continue recording only after it passes. If installation is prohibited or unavailable, continue with inspected screenshots only and state that motion confidence is low; do not imply that steady-state evidence proves flicker or streaming quality.
 
 ## Report format
 

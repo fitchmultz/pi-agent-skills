@@ -34,7 +34,7 @@ python3 <dogfood-skill-dir>/scripts/vfr.py init \
   --viewport 1440x1000
 ```
 
-`doctor` exits nonzero when ffmpeg is unavailable or lacks `-fps_mode` support (FFmpeg 5.1+). Stop there. Do not call `record start`, install software without permission, or hope `record stop` will work later.
+`doctor` exits nonzero when ffmpeg is unavailable or lacks `-fps_mode` support (FFmpeg 5.1+). Do not call `record start` until preflight passes. Install or update ffmpeg when current or standing environment policy permits, then rerun `doctor`; do not ask again for a covered install. If installation is prohibited or unavailable, use the screenshot fallback below rather than hoping `record stop` will work later.
 
 `init` prints the absolute run path. Pi shell state does not persist between `bash` calls, so copy that literal absolute path into every later command and browser artifact path. Do not rely on `$RUN` surviving another tool call.
 
@@ -166,7 +166,7 @@ Missing optional signals do not invalidate a verified video and inspected visual
 
 | Signal | Action |
 | --- | --- |
-| `doctor` reports missing ffmpeg | Do not start recording. Use inspected screenshots and report low motion confidence. |
+| `doctor` reports missing ffmpeg | Do not start recording. Install or update ffmpeg under current or standing environment policy, then rerun `doctor` and continue only after it passes. If installation is prohibited or unavailable, use inspected screenshots and report low motion confidence. |
 | Start reports the wrong path | Stop immediately; do not continue or restart over another run’s artifact. |
 | Start says recording already active | Stop and verify the existing recording before doing anything else. |
 | Stop fails | Do not start/restart. Follow exact next actions, preserve screenshots, and clean up the run-owned session. |
