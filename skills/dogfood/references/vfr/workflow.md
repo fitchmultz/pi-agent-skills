@@ -166,7 +166,7 @@ Missing optional signals do not invalidate a verified video and inspected visual
 
 | Signal | Action |
 | --- | --- |
-| `doctor` reports missing ffmpeg | Do not start recording. Use inspected screenshots and report low motion confidence. |
+| `doctor` reports missing ffmpeg | Do not start recording. Install or update ffmpeg under current or standing environment policy, then rerun `doctor` and continue only after it passes. If installation is prohibited or unavailable, use inspected screenshots and report low motion confidence. |
 | Start reports the wrong path | Stop immediately; do not continue or restart over another run’s artifact. |
 | Start says recording already active | Stop and verify the existing recording before doing anything else. |
 | Stop fails | Do not start/restart. Follow exact next actions, preserve screenshots, and clean up the run-owned session. |
