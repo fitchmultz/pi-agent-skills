@@ -13,7 +13,7 @@ Deliver a source-backed, editable diagram that answers the user's visual questio
 
 ## Prerequisites
 
-Both modes need Node and `rsvg-convert` (librsvg). D2 also needs `d2` and Python 3 with POSIX `fcntl.flock` (macOS/Linux). Check only the selected mode's tools. On macOS, missing renderers can be installed with `brew install librsvg d2`, and Python with `brew install python`, subject to environment install policy. Do not add tooling to project dependencies unless requested.
+Both modes need Node and `rsvg-convert` (librsvg). D2 also needs `d2` and Python 3 with POSIX `fcntl.flock` (macOS/Linux). Check only the selected mode's tools. On macOS, install missing renderers with `brew install librsvg d2`, and Python with `brew install python`, when current or standing environment policy permits it; do not ask again for covered installs. Keep auxiliary renderers outside project dependencies unless the project's reproducible rendering workflow needs them. Honor an explicit no-install restriction.
 
 Resolve all scripts, assets, and references below from this skill directory, not the caller's cwd. A proprietary native-design-file task needs its own application; do not substitute a diagram export.
 
