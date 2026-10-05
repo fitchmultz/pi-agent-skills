@@ -26,7 +26,8 @@ test("native discovery finds all packed skills and retains their scripts and ref
   mkdirSync(agentDir);
   try {
     // Real consumer-shaped pack, no host devDependencies inside it.
-    const [packed] = JSON.parse(execFileSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], { cwd: root, encoding: "utf8" }));
+    // npm 11 returns an array; npm 12 keys the same records by package name.
+    const [packed] = Object.values(JSON.parse(execFileSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], { cwd: root, encoding: "utf8" })));
     execFileSync("tar", ["-xzf", join(temp, packed.filename), "-C", temp]);
     const sourceFiles = (dir, prefix = "skills") => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => entry.isDirectory()
       ? sourceFiles(join(dir, entry.name), `${prefix}/${entry.name}`)
