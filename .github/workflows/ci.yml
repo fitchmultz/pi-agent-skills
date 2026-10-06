@@ -11,18 +11,51 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  official:
+  resolve:
+    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@6ec8741e1d5c7097e9b1f108bb698f5c5cd5d7f5 # main
+    with:
+      automation-ref: 6ec8741e1d5c7097e9b1f108bb698f5c5cd5d7f5 # main
+
+  qualify:
+    needs: resolve
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [official, fork]
+    name: ${{ matrix.host }}
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: ${{ matrix.host == 'fork' && 8 || 6 }}
+    env:
+      PI_OFFLINE: '1'
+      PI_TELEMETRY: '0'
+      PI_COMPAT_FORK_REF: ${{ needs.resolve.outputs.fork-ref }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          path: skills
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: fitchmultz/.github
+          ref: 6ec8741e1d5c7097e9b1f108bb698f5c5cd5d7f5 # main
+          path: automation
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: matrix.host == 'fork'
+        with:
+          repository: fitchmultz/pi
+          ref: ${{ needs.resolve.outputs.fork-ref }}
+          path: fork
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
-          cache: npm
-      - run: npm ci --ignore-scripts --no-audit --no-fund
+          check-latest: true
+          package-manager-cache: false
+      - name: Use the reviewed npm version
+        run: |
+          PM="$(node -p 'require("./automation/package.json").packageManager')"
+          npm exec --yes --package="$PM" -- npm install --global "$PM"
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq librsvg2-bin
       - name: Install D2
         run: |
@@ -31,63 +64,30 @@ jobs:
           mkdir "$RUNNER_TEMP/d2"
           tar -xzf "$RUNNER_TEMP/d2.tar.gz" -C "$RUNNER_TEMP/d2"
           sudo install -m 755 "$(find "$RUNNER_TEMP/d2" -type f -name d2 -print -quit)" /usr/local/bin/d2
-      - run: npm test
-      - run: npm run pack:check
-
-  official-current:
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    env:
-      PI_CURRENT_VERSION: '1.0.0'
-      PI_COMPAT_HOST: official-current
-      PI_OFFLINE: '1'
-      PI_TELEMETRY: '0'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-      - name: Install current official host separately from the minimum baseline
-        run: npm install --prefix "$RUNNER_TEMP/pi-current" --ignore-scripts --no-audit --no-fund "@earendil-works/pi-coding-agent@$PI_CURRENT_VERSION"
-      - name: Verify native skill and SDK behavior
-        env:
-          PI_HOST_INDEX: ${{ runner.temp }}/pi-current/node_modules/@earendil-works/pi-coding-agent/dist/index.js
-          PI_COMPAT_EXPECTED_VERSION: ${{ env.PI_CURRENT_VERSION }}
-        run: node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs
-
-  fork:
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          path: skills
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: fitchmultz/pi
-          ref: main
-          path: fork
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: fork/package-lock.json
-      - name: Build current fork
+      - name: Build and pack the frozen fork
+        if: matrix.host == 'fork'
         working-directory: fork
+        env:
+          FORK_REF: ${{ needs.resolve.outputs.fork-ref }}
         run: |
-          git rev-parse HEAD
-          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --ignore-scripts
           npm run hydrate:model-data
           npm run build:offline
-      - name: Verify native skill and SDK behavior
-        working-directory: skills
+          node ../automation/scripts/pack-fork.mjs . "$RUNNER_TEMP/fork-package" "$FORK_REF"
+          git diff --exit-code
+      - name: Full contracts and native skill consumers
         env:
-          PI_HOST_INDEX: ${{ github.workspace }}/fork/packages/coding-agent/dist/index.js
-          PI_COMPAT_HOST: fork
-          PI_OFFLINE: '1'
-          PI_TELEMETRY: '0'
-        run: node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs
+          HOST: ${{ matrix.host }}
+          VERSION: ${{ needs.resolve.outputs.official-version }}
+        run: |
+          target="$VERSION"
+          if [[ "$HOST" == fork ]]; then target="$RUNNER_TEMP/fork-package"; fi
+          node automation/scripts/qualify.mjs --repo pi-agent-skills --source "$GITHUB_WORKSPACE/skills" \
+            --host "$HOST" --target "$target" --output "$GITHUB_WORKSPACE/evidence"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: qualification-skills-${{ matrix.host }}
+          path: evidence
+          if-no-files-found: error
+          retention-days: 14
