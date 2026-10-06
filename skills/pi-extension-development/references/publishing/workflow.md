@@ -216,7 +216,7 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
 ## Explicit release flow
 
-Follow the repository's established channel first. Git/GitHub-only or private packages (including pi-agent-skills and pi-workflows) must not run the npm publication recipe or borrow a foreign npm name. Check actual tags/releases and select a non-reused version; GitHub-only delivery retains source/tag/artifact evidence without inventing a registry channel. The npm steps below apply only to an explicitly authorized, historically owned npm channel.
+Follow the repository's established channel first. Git/GitHub-only or private packages (including pi-agent-skills) must not run the npm publication recipe or borrow a foreign npm name. The owner has explicitly authorized pi-workflows to establish `@fitchmultz/pi-workflows`, continuing its existing version history with Git installation retained as a fallback; unscoped `pi-workflows` is not this project and must not be published to, deprecated, or otherwise changed. This specific scoped-channel authorization is not a waiver for other Git-only or foreign packages. Check actual tags/releases and select a non-reused version; GitHub-only delivery retains source/tag/artifact evidence without inventing a registry channel. The npm steps below apply only to an explicitly authorized owned npm channel, including this specifically authorized first publication.
 
 Run only the authorized actions, in order, and verify each before continuing:
 
