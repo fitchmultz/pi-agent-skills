@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   resolve:
-    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@6ec8741e1d5c7097e9b1f108bb698f5c5cd5d7f5 # main
+    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@11d531f79564b555ebf75348d7275eaf0cb6d825 # main
     with:
-      automation-ref: 6ec8741e1d5c7097e9b1f108bb698f5c5cd5d7f5 # main
+      automation-ref: 11d531f79564b555ebf75348d7275eaf0cb6d825 # main
 
   qualify:
     needs: resolve
