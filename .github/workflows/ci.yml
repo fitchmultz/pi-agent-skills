@@ -77,6 +77,7 @@ jobs:
           git diff --exit-code
       - name: Full contracts and native skill consumers
         env:
+          GH_TOKEN: ${{ github.token }}
           HOST: ${{ matrix.host }}
           VERSION: ${{ needs.resolve.outputs.official-version }}
         run: |
