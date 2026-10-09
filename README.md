@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-Source-managed Pi package for Mitch's reusable agent workflows. Version 0.9.1 requires Pi 1.0.0 or later and Node 24.21.0 or later.
+Source-managed Pi package for Mitch's reusable agent workflows. Version 0.9.2 requires Pi 1.0.0 or later and Node 24.21.0 or later.
 
 Guidance covers both official Pi and Mitch's active `fitchmultz/pi` fork; the same version string does not imply the same APIs. See [maintaining the skills](docs/maintaining-skills.md) for current sources and authoring policy, and [version hazards](skills/pi-extension-development/references/current-version-hazards.md) for the inspected host revisions.
 
@@ -36,7 +36,7 @@ npm run check:compat
 npm run smoke
 ```
 
-Asset/discovery validation uses the minimum supported Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all bundled skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI runs the full suite on the minimum official Pi baseline and host-sensitive discovery and scripted runtime tests on both current official Pi and the current fork. The supported baseline is now official 1.0.0; the current-host lane remains separate for future releases. The confirmed minimal-fork design is documented without claiming an unavailable candidate passed. No live runtime activation is part of qualification.
+Asset/discovery validation uses the minimum supported Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all bundled skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI resolves and freezes the current official release and fork revision, then runs contracts and host-sensitive discovery/scripted runtime checks for each. The supported development floor remains official 1.0.0. Dated source inventories distinguish the installed c2031 fork from historical 1.0 qualification and the unreleased schema/cursor target; neither inspection nor a matching version string qualifies a future build. No live runtime activation is part of qualification.
 
 The suite uses Node 24. Exact official and fork source baselines are recorded in the Pi extension skill's version hazards reference. CI installs D2 and librsvg to run the diagram rendering tests.
 

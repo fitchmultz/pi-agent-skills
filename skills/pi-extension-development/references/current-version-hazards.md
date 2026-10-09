@@ -4,7 +4,17 @@
 
 The supported baseline is **official Pi 1.0.0**, source [`a13d35a742c6ef8462812a28fbe1d8c8b7431c32`](https://github.com/earendil-works/pi/tree/a13d35a742c6ef8462812a28fbe1d8c8b7431c32), checked 2026-10-01 against the published public SDK `dist/index.js`, bundled CLI `dist/bundle/cli.js`, declarations and source. The eight Pi packages (coding-agent, agent-core, ai, tui, chord, telemetry, codemode, mcp) are 1.0.0; host TypeBox is **1.3.27** and the qualification Node is **24.21.0**. Companions may be nested under coding-agent's `node_modules`; resolve from the selected SDK, not the consumer root.
 
-The maintained `fitchmultz/pi` 1.0 target starts from official 1.0 and keeps only **restart, background_command, discover_tools, Read JSON selection, and compact view**. Its exact built candidate is not yet qualified. Installed older forks are not substitutes for that target. Keep live resources/settings/runtime untouched during isolated qualification; a matching version string is not a matching artifact. Historical reports retain the versions they actually exercised.
+The October 1 baseline above and `SKILL.md`'s `last-verified-pi`/`official-source` fields remain historical evidence, not a new qualification claim. The October 9 source audit distinguishes:
+
+| Distribution | Version / exact source | Evidence boundary |
+| --- | --- | --- |
+| Latest official stable at audit time | 1.1.0 / [`abe508e1b89912adde45528136c3221eb69acdd7`](https://github.com/earendil-works/pi/tree/abe508e1b89912adde45528136c3221eb69acdd7) | Released source and published package cohort; targeted compatibility inspection, not a new full skill qualification |
+| Installed `fitchmultz/pi` | 1.1.0 / [`c2031ab702c8815cd738a32664293541ad184ed6`](https://github.com/fitchmultz/pi/tree/c2031ab702c8815cd738a32664293541ad184ed6) | Immutable installed runtime/SDK identity and targeted offline checks |
+| Proposed upstream snapshot | unreleased / [`f1b2e77f5b13b2a199b1052cb79c235451afe7d7`](https://github.com/earendil-works/pi/tree/f1b2e77f5b13b2a199b1052cb79c235451afe7d7) | Source/schema/cursor inspection only; a future merged fork still needs its exact built-artifact qualification |
+
+The installed fork is no longer the five-feature 1.0 candidate. Its [revision-matched `FORK.md`](https://github.com/fitchmultz/pi/blob/c2031ab702c8815cd738a32664293541ad184ed6/FORK.md) owns the inventory: restart, detached background commands, instruction groups, JSON Read selection, compact activity (`boolean | "hybrid"`), immutable fork updates, Termux handling, complete native working-session state, credential isolation, fallback auth, opt-in performance warnings, temporary passive tracing, and Cloudflare Claude-ID canonicalization, plus retained correctness fixes. Those include native exact-Astra Ultrafast cost estimates gated by terminal tier confirmation; source/offline checks do not establish live billing.
+
+Resolve installed and intended revisions separately, then consult that revision's `FORK.md` and emitted exports. Keep live resources/settings/runtime untouched during isolated qualification; matching version strings do not identify matching artifacts. Historical reports retain the versions and checks they actually exercised.
 
 Canonical context, retain-none compaction, actionable boundaries and replacement callbacks date to **0.87.0**, not 1.0. Native tool composition dates to **0.99.0**. The hard 1.0 removals are experimental agent-core harness exports; fullscreen is now the default. Check every crossed changelog rather than attributing all existing APIs to this release.
 
@@ -32,13 +42,31 @@ Canonical context, retain-none compaction, actionable boundaries and replacement
 - Preserve `isError`, meaningful content and top-level usage. An output schema promises successful `structuredContent`. Content replacement drops old structured content unless supplied consistently; do not leak stale machine-readable secrets after redaction.
 - `defaultTools` reload enables newly added defaults without overriding explicit `tools`/`noTools`; do not delete necessary resume restoration without exercising that SDK path. `sendUserMessage` expands commands/skills/templates only with `expandPromptTemplates: true`; context-only `sendMessage({ triggerTurn: false })` is not steering.
 
-## Minimal fork boundaries
+## Current fork boundaries
 
-The confirmed discovery design emits `pi:instruction-groups` **synchronously during session_start** with `{ register(group), isManaged() }`. A group is `{ name, description, tools, instructions(ctx) }`; `discover_tools` accepts optional `enable: string[]`. Register synchronously with extension-owned tool names/instructions. This replaces old `ToolDefinition.discovery`, `sectionTools`, provider allowlists and settings inventories; do not resurrect them. Preserve complete official prompt-section/tool exposure and existing instruction/approval gates when the collector is absent or unmanaged. Native BM25 `tool_search`, provider-native search and MCP gateways are different mechanisms, not substitutes for group instructions. Candidate source/runtime qualification is still required; this confirmed contract is not a fork pass.
+The installed discovery builtin emits `pi:instruction-groups` **synchronously during session_start** with `{ register(group), isManaged() }`. A group is `{ name, description, tools, instructions(ctx) }`; `discover_tools` accepts optional `enable: string[]`. Register synchronously with extension-owned tool names/instructions. Enabling restores only previously selected tools for a subsequent turn: optional/excluded/hidden tools stay restricted, and same-assistant discovery/action calls are blocked even in sequential execution. Read the selected fork's `docs/instruction-groups.md` for readiness, positional declarations and branch/compaction recovery. This replaces old `ToolDefinition.discovery`, `sectionTools`, provider allowlists and settings inventories; do not resurrect them. Preserve complete official prompt-section/tool exposure and existing instruction/approval gates when the collector is absent or unmanaged. Native BM25 `tool_search`, provider-native search and MCP gateways are different mechanisms, not substitutes for group instructions. This source contract is not full qualification of another revision.
 
-Read JSON selection belongs to core `createReadToolDefinition`, so native cwd wrappers inherit it. `compactView` is a small core setting, default off; do not invent renderer properties from the setting name. Restart/background commands are builtin extensions using public 1.0 lifecycle, not checkpoint APIs. Inspect candidate help/source before relying on their details. `pi update --fork` is runtime delivery, not extension update, and needs explicit cutover authority.
+Read JSON selection belongs to core `createReadToolDefinition`, so native cwd wrappers inherit it. `compactView` is a global `boolean | "hybrid"` setting, default off; preserve the user's selection and do not invent renderer properties from its name. Restart/background commands are builtin extensions using public lifecycle APIs, not checkpoint APIs. Inspect the selected revision's help/source before relying on their details. `pi update --fork` is runtime delivery, not extension update, and needs explicit cutover authority.
 
-The target drops checkpoint/acquireCheckpoint, metadata/revision cursors, `recordUsage`, `ContextUsage.source`, Bash-cwd/publisher hooks, mutation-key exports, `unregisterCommand`, `persistOnCancel`, active-tool preservePending, extra retry events and extra TUI/RPC APIs. Do not keep unsupported branches or no-op shims for these targets. Saved data compatibility is a separate requirement: retain old journal readers/recovery when needed.
+The 1.0 rebuild dropped checkpoint/acquireCheckpoint, metadata/revision cursors, `recordUsage`, `ContextUsage.source`, Bash-cwd/publisher hooks, mutation-key exports, `unregisterCommand`, `persistOnCancel`, active-tool preservePending, extra retry events and extra TUI/RPC APIs. Current native working-session and auth-fallback APIs are separate additions, not restorations of that old stack. Do not keep unsupported branches or no-op shims. Saved data compatibility is a separate requirement: retain old journal readers/recovery when needed.
+
+## Published configuration schemas
+
+The audited **unreleased f1b2e77f** snapshot publishes these files under the coding-agent package root (repository prefix `packages/coding-agent/`):
+
+| Document | Schema path |
+| --- | --- |
+| Themes | `schemas/theme.schema.json` |
+| Keybindings | `schemas/keybindings.schema.json` |
+| Models | `schemas/models.schema.json` |
+| Settings | `schemas/settings.schema.json` |
+
+Editor URLs use `https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/schemas/<name>.schema.json`; theme metadata must no longer point into `src/modes/interactive/theme/`. Pi does not fetch `$schema` URLs to load configuration. Use the exact host's shipped schema/native loader for acceptance; these paths and stricter contracts must not be inferred from the shared 1.1.0 version string or attributed to the older c2031/official-stable artifacts.
+
+- Themes reject extra top-level fields and unknown `colors`/`export` keys. Put reusable custom colors in `vars`, use documented export backgrounds, and resolve missing/circular variable references through the native loader. Names cannot contain `/`; `system` is reserved. Optional scrollbar/search/`thinkingMax` tokens retain native fallbacks; do not duplicate a token inventory or add needless colors.
+- Key values use the native `KeyId` spelling and case, including `pageUp`/`pageDown`, with lowercase `ctrl`, `shift`, `alt`, `super` modifiers, no duplicates, and valid base keys. Examples: `ctrl+shift+x`, `alt++`; not `Ctrl+X`, `option+x`, or `ctrl+ctrl+x`. Extension-owned action names remain allowed; schema validation is not a global action-name allowlist.
+- `models.json` definitions and overrides require supplied `contextWindow` and `maxTokens` to be positive numbers. Zero is not “unlimited”; omit optional values or supply verified positive limits. Image dimensions/byte/count limits are positive integers; JPEG quality is 1–100, and supplied prompt-cache lifetimes are positive.
+- Settings allow extension-owned keys. Do not make Pi's schemas a strict validator for unrelated extension configuration. When adapting a fork settings schema, retain `compactView: boolean | "hybrid"` and existing resource filters.
 
 ## SDK, JSON and RPC traps
 
@@ -67,4 +95,6 @@ Agent-core 1.0 removes `AgentHarness`, Session/Storage/repos, durable/harness/no
 
 ## Source map
 
-Exact official SHA above: `packages/coding-agent/{CHANGELOG.md,docs/{sdk,extensions,sessions,session-format,rpc,tui,packages,codemode,mcp}.md,src/{index.ts,core/{sdk,agent-session,agent-session-runtime,session-manager,model-runtime,model-registry}.ts,core/extensions/{types,loader,runner}.ts,core/tools/file-mutation-queue.ts,modes/rpc/{rpc-client,rpc-mode,rpc-types}.ts}}`; `packages/agent/{CHANGELOG.md,package.json,src/index.ts}`; `packages/ai/{package.json,src/{index,compat,models}.ts}`; `packages/tui/{CHANGELOG.md,src/index.ts}`. Matching published JS/declarations and runnable CLI qualify exports/loading; prose and greps alone do not prove behavior. The minimal-fork design is confirmed but its built artifact remains unqualified.
+Historical official SHA above: `packages/coding-agent/{CHANGELOG.md,docs/{sdk,extensions,sessions,session-format,rpc,tui,packages,codemode,mcp}.md,src/{index.ts,core/{sdk,agent-session,agent-session-runtime,session-manager,model-runtime,model-registry}.ts,core/extensions/{types,loader,runner}.ts,core/tools/file-mutation-queue.ts,modes/rpc/{rpc-client,rpc-mode,rpc-types}.ts}}`; `packages/agent/{CHANGELOG.md,package.json,src/index.ts}`; `packages/ai/{package.json,src/{index,compat,models}.ts}`; `packages/tui/{CHANGELOG.md,src/index.ts}`.
+
+Current fork: revision-matched `FORK.md`, `docs/instruction-groups.md` and its `extensions/instruction-groups/` owner. Unreleased schema/cursor target: `schemas/*.schema.json`, `core/{key-id-schema,keybindings-schema,model-config,settings-schema}.ts`, `modes/interactive/theme/{theme-schema,theme}.ts`, `packages/ai/src/providers/model-schema.ts`, and `packages/tui/src/{index,tui,components/editor,components/input,utils}.ts`. Matching published JS/declarations and runnable CLI qualify exports/loading; source inspection alone does not prove a future artifact works.

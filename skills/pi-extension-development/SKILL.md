@@ -3,7 +3,7 @@ name: pi-extension-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 1.0.0+; resolve APIs against the exact host. Exact source checks are recorded in references/current-version-hazards.md. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   last-verified-pi: "1.0.0"
   official-source: "a13d35a742c6ef8462812a28fbe1d8c8b7431c32"
 ---
@@ -18,7 +18,7 @@ Use a skill for instructions, a prompt template for user-invoked expansion, a co
 
 For skill content, Crabbox, platform matrices, or external dependency research, use `agent-skill-engineering`, `crabbox-platform-testing`, `platform-validation`, or `external-repo-integration` **if available**. These are optional companion skills, not bundled prerequisites. Otherwise use the relevant current project/vendor sources directly. Pi package install/discovery remains in this skill even when the package ships skills.
 
-`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. If an integration is absent from the active tool list, inspect any advertised discovery catalog before declaring it unavailable or substituting another tool. The minimal fork's confirmed `discover_tools` design collects extension-owned groups synchronously through `pi:instruction-groups` at session start; its built candidate still needs qualification. Keep complete official-host instructions/exposure when unmanaged; no user-maintained settings inventory. Enabling a group executes no integration action and is distinct from provider-native tool search or an extension's MCP gateway. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
+`change_dir`, `ask_question`, browser tools, and `delegate`/`agent_runs`/`load_subagent` come from separate extensions on both hosts; inspect available tools rather than assuming Pi supplies them. If an integration is absent from the active tool list, inspect any advertised discovery catalog before declaring it unavailable or substituting another tool. The installed fork's `discover_tools` collects extension-owned groups synchronously through `pi:instruction-groups` at session start; see `docs/instruction-groups.md` and the dated source identities in `references/current-version-hazards.md`. Keep complete official-host instructions/exposure when unmanaged; no user-maintained settings inventory. Enabling a group executes no integration action, restores only previously selected tools for a later turn, and is distinct from provider-native tool search or an extension's MCP gateway. Question dialogs need TUI or an RPC client that services them, not plain print mode. Do not silently replace a workflow's required approval gate with a default answer.
 
 ## Resolve the source of truth
 
@@ -54,10 +54,10 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 | --- | --- | --- |
 | Tools, events, trust, load order, packages | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/configuration.md`, `docs/environment-variables.md`, `docs/packages.md`, matching examples/types/source | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
 | SDK, CLI integration, RPC, wire formats | `docs/sdk.md`, `docs/cli.md`, `docs/cli-integration.md`, `docs/rpc.md`, `docs/rpc-commands.md`, `docs/rpc-extension-ui.md`, `docs/json.md`, `docs/message-types.md`, matching examples/types/source | `references/runtime-authoring-guide.md` |
-| Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations; candidate fork restart docs/help only when targeting that kept feature | `references/lifecycle-checklist.md` |
-| TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples and pi-tui exports/types | `references/tui-authoring-guide.md` |
+| Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime/session implementations; exact fork `docs/restart.md`/`docs/working-session.md` and help when targeting those features | `references/lifecycle-checklist.md` |
+| TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, matching examples, published `schemas/*.schema.json` when present, and pi-tui exports/types | `references/tui-authoring-guide.md` |
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, pi-ai exports/types/source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
-| Deferred integration tools/instructions | Fork `docs/tool-discovery.md`, `docs/extensions.md`, tool-definition, system-prompt and discovery implementation/types; official dynamic-tool contract separately | `references/runtime-authoring-guide.md` |
+| Deferred integration tools/instructions | Fork `docs/instruction-groups.md`, `docs/extensions.md`, tool-definition, system-prompt and discovery implementation/types; official dynamic-tool contract separately | `references/runtime-authoring-guide.md` |
 | Skill/template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource-loader and package-manager | No runtime hook needed for content-only work |
 | Release/publishing | `docs/packages.md`, CLI help, package-manager | `references/publishing/workflow.md` before release work |
 | Requested Linux/Docker proof | Exact host/distribution identity and project tests | `references/linux-docker-validation.md` |

@@ -4,6 +4,12 @@
 
 - Add `clef`, a concise reference for Cloudflare's decision models and Pi's native classification API, without prescribing a domain or workflow.
 
+## [0.9.2] - 2026-10-09
+
+- Refresh Pi extension development guidance against installed fork c2031's full `FORK.md` inventory and `docs/instruction-groups.md`, distinguishing current installed source from historical 1.0 qualification and the unreleased upstream target.
+- Document published configuration schema paths, strict theme fields, canonical key IDs, positive model/image/cache limits, and revision-specific hardware/fake cursor behavior without requiring unavailable helper imports on current supported hosts.
+- Retain the Pi 1.0.0 development floor and historical verification metadata; align maintenance guidance with frozen current-host CI. Git/GitHub-only patch release; no npm publication.
+
 ## [0.9.1] - 2026-10-09
 
 - Accept npm 11's singleton array and npm 12's package-name-keyed `npm pack --json` output in the publishing and Linux Docker recipes. Select only the expected package and preserve release identity, manifest, artifact marker, path and hash checks.
@@ -147,6 +153,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.9.2]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.9.0...v0.9.1
 [0.8.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.6.0...v0.7.0

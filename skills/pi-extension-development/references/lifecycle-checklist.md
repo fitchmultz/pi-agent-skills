@@ -47,7 +47,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.
 - Runtime `pi.setActiveTools()` changes are persisted or reconstructed when needed.
 - Provider register/unregister timing is clear and validated if model availability matters. Dynamic refresh uses read-only `context.stored` and generation-checked `context.publish()`; no state mutates before successful publication. `createProvider({ fetchModels })` and config callbacks that only return models keep factory-owned publication. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
-- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Official 1.0 clears factory caches; the minimal fork targets that path, not older restart-only loaders. Validate the distribution actually used.
+- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Official 1.0+ and installed c2031 clear factory caches; older restart-only loader advice is historical. Validate the exact distribution used, with a fresh process when package/runtime identity matters.
 
 ## Replacement footguns
 
