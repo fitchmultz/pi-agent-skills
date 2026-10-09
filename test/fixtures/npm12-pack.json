@@ -1,0 +1,18 @@
+{
+  "@fixture/pi-pack-shapes": {
+    "id": "@fixture/pi-pack-shapes@1.2.3",
+    "name": "@fixture/pi-pack-shapes",
+    "version": "1.2.3",
+    "size": 231,
+    "unpackedSize": 116,
+    "shasum": "8f58f879639f4a84b7c83fc84a0b5a6d921b5e4f",
+    "integrity": "sha512-qb/F93UeU0TzFb4MfdVzqfWwYrKwhDeQL7WLauM1aWgRi105Z8CJI6W6npMGdwbp5uXOd/Iswjq3fEtm3APu0w==",
+    "filename": "fixture-pi-pack-shapes-1.2.3.tgz",
+    "files": [
+      { "path": "index.js", "size": 26, "mode": 420 },
+      { "path": "package.json", "size": 90, "mode": 420 }
+    ],
+    "entryCount": 2,
+    "bundled": []
+  }
+}

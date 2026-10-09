@@ -169,7 +169,9 @@ Use `--no-model` for fast package/tool validation when live model calls are unne
 
 ## Credential-free package gate
 
-Do not pass model credentials to this container. A strong Linux pass usually includes:
+Do not pass model credentials to this container. `npm pack --json` may return a
+one-element array (npm 11) or a record keyed by the expected package name (npm 12).
+Reject extra records and mismatched keys/names. A strong Linux pass usually includes:
 
 ```bash
 set -e
@@ -191,10 +193,14 @@ npm pack --json --pack-destination /artifacts > "$pack_json"
 package_name="$(node -p 'require("./package.json").name')"
 packed_tarball="/artifacts/$(node -e '
 const fs = require("node:fs");
-const result = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-if (result.length !== 1 || !result[0].filename) throw new Error("expected one packed tarball");
-process.stdout.write(result[0].filename);
-' "$pack_json")"
+const [packPath, name] = process.argv.slice(1);
+const result = JSON.parse(fs.readFileSync(packPath, "utf8"));
+const records = Array.isArray(result) ? result :
+  result && typeof result === "object" && Object.keys(result).length === 1 && Object.hasOwn(result, name) ? [result[name]] : [];
+const [packed] = records;
+if (records.length !== 1 || packed?.name !== name || !packed.filename) throw new Error("expected one packed tarball for the package");
+process.stdout.write(packed.filename);
+' "$pack_json" "$package_name")"
 [[ -f "$packed_tarball" ]]
 
 # Prepare project-local package state on the persistent artifact volume.
