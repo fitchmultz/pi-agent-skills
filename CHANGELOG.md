@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Add `clef`, a concise reference for Cloudflare's decision models and Pi's native classification API, without prescribing a domain or workflow.
+
 ## [0.9.0] - 2026-10-01
 
 - Raise the supported SDK and current-host qualification to Pi 1.0.0; keep Git/GitHub-only delivery and every bundled skill/resource.

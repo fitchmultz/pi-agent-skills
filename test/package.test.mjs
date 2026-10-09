@@ -9,6 +9,7 @@ const skillsDir = path.join(root, "skills");
 const expectedSkills = [
   "ask-clarifying-questions",
   "bro",
+  "clef",
   "deslop",
   "diagram-creation",
   "dogfood",
