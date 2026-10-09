@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-- Add `clef`, a concise reference for Cloudflare's decision models and Pi's native classification API, without prescribing a domain or workflow.
-
 ## [0.9.2] - 2026-10-09
 
 - Refresh Pi extension development guidance against installed fork c2031's full `FORK.md` inventory and `docs/instruction-groups.md`, distinguishing current installed source from historical 1.0 qualification and the unreleased upstream target.
@@ -12,6 +10,7 @@
 
 ## [0.9.1] - 2026-10-09
 
+- Add `clef`, a concise reference for Cloudflare's decision models and Pi's native classification API, without prescribing a domain or workflow.
 - Accept npm 11's singleton array and npm 12's package-name-keyed `npm pack --json` output in the publishing and Linux Docker recipes. Select only the expected package and preserve release identity, manifest, artifact marker, path and hash checks.
 - Exercise all five documented parsers against observed npm 11.19.0/12.2.0 fixtures and malformed/ambiguous metadata, including retained release-artifact safeguards.
 
