@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-09
+
 - Add `clef`, a concise reference for Cloudflare's decision models and Pi's native classification API, without prescribing a domain or workflow.
+- Accept npm 11's singleton array and npm 12's package-name-keyed `npm pack --json` output in the publishing and Linux Docker recipes. Select only the expected package and preserve release identity, manifest, artifact marker, path and hash checks.
+- Exercise all five documented parsers against observed npm 11.19.0/12.2.0 fixtures and malformed/ambiguous metadata, including retained release-artifact safeguards.
 
 ## [0.9.0] - 2026-10-01
 
@@ -142,6 +146,7 @@
 - Updated extension, provider, JSON/RPC, SDK, harness-session, filesystem, and remote-session guidance for the Pi 0.84.0 contracts.
 - Pinned local validation to Pi 0.84.0 and documented install, package, and release expectations for Pi 0.84.0 or later.
 
+[0.9.1]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.9.0...v0.9.1
 [0.8.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/fitchmultz/pi-agent-skills/compare/v0.5.1...v0.6.0

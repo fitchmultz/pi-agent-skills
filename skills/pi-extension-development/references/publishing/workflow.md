@@ -164,17 +164,26 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
 5. Inspect the exact publish payload without lifecycle hooks:
 
+   `npm pack --json` returns a one-element array on npm 11 and a record keyed by
+   package name on npm 12. Select only the expected package; reject extra records
+   or a mismatched key/name rather than taking an arbitrary first value.
+
    ```bash
    "${clean_env[@]}" "$NPM_BIN" publish --dry-run --ignore-scripts
 
+   package_name="$("${clean_env[@]}" "$NODE_BIN" -p 'require(process.argv[1]).name' "$PWD/package.json")"
    pack_json="$clean_home/pack.json"
    "${clean_env[@]}" "$NPM_BIN" pack --json --ignore-scripts --pack-destination "$clean_home" > "$pack_json"
    tarball="$clean_home/$("${clean_env[@]}" "$NODE_BIN" -e '
    const fs = require("node:fs");
-   const result = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-   if (result.length !== 1 || !result[0].filename) throw new Error("expected one packed tarball");
-   process.stdout.write(result[0].filename);
-   ' "$pack_json")"
+   const [packPath, name] = process.argv.slice(1);
+   const result = JSON.parse(fs.readFileSync(packPath, "utf8"));
+   const records = Array.isArray(result) ? result :
+     result && typeof result === "object" && Object.keys(result).length === 1 && Object.hasOwn(result, name) ? [result[name]] : [];
+   const [packed] = records;
+   if (records.length !== 1 || packed?.name !== name || !packed.filename) throw new Error("expected one packed tarball for the package");
+   process.stdout.write(packed.filename);
+   ' "$pack_json" "$package_name")"
    [[ -f "$tarball" ]] || { printf 'packed tarball not found: %s\n' "$tarball" >&2; exit 1; }
    ```
 
@@ -183,7 +192,6 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 6. Verify the packed artifact from a fresh temporary project. Use an npm `file:` source so Pi exercises managed npm installation and dependency behavior; a raw tarball path is only one extension file, and an absolute source directory only proves linked local-resource loading:
 
    ```bash
-   package_name="$("${clean_env[@]}" "$NODE_BIN" -p 'require(process.argv[1]).name' "$PWD/package.json")"
    package_source="npm:${package_name}@file:${tarball}"
    target_index=0
    for PI_BIN in "${PI_TARGET_BINS[@]}"; do
@@ -321,17 +329,25 @@ Do not repack after step 3. Run the artifact-preparation shell before any push, 
   const fs = require("node:fs");
   const [path, name, version] = process.argv.slice(1);
   const result = JSON.parse(fs.readFileSync(path, "utf8"));
-  if (result.length !== 1 || result[0].name !== name || result[0].version !== version || !result[0].filename || !Array.isArray(result[0].files)) {
+  const records = Array.isArray(result) ? result :
+    result && typeof result === "object" && Object.keys(result).length === 1 && Object.hasOwn(result, name) ? [result[name]] : [];
+  const [packed] = records;
+  if (records.length !== 1 || packed?.name !== name || packed.version !== version || !packed.filename || !Array.isArray(packed.files)) {
     throw new Error("packed artifact identity or file manifest mismatch");
   }
-  process.stdout.write(result[0].filename);
+  process.stdout.write(packed.filename);
   ' "$pack_json" "$AUTHORIZED_NPM_NAME" "$AUTHORIZED_NPM_VERSION")"
   [[ -f "$tarball" ]] || { printf 'packed tarball not found: %s\n' "$tarball" >&2; exit 1; }
   "${base_env[@]}" "$NODE_BIN" -e '
   const fs = require("node:fs");
-  const [result] = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-  console.log(JSON.stringify({ name: result.name, version: result.version, filename: result.filename, files: result.files.map(({ path, size, mode }) => ({ path, size, mode })) }, null, 2));
-  ' "$pack_json"
+  const [packPath, name, version] = process.argv.slice(1);
+  const result = JSON.parse(fs.readFileSync(packPath, "utf8"));
+  const records = Array.isArray(result) ? result :
+    result && typeof result === "object" && Object.keys(result).length === 1 && Object.hasOwn(result, name) ? [result[name]] : [];
+  const [packed] = records;
+  if (records.length !== 1 || packed?.name !== name || packed.version !== version || !packed.filename || !Array.isArray(packed.files)) throw new Error("packed artifact identity or file manifest mismatch");
+  console.log(JSON.stringify({ name: packed.name, version: packed.version, filename: packed.filename, files: packed.files.map(({ path, size, mode }) => ({ path, size, mode })) }, null, 2));
+  ' "$pack_json" "$AUTHORIZED_NPM_NAME" "$AUTHORIZED_NPM_VERSION"
 
   tarball_sha256="$("${base_env[@]}" "$NODE_BIN" -e '
   const fs = require("node:fs");
@@ -422,10 +438,13 @@ For npm authentication, use the `NPM_TOKEN` already loaded from `~/.secrets`. If
   const evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
   const marker = fs.readFileSync(markerPath, "utf8").trim();
   const result = JSON.parse(fs.readFileSync(packPath, "utf8"));
+  const records = Array.isArray(result) ? result :
+    result && typeof result === "object" && Object.keys(result).length === 1 && Object.hasOwn(result, name) ? [result[name]] : [];
+  const [packed] = records;
   const expected = { name, version, registry: registry.replace(/\/+$/, ""), tag, access, gitCommit, gitTag };
   for (const [key, value] of Object.entries(expected)) if (evidence[key] !== value) throw new Error(`release evidence ${key} mismatch`);
   if (!marker || evidence.artifactId !== marker) throw new Error("release artifact marker mismatch");
-  if (result.length !== 1 || result[0].name !== name || result[0].version !== version || result[0].filename !== evidence.filename) throw new Error("release pack identity mismatch");
+  if (records.length !== 1 || packed?.name !== name || packed.version !== version || packed.filename !== evidence.filename) throw new Error("release pack identity mismatch");
   const tarball = path.join(artifactDir, evidence.filename);
   if (path.dirname(tarball) !== artifactDir) throw new Error("release tarball escaped artifact directory");
   const actualHash = crypto.createHash("sha256").update(fs.readFileSync(tarball)).digest("hex");
