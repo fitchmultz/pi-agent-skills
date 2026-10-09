@@ -4,13 +4,15 @@ This repository owns the bundled skill instructions, references, scripts, and as
 
 ## Current guidance
 
-The October 1, 2026 Pi modernization uses:
+The October 1, 2026 Pi modernization used:
 
 - [OpenAI's latest-model guide](https://developers.openai.com/api/docs/guides/latest-model), currently covering GPT-6 Astra, Sol, and Luna: infer routine intent, finish authorized work, ask only consequential questions, make instruction conflicts explicit, delegate useful independent work, and calibrate verification to the change.
 - [Agent Skills authoring practices](https://agentskills.io/skill-creation/best-practices) and [specification](https://agentskills.io/specification): precise routing descriptions, concise task-specific instructions, progressive disclosure, and scripts for fragile repeatable operations.
 - Version-matched [official Pi skill documentation](https://github.com/earendil-works/pi/blob/v1.0.0/packages/coding-agent/docs/skills.md) and the active [fitchmultz/pi fork](https://github.com/fitchmultz/pi). The [version hazards reference](../skills/pi-extension-development/references/current-version-hazards.md) owns exact inspected source identities and distribution differences.
 
 These are dated source checks, not a promise that a moving “latest” URL will stay unchanged. Recheck the relevant primary source before the next refresh. Historical release notes, migration scenarios, and evaluation reports retain the versions they actually describe.
+
+The October 9 guidance refresh uses the installed fork's c2031 revision-matched `FORK.md` and the exact released/unreleased source identities in the version hazards reference. It corrects the old five-feature candidate inventory and documents revision-specific schema/cursor contracts without rewriting historical qualification fields.
 
 ## Authoring rules
 
@@ -27,15 +29,16 @@ Run `npm test`, `npm run smoke`, and `npm run pack:check` before shipping. The d
 
 ### Minimum and current official hosts
 
-`package.json` pins the minimum supported official Pi SDK for local development and the full CI suite. The `official-current` job in `.github/workflows/ci.yml` owns the separate current-official pin, which Renovate updates. Both current-host jobs run the same native discovery and scripted-session tests through `PI_HOST_INDEX`; the current-official check also verifies the exact installed version. The current-host install never replaces the local minimum baseline.
+`package.json` pins the minimum supported official Pi SDK for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current official release and fork revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
 
-The 0.9.0 release uses the owner-selected Pi 1.0.0 modernization floor. Local and current-official pins now use 1.0.0; no older-host compatibility shim is required. This supersedes the previous 0.87.1 tooling-footprint decision without claiming 1.0 fixes every upstream cost. Guidance uses public SDK/session/runtime contracts, removes experimental harness and old fork-runtime requirements, and preserves historical evaluation results and saved-data recovery. The minimal fork keeps only restart/background_command/discover_tools/Read JSON/compactView; candidate qualification is separate from its confirmed design. Git/GitHub is the only release channel; no npm publication.
+The 0.9.0 release established the owner-selected Pi 1.0.0 modernization floor, retained for local validation. This supersedes the previous 0.87.1 tooling-footprint decision without claiming 1.0 fixes every upstream cost. Guidance uses public SDK/session/runtime contracts, removes experimental harness and old fork-runtime requirements, and preserves historical evaluation results and saved-data recovery. The five-feature 1.0 fork candidate was a dated design snapshot; the installed 1.1.0 c2031 fork has the broader inventory in its `FORK.md`. Inspecting it does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
 
-Reproduce current-official CI locally without changing the repository's dependency tree:
+Run the current-official host-sensitive checks locally without changing the repository's dependency tree. For an exact CI reproduction, select the tag from that run's frozen host receipt instead of querying the latest release:
 
 ```bash
 host_dir=$(mktemp -d)
-PI_CURRENT_VERSION=$(awk -F "'" '/PI_CURRENT_VERSION:/ { print $2; exit }' .github/workflows/ci.yml)
+PI_CURRENT_TAG=$(gh release view --repo earendil-works/pi --json tagName --jq .tagName)
+PI_CURRENT_VERSION="${PI_CURRENT_TAG#v}"
 npm install --prefix "$host_dir" --ignore-scripts --no-audit --no-fund \
   "@earendil-works/pi-coding-agent@$PI_CURRENT_VERSION"
 PI_HOST_INDEX="$host_dir/node_modules/@earendil-works/pi-coding-agent/dist/index.js" \
