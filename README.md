@@ -1,53 +1,76 @@
 # pi-agent-skills
 
-Source-managed Pi package for Mitch's reusable agent workflows. Version 0.9.2 requires Pi 1.0.0 or later and Node 24.21.0 or later.
+pi-agent-skills adds 15 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
 
-Guidance covers both official Pi and Mitch's active `fitchmultz/pi` fork; the same version string does not imply the same APIs. See [maintaining the skills](docs/maintaining-skills.md) for current sources and authoring policy, and [version hazards](skills/pi-extension-development/references/current-version-hazards.md) for the inspected host revisions.
+![A task leads Pi to a skill, its SKILL.md instructions, and the helper files that the task needs.](.github/readme/skill-workflow.png)
 
-## Skills
+*Pi reads a skill's instructions and uses its helper files when the task needs them.*
 
-- `ask-clarifying-questions`
-- `bro`
-- `clef`
-- `deslop`
-- `diagram-creation`
-- `dogfood`
-- `handoff`
-- `pi-extension-development`
-- `propose-then-ship-pi`
-- `ssh-unix-ops`
-- `tdd`
-- `test-audit`
-- `thermo-nuclear-code-quality-review`
-- `ux-review`
-- `verification-before-completion`
+## Install and try it
 
-## Install
+This package requires Pi 1.0.0 or later and Node 24.21.0 or later. Install it from Git or a local checkout. It has no npm release.
+
+Skills can tell Pi to run commands and change files. Read the [skill instructions](#skills) before you install this package.
 
 ```bash
 pi install git:github.com/fitchmultz/pi-agent-skills
+pi
 ```
 
-## Validate
+Enter this command in Pi:
 
-```bash
-npm ci --ignore-scripts
-npm run check:compat
-npm run smoke
+```text
+/skill:deslop remove redundant code from this diff and preserve its behavior
 ```
 
-Asset/discovery validation uses the minimum supported Pi development baseline pinned in `package.json`. `check:compat` runs the existing content/helper tests and pack check; `smoke` is the native discovery test, also included in `npm test`. It packs the real skills, checks that every helper/reference survives, and loads all bundled skills through the selected Pi SDK in an isolated profile. Offline tests also exercise native evaluation sessions with a scripted model stream; they do not establish model-backed skill quality. Pull-request CI resolves and freezes the current official release and fork revision, then runs contracts and host-sensitive discovery/scripted runtime checks for each. The supported development floor remains official 1.0.0. Dated source inventories distinguish the installed c2031 fork from historical 1.0 qualification and the unreleased schema/cursor target; neither inspection nor a matching version string qualifies a future build. No live runtime activation is part of qualification.
+## Choose a skill
 
-The suite uses Node 24. Exact official and fork source baselines are recorded in the Pi extension skill's version hazards reference. CI installs D2 and librsvg to run the diagram rendering tests.
+Pi can choose a skill from your request. For example, ask it to review a PR for usability problems.
 
-## Model evaluations
+Enter `/skill:name` to choose a skill yourself:
 
-Run opt-in task and routing evaluations through the actual Pi SDK and configured model provider:
-
-```bash
-npm run eval:model -- --case clarify-and-continue
+```text
+/skill:tdd add a failing test, then fix the bug
+/skill:diagram-creation draw the request flow for this service
+/skill:bro
 ```
 
-See [Skill evaluations](docs/evaluations.md) for both-host comparisons, repeated and held-out cases, caller profiles, and fixture limitations. Live model evaluations are local and opt-in. The [0.7.0 results](docs/evaluation-results.md) include exact outcomes, retained failures, source identities, and evidence. No model credentials are needed for the normal test suite.
+`bro` requires an explicit command.
 
-This repository is private to npm publishing. Install it from git or a local checkout.
+Some skills require extra tools. The skill pages below list their requirements.
+
+## Skills
+
+| Skill | Use it for |
+| --- | --- |
+| [`ask-clarifying-questions`](skills/ask-clarifying-questions/SKILL.md) | Settle a decision that could change what gets built. |
+| [`bro`](skills/bro/SKILL.md) | Restate the previous response in plain language. |
+| [`clef`](skills/clef/SKILL.md) | Evaluate text or JSON with Cloudflare's decision models. |
+| [`deslop`](skills/deslop/SKILL.md) | Remove AI-generated noise from a branch or PR. |
+| [`diagram-creation`](skills/diagram-creation/SKILL.md) | Create diagrams with editable SVG or D2 source. |
+| [`dogfood`](skills/dogfood/SKILL.md) | Test browser flows and capture evidence of UI problems. |
+| [`handoff`](skills/handoff/SKILL.md) | Write instructions for the next session or a delegated task. |
+| [`pi-extension-development`](skills/pi-extension-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
+| [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. |
+| [`ssh-unix-ops`](skills/ssh-unix-ops/SKILL.md) | Work on Linux, macOS, or WSL2 hosts over SSH. |
+| [`tdd`](skills/tdd/SKILL.md) | Write a test that fails, make it pass, then refactor. |
+| [`test-audit`](skills/test-audit/SKILL.md) | Find brittle or redundant tests and check the value of new tests. |
+| [`thermo-nuclear-code-quality-review`](skills/thermo-nuclear-code-quality-review/SKILL.md) | Review a branch or PR for maintainability problems. |
+| [`ux-review`](skills/ux-review/SKILL.md) | Review user-facing changes for usability and complete workflows. |
+| [`verification-before-completion`](skills/verification-before-completion/SKILL.md) | Check the evidence before you claim that work is complete. |
+
+## Compatibility
+
+The skills support official Pi and [`fitchmultz/pi`](https://github.com/fitchmultz/pi). Their extension APIs can differ even when their version numbers match. Read the [version hazards reference](skills/pi-extension-development/references/current-version-hazards.md) before you build an extension.
+
+## Development and evaluations
+
+Read the [maintenance guide](docs/maintaining-skills.md) to change a skill or run local checks. Normal tests need no model credentials.
+
+Live model evaluations can incur provider charges. Read the [evaluation guide](docs/evaluations.md) before you run them. The [0.7.0 results](docs/evaluation-results.md) document a past comparison and its limits.
+
+The [changelog](CHANGELOG.md) records changes to this package.
+
+## License
+
+[MIT](LICENSE) © Mitch Fultz.

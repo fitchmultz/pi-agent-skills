@@ -25,11 +25,26 @@ The October 9 guidance refresh uses the installed fork's c2031 revision-matched 
 
 ## Validation
 
-Run `npm test`, `npm run smoke`, and `npm run pack:check` before shipping. The discovery check packs the real bundle and verifies that all skills and supporting files survive installation. Validate host-sensitive behavior against the minimum official Pi baseline, current official Pi, and the current fork, recording their exact identities.
+Use Node 24 (at least 24.21.0) and install the development dependencies before running the checks:
+
+```bash
+npm ci --ignore-scripts
+npm test
+npm run smoke
+npm run pack:check
+```
+
+`npm run check:compat` combines `npm test` and the pack check. `smoke` runs the native discovery test separately; it is also included in `npm test`.
+
+The discovery check packs the real skills, verifies that every bundled helper, reference, and asset survives, and loads the skills through the selected Pi SDK and bundled CLI in an isolated profile. Offline evaluation tests also exercise native Pi sessions with a scripted model stream. These checks do not establish model-backed skill quality, and normal tests need no model credentials. CI installs D2 and librsvg for the diagram rendering tests.
+
+Validate host-sensitive behavior against the minimum official Pi baseline, current official Pi, and the current fork, recording their exact identities. No live runtime activation is part of qualification.
 
 ### Minimum and current official hosts
 
 `package.json` pins the minimum supported official Pi SDK for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current official release and fork revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
+
+The supported development floor remains official Pi 1.0.0. Dated source inventories distinguish the installed c2031 fork from historical 1.0 qualification and the unreleased schema/cursor target. An inspection or matching version string does not qualify a future build; the [version hazards reference](../skills/pi-extension-development/references/current-version-hazards.md) records the exact official and fork source baselines.
 
 The 0.9.0 release established the owner-selected Pi 1.0.0 modernization floor, retained for local validation. This supersedes the previous 0.87.1 tooling-footprint decision without claiming 1.0 fixes every upstream cost. Guidance uses public SDK/session/runtime contracts, removes experimental harness and old fork-runtime requirements, and preserves historical evaluation results and saved-data recovery. The five-feature 1.0 fork candidate was a dated design snapshot; the installed 1.1.0 c2031 fork has the broader inventory in its `FORK.md`. Inspecting it does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
 
