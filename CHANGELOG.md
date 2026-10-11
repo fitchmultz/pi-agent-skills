@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Rewrite the README with a human-focused install path, practical skill guide, and editable workflow diagram; move detailed validation guidance into the maintenance guide.
+
 ## [0.9.2] - 2026-10-09
 
 - Refresh Pi extension development guidance against installed fork c2031's full `FORK.md` inventory and `docs/instruction-groups.md`, distinguishing current installed source from historical 1.0 qualification and the unreleased upstream target.

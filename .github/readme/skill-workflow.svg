@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560" role="img" aria-labelledby="title desc">
+  <title id="title">How pi-agent-skills fits into a Pi session</title>
+  <desc id="desc">After installing the bundle, describe a task or invoke a skill explicitly. Pi selects a workflow, reads its SKILL.md, and follows the steps with supporting files as needed.</desc>
+  <!-- Semantic sources: package.json pi.skills, Pi docs/skills.md, and skills/*/SKILL.md. -->
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#060A12"/>
+      <stop offset="0.52" stop-color="#0B1120"/>
+      <stop offset="1" stop-color="#080C16"/>
+    </linearGradient>
+    <radialGradient id="blueBloom" cx="0.18" cy="0.18" r="0.8">
+      <stop stop-color="#2563EB" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#2563EB" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violetBloom" cx="0.65" cy="0.5" r="0.7">
+      <stop stop-color="#8B5CF6" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#172238" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#0E1525" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="focus" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#172554" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#312E81" stop-opacity="0.58"/>
+    </linearGradient>
+    <pattern id="dotGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.2" fill="#94A3B8" fill-opacity="0.09"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#02040A" flood-opacity="0.5"/>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#60A5FA"/>
+    </marker>
+    <marker id="arrowViolet" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#A78BFA"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M1 1 11 6 1 11Z" fill="#6EE7B7"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, ui-sans-serif, Arial, sans-serif; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .card-title { font: 650 32px Inter, ui-sans-serif, Arial, sans-serif; fill: #F8FAFC; }
+      .card-copy { font: 450 26px Inter, ui-sans-serif, Arial, sans-serif; fill: #A7B5CB; }
+      .step { font: 700 24px "JetBrains Mono", ui-monospace, monospace; }
+      .connector { fill: none; stroke-width: 3.5; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <!-- Solid canvas and restrained starter-token depth. -->
+  <rect width="1600" height="560" fill="url(#canvas)"/>
+  <rect width="1600" height="560" fill="url(#blueBloom)"/>
+  <rect width="1600" height="560" fill="url(#violetBloom)"/>
+  <rect width="1600" height="560" fill="url(#dotGrid)"/>
+  <g class="sans">
+    <text x="64" y="86" font-size="48" font-weight="700" letter-spacing="-1" fill="#F8FAFC">A workflow when you need it</text>
+    <text x="64" y="134" font-size="28" fill="#A7B5CB">Install the bundle once. Choose from 15 reusable skills in your Pi session.</text>
+  </g>
+
+  <!-- Three ordered edges; the explicit command is another way to choose step 2. -->
+  <g>
+    <path d="M360 336H402" class="connector" stroke="#60A5FA" marker-end="url(#arrowBlue)"/>
+    <path d="M756 336H798" class="connector" stroke="#A78BFA" marker-end="url(#arrowViolet)"/>
+    <path d="M1148 336H1190" class="connector" stroke="#6EE7B7" marker-end="url(#arrowGreen)"/>
+  </g>
+
+  <!-- User entry, Pi's selection, loaded source, and applied guidance. -->
+  <g filter="url(#shadow)" class="sans">
+    <g transform="translate(64 204)">
+      <rect width="296" height="252" rx="24" fill="url(#glass)" stroke="#2A3851"/>
+      <circle cx="44" cy="44" r="22" fill="#60A5FA" fill-opacity="0.13"/>
+      <text x="44" y="52" text-anchor="middle" class="step" fill="#93C5FD">1</text>
+      <text x="28" y="108" class="card-title">Describe a task</text>
+      <text x="28" y="152" class="card-copy">Review a change,</text>
+      <text x="28" y="187" class="card-copy">test a fix, or draw</text>
+      <text x="28" y="222" class="card-copy">a service flow.</text>
+    </g>
+    <g transform="translate(408 204)">
+      <rect width="348" height="252" rx="24" fill="url(#focus)" stroke="#6D7DFF" stroke-opacity="0.62"/>
+      <circle cx="44" cy="44" r="22" fill="#A78BFA" fill-opacity="0.17"/>
+      <text x="44" y="52" text-anchor="middle" class="step" fill="#D8B4FE">2</text>
+      <rect x="212" y="24" width="108" height="38" rx="19" fill="#0C1425" stroke="#51426F"/>
+      <text x="266" y="50" text-anchor="middle" class="mono" font-size="23" fill="#D8B4FE">Pi</text>
+      <text x="28" y="108" class="card-title">Pick a skill</text>
+      <text x="28" y="152" class="card-copy">Pi can match the task.</text>
+      <text x="28" y="187" class="card-copy">Or choose one with</text>
+      <text x="28" y="222" class="mono" font-size="26" fill="#D8B4FE">/skill:name</text>
+    </g>
+    <g transform="translate(804 204)">
+      <rect width="344" height="252" rx="24" fill="url(#glass)" stroke="#3D365C"/>
+      <circle cx="44" cy="44" r="22" fill="#A78BFA" fill-opacity="0.13"/>
+      <text x="44" y="52" text-anchor="middle" class="step" fill="#D8B4FE">3</text>
+      <text x="28" y="108" class="card-title">Read SKILL.md</text>
+      <text x="28" y="152" class="card-copy">Load the workflow's</text>
+      <text x="28" y="187" class="card-copy">full instructions</text>
+      <text x="28" y="222" class="card-copy">when needed.</text>
+    </g>
+    <g transform="translate(1196 204)">
+      <rect width="340" height="252" rx="24" fill="url(#glass)" stroke="#2D4E46"/>
+      <circle cx="44" cy="44" r="22" fill="#6EE7B7" fill-opacity="0.13"/>
+      <text x="44" y="52" text-anchor="middle" class="step" fill="#6EE7B7">4</text>
+      <text x="28" y="108" class="card-title">Follow its steps</text>
+      <text x="28" y="152" class="card-copy">Use bundled helpers,</text>
+      <text x="28" y="187" class="card-copy">references, and assets</text>
+      <text x="28" y="222" class="card-copy">as the task needs.</text>
+    </g>
+  </g>
+  <text x="64" y="517" class="sans" font-size="27" fill="#A7B5CB">Skills add task-specific guidance; your session's tools carry out the work.</text>
+</svg>
