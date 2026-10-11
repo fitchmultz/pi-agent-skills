@@ -4,8 +4,6 @@ pi-agent-skills adds 15 task workflows to [Pi](https://pi.dev), the coding agent
 
 ![A task leads Pi to a skill, its SKILL.md instructions, and the helper files that the task needs.](.github/readme/skill-workflow.png)
 
-*Pi reads a skill's instructions and uses its helper files when the task needs them.*
-
 ## Install and try it
 
 This package requires Pi 1.0.0 or later and Node 24.21.0 or later. Install it from Git or a local checkout. It has no npm release.
