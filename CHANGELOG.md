@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Add `code-smells`: a read-only current-project or scoped smell inventory inspired by Orrery, combining structural evidence with full Clef judgments through Cloudflare AI Gateway.
 - Rewrite the README with a human-focused install path, practical skill guide, and editable workflow diagram; move detailed validation guidance into the maintenance guide.
 
 ## [0.9.2] - 2026-10-09
