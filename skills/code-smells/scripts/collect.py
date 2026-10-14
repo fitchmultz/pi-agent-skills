@@ -90,19 +90,19 @@ def filesystem_inventory(root, scopes):
     pending = [(root, [])]
     while pending:
         directory, inherited = pending.pop()
-        rules = inherited
-        ignore = directory / ".gitignore"
-        if ignore.is_file() and not ignore.is_symlink():
-            try:
-                spec = GitIgnoreSpec.from_lines(ignore.read_text(encoding="utf-8-sig").splitlines())
-                rules = [*inherited, (directory, spec)]
-            except (OSError, UnicodeError, ValueError) as error:
-                errors.append({"path": ignore.relative_to(root).as_posix(), "error": str(error)})
         try:
             entries = sorted(directory.iterdir())
         except OSError as error:
             errors.append({"path": directory.relative_to(root).as_posix(), "error": str(error)})
             continue
+        rules = inherited
+        ignore = directory / ".gitignore"
+        try:
+            if ignore.is_file() and not ignore.is_symlink():
+                spec = GitIgnoreSpec.from_lines(ignore.read_text(encoding="utf-8-sig").splitlines())
+                rules = [*inherited, (directory, spec)]
+        except (OSError, UnicodeError, ValueError) as error:
+            errors.append({"path": ignore.relative_to(root).as_posix(), "error": str(error)})
         for path in entries:
             if not (selected(path, scopes) or any(within(scope, path) for scope in scopes)):
                 continue
