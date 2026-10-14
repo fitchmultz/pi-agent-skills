@@ -64,6 +64,25 @@ jobs:
           mkdir "$RUNNER_TEMP/d2"
           tar -xzf "$RUNNER_TEMP/d2.tar.gz" -C "$RUNNER_TEMP/d2"
           sudo install -m 755 "$(find "$RUNNER_TEMP/d2" -type f -name d2 -print -quit)" /usr/local/bin/d2
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Install PMD for real code-smell helper checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          dir="$RUNNER_TEMP/code-smells-pmd"
+          mkdir "$dir"
+          gh api repos/pmd/pmd/releases/latest > "$dir/release.json"
+          jq -e '[.assets[] | select(.name | startswith("pmd-dist-")) | select(.name | endswith("-bin.zip"))] |
+            if length == 1 then .[0] else error("Expected one PMD binary distribution") end' \
+            "$dir/release.json" > "$dir/asset.json"
+          url="$(jq -r .browser_download_url "$dir/asset.json")"
+          digest="$(jq -er '.digest | select(test("^sha256:[0-9a-f]{64}$"))' "$dir/asset.json")"
+          curl -fL --retry 1 "$url" -o "$dir/pmd.zip"
+          printf '%s  %s\n' "${digest#sha256:}" "$dir/pmd.zip" | sha256sum -c -
+          unzip -q "$dir/pmd.zip" -d "$dir"
+          bin="$(find "$dir" -type f -path '*/bin/pmd' -print -quit)"
+          "$bin" --version
+          dirname "$bin" >> "$GITHUB_PATH"
       - name: Build and pack the frozen fork
         if: matrix.host == 'fork'
         working-directory: fork

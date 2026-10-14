@@ -1,24 +1,21 @@
 # Full Clef through Cloudflare AI Gateway
 
-Use Pi's native classifier API, not a chat completion or a custom HTTP client.
-The classifier provider is `cloudflare-workers-ai`; the exact model ID is
-`@cf/cloudflare/clef`. Provider naming alone does not establish Gateway routing.
+Use Pi's native classifier SDK through `scripts/classify.mjs`, not a chat
+completion or a custom authentication/HTTP implementation. The classifier
+provider is `cloudflare-workers-ai`; the exact model is `@cf/cloudflare/clef`.
+Its provider name alone does not prove Gateway routing.
 
 ## Required route
 
-Cloudflare supports Gateway routing on the Workers AI REST endpoint
+Cloudflare supports Gateway routing on
 `https://api.cloudflare.com/client/v4/accounts/{account}/ai/run` through the
-**`cf-aig-gateway-id` request header**. The API hostname is therefore compatible
-with Gateway use; a bare request without that header is not.
+**`cf-aig-gateway-id` request header**. The API hostname is compatible with
+Gateway use; a bare request without that header is not.
 
-The Workers AI credential needs the account ID and Workers AI access. Use the
-user's existing Gateway ID for that account. An authenticated
-`cloudflare-ai-gateway` chat provider does not automatically route classifiers.
-
-On Pi versions supporting provider headers, this is the relevant fragment of
-the agent directory's `models.json` (`PI_CODING_AGENT_DIR`, otherwise
-`~/.pi/agent`). It is setup guidance, not permission to change configuration
-during a read-only scan:
+The Workers AI credential needs the account ID and Workers AI access. Reuse the
+existing Gateway ID for that account. An authenticated `cloudflare-ai-gateway`
+chat provider does not automatically route classifiers. On hosts supporting
+provider headers, the relevant agent-directory `models.json` fragment is:
 
 ```json
 {
@@ -32,70 +29,76 @@ during a read-only scan:
 }
 ```
 
-Merge only the header into existing configuration when setup is authorized;
-preserve other providers, headers, and credentials. Provider-level headers affect
-all models on that provider. Environment interpolation is also possible when the
-Gateway ID is available in that provider's credential environment or process
+The directory is `PI_CODING_AGENT_DIR`, otherwise `~/.pi/agent`. This is setup
+guidance, not authority to alter configuration during a read-only scan. When
+setup is authorized, merge the header without replacing other providers,
+headers, or credentials. It affects all models on that provider. Environment
+interpolation needs the variable in that provider's credential/process
 environment; another provider's credential environment is not inherited.
-Never print API keys, bearer headers, or the whole credential file.
+Never print keys, bearer headers, or the whole credential file.
 
-Load changed configuration with `/reload` before using native classifiers.
-Verify the effective Gateway header belongs to the current session's loaded
-configuration. Do not assume a file changed after session startup is active.
-On the inspected Pi implementation, per-model `modelOverrides` apply to chat
-models, not classifiers. Passing a fabricated `headers` or `baseUrl` field to
-codemode's `models.classify` also does not override transport: it re-resolves the
-model by provider and ID.
+The helper starts a fresh native SDK runtime, so it reads current configuration.
+For ad-hoc codemode calls in an existing session, load changed configuration with
+`/reload` first. Per-model `modelOverrides` are chat-only on the inspected host;
+fabricated model-object headers/baseUrl also do not override codemode transport.
 
-For a new setup, qualify routing with a small synthetic classification and a
-Gateway receipt: for example, `cf-aig-log-id` from an SDK `onResponse` observer
-or the matching request in Gateway logs. Native codemode returns answers and
-usage, not raw HTTP headers. A catalog entry or successful answer alone does
-not prove the request traversed Gateway. Reuse still-valid setup verification
-while its route/configuration is unchanged; report any unavailable log evidence
-honestly.
+The runner verifies the effective header before inference, checks each actual
+outgoing request's exact account endpoint, Gateway header, and model, and requires
+`cf-aig-log-id` on a successful response. It uses a native in-memory credential
+snapshot with normal key/template/command resolution, without writing credential
+storage. A changed environment cannot redirect later jobs under the original
+route fingerprint. It has no direct, Flash, chat-model, or OpenRouter fallback.
+A catalog entry or successful answer without a Gateway receipt is insufficient. Native
+codemode's answers do not expose raw response headers; use the helper or a
+supported SDK observer when qualifying a route.
 
-## Native classification
+## Evidence size and actual service limits
 
-After verifying the route, build `state` from the inspected candidate evidence
-and `questions` from the smell rubric. A boolean question has `type: "bool"`,
-`instructions`, and `criteria: { true: "...", false: "..." }`.
+Full Clef has a **65,536-token context**. Cloudflare also documents a **13 MiB
+request-body ceiling**. These are actual provider limits, not skill-owned scan
+budgets. They do not justify a maximum number of files, candidates, or calls.
 
-Run inside `codemode`:
+The current [Clef schema](https://developers.cloudflare.com/workers-ai/models/clef/schema-input.json)
+has no documented truncation-off switch or preflight token-count operation.
+Cloudflare states that long text state is truncated to fit the context left by
+questions. Usage reports tokens used, not original input length or a truncation
+marker. A successful response does not establish complete evidence ingestion.
+Do not invent a bytes-to-tokens safety cutoff or claim the runner prevents
+service-side truncation.
 
-```js
-const model = (await models.getAvailableOfType("classifier", "cloudflare-workers-ai"))
-  .find(candidate => candidate.id === "@cf/cloudflare/clef");
-if (!model) throw new Error("Full Clef is unavailable; no substitute route or model.");
-const result = await models.classify(model, { state, questions });
-if (result.stopReason !== "stop") {
-  throw new Error(result.errorMessage || result.stopReason);
-}
-return { model: result.model, answers: result.answers, usage: result.usage };
-```
+Build jobs from complete logical evidence units. For large responsibilities,
+review all functions/parts, ask focused questions about each, then reconcile the
+cross-part behavior and relevant contracts in the parent model. Never keep only
+file heads or silently drop later files, summaries, callers, or occurrences.
+Retain the manifest and review coverage so every in-scope area is accounted for.
+If necessary evidence cannot be evaluated reliably, name the unresolved question
+instead of reporting a negative judgment or clean scope. The runner sends state
+unchanged, records the lack of provider completeness attestation, and marks an
+exhausted advertised context or provider rejection as an unassessed/error job.
 
-Boolean answers have `{ type: "bool", probability: number }`. Verify the expected
-question IDs and answer types before applying the rubric's triage thresholds.
-Use one state per candidate or duplicate pair. Independent calls can run
-concurrently; Pi queues beyond four concurrent model calls per script.
+## Interpreting answers
 
-Full Clef has a 65,536-token context. Keep source, context, and questions within
-it, reading and selecting complete relevant evidence instead of relying on
-service truncation. Provider errors resolve as non-`stop` results; an error or a
-missing answer is an unassessed candidate, never a negative smell judgment.
-If the required route or full model is unavailable, keep the local findings and
-state that the Clef pass is blocked. Do not bypass Gateway or use Flash,
-OpenRouter, or a chat-model fallback.
+Use the rubric's explicit `supported`, `not_supported`, and
+`insufficient_evidence` choices. Other native question types are available when
+useful, but there is no confidence cutoff. The runner preserves typed answers
+and probabilities without selecting findings. Missing answers, wrong types,
+provider failures, and missing Gateway receipts cannot count as negative smell
+judgments. Resolve their cause and resume; keep independently supported local
+findings distinct.
+
+Only the parent model has the full investigation context. Corroborate semantics,
+write explanations from source, and rank findings there. A user-requested output
+count never becomes a classifier-call budget.
 
 ## Sources and qualification
 
-- [Cloudflare Gateway REST API](https://developers.cloudflare.com/ai-gateway/usage/rest-api/)
+- [Gateway REST API](https://developers.cloudflare.com/ai-gateway/usage/rest-api/)
 - [Workers AI Gateway integration](https://developers.cloudflare.com/ai-gateway/usage/providers/workersai/)
-- [Full Clef model](https://developers.cloudflare.com/workers-ai/models/clef/)
+- [Full Clef model and limits](https://developers.cloudflare.com/workers-ai/models/clef/)
 - [Gateway response log ID](https://developers.cloudflare.com/ai-gateway/evaluations/add-human-feedback-api/#2-retrieve-the-cf-aig-log-id)
-- Pi's installed `docs/codemode.md` and `docs/models.md` for the active host API.
+- Active Pi's `docs/codemode.md` and `docs/models.md` for native API details.
 
 The header route was live-verified on October 14, 2026 with Pi fork revision
-`2c0c794053ee5e86ecd25d6c4d0979cf837756f7`: native full-Clef classification
-returned a typed boolean answer and Gateway response headers including
-`cf-aig-log-id`. This qualifies that setup, not every Pi version or credential.
+`2c0c794053ee5e86ecd25d6c4d0979cf837756f7`: native full-Clef calls returned typed
+answers and Gateway response receipts. This qualifies that setup, not every
+host version, source-evidence size, or credential.

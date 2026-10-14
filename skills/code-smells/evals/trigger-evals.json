@@ -1,5 +1,6 @@
 [
   {"query":"Find and list code smells in this project.","should_trigger":true,"reason":"Default current-project smell inventory."},
+  {"query":"Give me the top 10 code smells in this project.","should_trigger":true,"reason":"Full-scope analysis with user-selected presentation size."},
   {"query":"Scan packages/auth for duplicated behavior and mixed responsibilities.","should_trigger":true,"reason":"Explicitly scoped structural and semantic smell scan."},
   {"query":"Where are the junk drawers and tangled dependencies in this codebase? Give me an inventory, no edits.","should_trigger":true,"reason":"Read-only project-wide smell detection."},
   {"query":"Check only session storage and token refresh for code smells.","should_trigger":true,"reason":"User-selected subsystem, not necessarily one directory."},

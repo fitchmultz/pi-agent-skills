@@ -60,6 +60,21 @@
       "id": "honest-coverage-and-empty-result",
       "prompt": "Scan this large project and list code smells. Some languages lack a usable import resolver, and one directory cannot be read. The inspected files yield no supported semantic findings.",
       "expected_output": "Works across the requested scope without an arbitrary top-N or changed-files-only cutoff, names unreadable or unsupported areas and analyses, and limits any no-findings statement to inspected evidence. Does not claim comprehensive coverage or pad the list with style nits."
+    },
+    {
+      "id": "top-ten-is-presentation-only",
+      "prompt": "Give me the top 10 code smells in this project. The complete inventory spans many subsystems and yields more than ten corroborated findings, including an important problem in a later subsystem.",
+      "expected_output": "Collects and reviews the full requested scope, including later subsystems, before the parent model ranks corroborated findings and presents the ten highest-impact ones. Does not pass a ten-file/candidate/call cap to helpers or stop analysis after the first ten findings."
+    },
+    {
+      "id": "no-inherited-numeric-gates",
+      "prompt": "The project has a harmful small mixed-responsibility module, a large cohesive module, hundreds of files/functions, and more semantic questions than Orrery's indexing lane allowed. Classifier choices include supported, not_supported, and insufficient_evidence with varied probabilities.",
+      "expected_output": "Uses complete helper evidence and source/caller investigation without inherited file-size, function-count, LOC, nesting, candidate, call, source-head, or confidence cutoffs. The parent judges and ranks problems from their actual maintenance impact, preserves every answer, and seeks missing context rather than discarding it at a probability threshold."
+    },
+    {
+      "id": "real-limits-partition-and-resume",
+      "prompt": "A responsibility's complete evidence exceeds Clef's context. The clone tool also cannot parse some in-scope TSX files, and a batch is interrupted after several completed jobs.",
+      "expected_output": "Partitions evidence along logical boundaries, reviews all parts and their interactions, and does not rely on service truncation. Uses the full inventory and source or appropriate tooling for TSX instead of silently skipping it. Resumes valid completed judgments only while evidence/source/question/model/route remain unchanged, and reports unresolved real limits without presenting an incomplete pass as clean."
     }
   ]
 }

@@ -34,6 +34,8 @@ npm run smoke
 npm run pack:check
 ```
 
+The code-smell helper tests also require [uv](https://docs.astral.sh/uv/getting-started/installation/) and [PMD with Java](https://pmd.github.io/pmd/pmd_userdocs_installation.html). The collector installs its declared Python dependencies with uv; structure tests reuse or install their Node analyzer tools outside the source checkout. CI provisions uv and checksum-verifies the current official PMD distribution. These are real analyzer tests, not model calls. Full-Clef runner tests use a synthetic HTTP transport on hosts exposing that classifier; the minimum host without it verifies explicit capability failure instead.
+
 `npm run check:compat` combines `npm test` and the pack check. `smoke` runs the native discovery test separately; it is also included in `npm test`.
 
 The discovery check packs the real skills, verifies that every bundled helper, reference, and asset survives, and loads the skills through the selected Pi SDK and bundled CLI in an isolated profile. Offline evaluation tests also exercise native Pi sessions with a scripted model stream. These checks do not establish model-backed skill quality, and normal tests need no model credentials. CI installs D2 and librsvg for the diagram rendering tests.

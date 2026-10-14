@@ -10,7 +10,6 @@ import { fileURLToPath } from 'node:url';
 const script = fileURLToPath(new URL('../skills/code-smells/scripts/structure.mjs', import.meta.url));
 const temporary = mkdtempSync(path.join(os.tmpdir(), 'code-smells-structure-test-'));
 const tools = process.env.CODE_SMELLS_TOOLS_DIR ?? path.join(temporary, 'tools');
-const pmdAvailable = spawnSync('pmd', ['--version'], { stdio: 'ignore' }).status === 0;
 after(() => rmSync(temporary, { recursive: true, force: true }));
 
 function fixture(name, sources) {
@@ -42,6 +41,8 @@ test('CLI retains complete cyclic components and exposes parser/resolver gaps', 
     'c.ts': 'import { b } from "./b"; export const c = b;\n',
     'self.cjs': 'require("./self.cjs");\n',
     'esm.mjs': 'import "./self.cjs";\n',
+    'entry.js': 'import "./node_modules_tools.js";\n',
+    'node_modules_tools.js': 'import "./entry.js";\n',
     'bad.ts': 'import { broken syntax!!!;\n',
     'bad.js': 'export function broken( {\n',
     'missing.ts': 'import "./not-there";\n',
@@ -59,6 +60,8 @@ test('CLI retains complete cyclic components and exposes parser/resolver gaps', 
   assert.deepEqual(component.members, ['a.ts', 'b.ts', 'c.ts']);
   assert.deepEqual(component.edges.map(({ from, to }) => `${from}->${to}`).sort(), ['a.ts->b.ts', 'a.ts->c.ts', 'b.ts->a.ts', 'c.ts->b.ts']);
   assert.ok(graph.cyclicComponents.some(group => group.members.length === 1 && group.members[0] === 'self.cjs'));
+  assert.ok(graph.cyclicComponents.some(group => group.members.join(',') === 'entry.js,node_modules_tools.js'),
+    'Authored filenames containing node_modules must retain their dependency edges');
   assert.deepEqual(graph.graph['esm.mjs'], ['self.cjs']);
   assert.deepEqual(graph.parseErrors.map(file => file.path).sort(), ['bad.js', 'bad.ts']);
   assert.ok(graph.parseErrors.every(file => file.error.length > 0));
@@ -67,13 +70,13 @@ test('CLI retains complete cyclic components and exposes parser/resolver gaps', 
   assert.ok(!('../outside.ts' in graph.graph));
   assert.deepEqual(graph.unsupported.map(file => file.path), ['other.py']);
   assert.equal(graph.coverage.parseErrors, 2);
-  assert.equal(graph.coverage.edges, 6);
-  assert.ok(result.report.tools.versions.madge);
+  assert.equal(graph.coverage.edges, 8);
+  assert.ok(result.report.tools.versions.precinct);
 });
 
 // Contract: no file-size or occurrence cap; cross-file lexical evidence is kept
 // for every supported group, with lossless original paths and explicit coverage.
-test('CLI keeps large files, every clone occurrence, languages, unusual paths and CPD errors', { skip: !pmdAvailable }, () => {
+test('CLI keeps large files, every clone occurrence, languages, unusual paths and CPD errors', () => {
   const implementations = {
     js: 'function bill(items) {\n let total = 0;\n for (const item of items) {\n  if (item.active) total += item.price;\n }\n return total;\n}\n',
     ts: 'function bill(items: any[]) {\n let total = 0;\n for (const item of items) {\n  if (item.active) total += item.price;\n }\n return total;\n}\n',
@@ -126,13 +129,11 @@ test('CLI keeps large files, every clone occurrence, languages, unusual paths an
 // outside its inventory root, and stale inventory hashes cannot certify new code.
 test('CLI preserves existing outputs and refuses stale or escaping inventory evidence', () => {
   const input = fixture('safety', { 'valid.js': 'export const stable = 42;\n' });
-  if (pmdAvailable) {
-    const clean = collect(input, 'clean');
-    assert.equal(clean.status, 0, clean.stderr);
-    assert.equal(clean.report.status, 'complete');
-    assert.deepEqual(clean.report.duplicates.groups[0].missing, []);
-    assert.equal(clean.report.graph.coverage.nodes, 1);
-  }
+  const clean = collect(input, 'clean');
+  assert.equal(clean.status, 0, clean.stderr);
+  assert.equal(clean.report.status, 'complete');
+  assert.deepEqual(clean.report.duplicates.groups[0].missing, []);
+  assert.equal(clean.report.graph.coverage.nodes, 1);
   const existing = path.join(input.directory, 'existing');
   mkdirSync(existing);
   writeFileSync(path.join(existing, 'structure.json'), 'valuable existing report');

@@ -128,6 +128,19 @@ test("default Git root and repeated scopes differ from an explicit subtree root"
   assert.deepEqual(subEvidence.files.map(({ path: name }) => name), ["a.py", "nested/b.py"]);
 });
 
+test("a scope inside a tracked submodule retains its unexpanded repository boundary", (t) => {
+  const f = fixture(t, true);
+  f.write("packages/module/src/logic.py", "def maintained():\n    return 1\n");
+  f.git("update-index", "--add", "--cacheinfo", `160000,${"1".repeat(40)},packages/module`);
+  const evidence = f.collect(["--scope", "packages/module/src"]);
+  assert.deepEqual(evidence.scopes, ["packages/module/src"]);
+  assert.deepEqual(evidence.files.map(({ path: name, status }) => ({ path: name, status })), [
+    { path: "packages/module", status: "submodule" },
+  ]);
+  assert.equal(evidence.coverage.inventory_complete, false);
+  assert.equal(evidence.coverage.functions, 0, "The parent must expand the recorded repository separately");
+});
+
 test("non-Git traversal honors nested ignore rules, negation and hidden maintained sources", (t) => {
   const f = fixture(t);
   f.write(".gitignore", "ignored/\n*.tmp\nsrc/*.py\n!src/keep.py\n");

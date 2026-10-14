@@ -32,6 +32,7 @@ Enter `/skill:name` to choose a skill yourself:
 /skill:diagram-creation draw the request flow for this service
 /skill:code-smells
 /skill:code-smells packages/server/src/auth
+/skill:code-smells give me the top 10
 /skill:bro
 ```
 
@@ -46,7 +47,7 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`ask-clarifying-questions`](skills/ask-clarifying-questions/SKILL.md) | Settle a decision that could change what gets built. |
 | [`bro`](skills/bro/SKILL.md) | Restate the previous response in plain language. |
 | [`clef`](skills/clef/SKILL.md) | Evaluate text or JSON with Cloudflare's decision models. |
-| [`code-smells`](skills/code-smells/SKILL.md) | List code smells across the current project or a selected area, using full Clef through Cloudflare AI Gateway. |
+| [`code-smells`](skills/code-smells/SKILL.md) | Analyze the current project or a selected area with evidence helpers and full Clef through Cloudflare AI Gateway; rank any requested top-N list after analysis. |
 | [`deslop`](skills/deslop/SKILL.md) | Remove AI-generated noise from a branch or PR. |
 | [`diagram-creation`](skills/diagram-creation/SKILL.md) | Create diagrams with editable SVG or D2 source. |
 | [`dogfood`](skills/dogfood/SKILL.md) | Test browser flows and capture evidence of UI problems. |

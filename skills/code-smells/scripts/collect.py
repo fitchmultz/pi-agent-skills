@@ -61,16 +61,21 @@ def git_inventory(root, scopes):
     if root in scopes:
         paths = []
 
-    def listing(*options):
-        result = git(root, "ls-files", "-z", *options, "--", *paths)
+    def listing(*options, scoped=True):
+        result = git(root, "ls-files", "-z", *options, "--", *(paths if scoped else []))
         if result.returncode:
             raise ValueError(os.fsdecode(result.stderr).strip())
         return [os.fsdecode(p) for p in result.stdout.split(b"\0") if p]
 
     files = {}
-    for entry in listing("--cached", "--stage"):
+    # A pathspec inside a gitlink omits the gitlink itself. Retain that boundary
+    # so a scoped scan cannot mistake an unexpanded submodule for an empty area.
+    for entry in listing("--cached", "--stage", scoped=False):
         details, name = entry.split("\t", 1)
-        files[name] = "submodule" if details.startswith("160000 ") else "tracked"
+        origin = "submodule" if details.startswith("160000 ") else "tracked"
+        path = root / name
+        if selected(path, scopes) or (origin == "submodule" and any(within(scope, path) for scope in scopes)):
+            files[name] = origin
     for name in listing("--others", "--exclude-standard"):
         files.setdefault(name.rstrip("/"), "untracked")
     exclusions = [
@@ -266,7 +271,9 @@ def main():
             "tools": {"lizard": version("lizard"), "pathspec": version("pathspec")},
             "files": files, "exclusions": exclusions, "inventory_errors": errors,
             "coverage": {
-                "inventory_complete": not errors and not counts.get("unexpanded_directory"),
+                "inventory_complete": not errors and not any(
+                    counts.get(status) for status in ("unexpanded_directory", "submodule")
+                ),
                 "files": len(files), "statuses": counts,
                 "functions": sum(len(file["functions"]) for file in files),
                 "limitations": [

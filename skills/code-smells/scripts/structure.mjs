@@ -8,9 +8,9 @@ import { createRequire, isBuiltin } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-const packages = ['madge', 'precinct', '@dagrejs/graphlib', 'node-source-walk', 'filing-cabinet', 'fast-xml-parser', 'iconv-lite'];
+const packages = ['precinct', '@dagrejs/graphlib', 'node-source-walk', 'filing-cabinet', 'fast-xml-parser', 'iconv-lite'];
 const graphExtensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
-// PMD 7.28 language registration metadata, not guesses from a mixed manifest.
+// ponytail: Static PMD 7.28 extension metadata; refresh from PMD registrations when new formats are needed.
 // Ambiguous extensions require an explicit choice; JSX/TSX are not JS/TS CPD grammars.
 const cpdExtensions = {
   apex: ['cls', 'trigger'], coco: ['coco'], cpp: ['h', 'hpp', 'hxx', 'c', 'cpp', 'cxx', 'cc', 'C'],
@@ -103,15 +103,15 @@ async function graphEvidence(files, root, tsConfig, modules) {
     return true;
   });
   const inputs = new Set(eligible.map(file => path.join(root, file.path)));
-  const valid = [];
+  const graph = new Graph({ directed: true });
   for (const file of eligible) {
     const filename = path.join(root, file.path);
+    graph.setNode(file.path);
     try {
-      if (!['utf-8', 'utf-8-sig', 'utf8'].includes(file.encoding.toLowerCase())) throw new Error('Madge/Precinct require UTF-8 source');
+      if (!['utf-8', 'utf-8-sig', 'utf8'].includes(file.encoding.toLowerCase())) throw new Error('Precinct requires UTF-8 source');
       // Precinct catches JS parser exceptions internally; its walker is needed to expose them.
       if (!['.ts', '.tsx'].includes(path.extname(filename))) new Walker().parse(await readFile(filename, 'utf8'));
       const imports = precinct.paperwork(filename, { ...detectiveOptions, includeCore: false });
-      valid.push(filename);
       result.files.push(file.path);
       for (const specifier of imports) {
         if (isBuiltin(specifier)) continue;
@@ -119,27 +119,17 @@ async function graphEvidence(files, root, tsConfig, modules) {
           const target = cabinet({ partial: specifier, filename, directory: root, ast: precinct.ast, tsConfig });
           if (!target) result.unresolvedImports.push({ path: file.path, specifier });
           else if (!inputs.has(path.resolve(target))) result.boundaryImports.push({ path: file.path, specifier, target: posix(path.relative(root, target)) });
+          else graph.setEdge(file.path, posix(path.relative(root, target)));
         } catch (error) { result.unresolvedImports.push({ path: file.path, specifier, error: error.message }); }
       }
     } catch (error) { result.parseErrors.push({ path: file.path, error: error.message }); }
   }
-  if (valid.length) {
-    try {
-      const analysis = await modules.madge(valid, { baseDir: root, tsConfig, detectiveOptions, dependencyFilter: filename => inputs.has(path.resolve(filename)) });
-      result.graph = analysis.obj();
-      result.warnings = analysis.warnings();
-      const graph = new Graph({ directed: true });
-      for (const [from, targets] of Object.entries(result.graph)) {
-        graph.setNode(from);
-        for (const to of targets) graph.setEdge(from, to);
-      }
-      result.cyclicComponents = alg.findCycles(graph).map(members => {
-        const group = new Set(members);
-        return { members: members.sort(), edges: graph.edges().filter(({ v, w }) => group.has(v) && group.has(w)).map(({ v, w }) => ({ from: v, to: w })) };
-      });
-    } catch (error) { result.error = error.message; }
-  }
-  if (result.error || result.parseErrors.length || result.unresolvedImports.length || result.boundaryImports.length || result.unsupported.length || result.warnings?.skipped?.length) result.status = 'partial';
+  result.graph = Object.fromEntries(graph.nodes().sort().map(file => [file, graph.successors(file).sort()]));
+  result.cyclicComponents = alg.findCycles(graph).map(members => {
+    const group = new Set(members);
+    return { members: members.sort(), edges: graph.edges().filter(({ v, w }) => group.has(v) && group.has(w)).map(({ v, w }) => ({ from: v, to: w })) };
+  });
+  if (result.parseErrors.length || result.unresolvedImports.length || result.boundaryImports.length || result.unsupported.length) result.status = 'partial';
   result.coverage = { requested: eligible.length, parsed: result.files.length, parseErrors: result.parseErrors.length, unresolvedImports: result.unresolvedImports.length, boundaryImports: result.boundaryImports.length, unsupported: result.unsupported.length, nodes: Object.keys(result.graph).length, edges: Object.values(result.graph).reduce((sum, targets) => sum + targets.length, 0) };
   return result;
 }
