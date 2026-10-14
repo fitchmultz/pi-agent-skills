@@ -10,6 +10,7 @@ const expectedSkills = [
   "ask-clarifying-questions",
   "bro",
   "clef",
+  "code-smells",
   "deslop",
   "diagram-creation",
   "dogfood",

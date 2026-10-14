@@ -1,0 +1,13 @@
+[
+  {"query":"Find and list code smells in this project.","should_trigger":true,"reason":"Default current-project smell inventory."},
+  {"query":"Give me the top 10 code smells in this project.","should_trigger":true,"reason":"Full-scope analysis with user-selected presentation size."},
+  {"query":"Scan packages/auth for duplicated behavior and mixed responsibilities.","should_trigger":true,"reason":"Explicitly scoped structural and semantic smell scan."},
+  {"query":"Where are the junk drawers and tangled dependencies in this codebase? Give me an inventory, no edits.","should_trigger":true,"reason":"Read-only project-wide smell detection."},
+  {"query":"Check only session storage and token refresh for code smells.","should_trigger":true,"reason":"User-selected subsystem, not necessarily one directory."},
+  {"query":"Use full Clef through Cloudflare AI Gateway to find maintainability smells.","should_trigger":true,"reason":"Exact model-backed workflow."},
+  {"query":"Give this PR a thermo-nuclear maintainability review.","should_trigger":false,"reason":"Diff-focused deep review has its own skill."},
+  {"query":"Deslop the changed hunks and remove redundant comments.","should_trigger":false,"reason":"Behavior-preserving diff cleanup, not a smell inventory."},
+  {"query":"Use Clef to classify the sentiment of these messages.","should_trigger":false,"reason":"General classification belongs to the Clef skill."},
+  {"query":"Find the root cause of this production crash.","should_trigger":false,"reason":"Bug diagnosis is not a code-smell inventory."},
+  {"query":"Draw a diagram of the import pipeline.","should_trigger":false,"reason":"Diagram creation rather than smell detection."}
+]
