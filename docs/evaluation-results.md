@@ -1,6 +1,8 @@
 # 0.7.0 evaluation results
 
-Evaluated on 2026-09-22. This release preserves all twelve skills, refreshes their Pi contracts, and reduces repeated instructions. The comparisons found and corrected two instruction problems: a QA report could use the wrong directory, and the shorter Pi description lost explicit platform-work exclusions.
+Evaluated on 2026-09-22. The 0.7.0 release covered twelve skills, refreshed their Pi contracts, and reduced repeated instructions. The comparisons found and corrected two instruction problems: a QA report could use the wrong directory, and the shorter Pi description lost explicit platform-work exclusions.
+
+These are historical results for the archived 0.7.0 bundle, not scores for the current bundle. The current behavior suite has 17 cases across ten skills, and the held-out suite has ten prompts. Historical aggregate counts below remain unchanged; the coverage table lists only skills still bundled.
 
 The behavior-qualified candidate completed all 19 task cases on both hosts after the two documented wording-only grading corrections below. The final description-only refinement matched all 32 Pi routing labels on both hosts. Some broader routing probes still disagree with their labels or encounter missing-repository fixture boundaries. These are bounded results, not a guarantee of universal routing accuracy or reliability.
 
@@ -97,10 +99,8 @@ The corrected fixture pairs scored 6/6 for both official variants and 4/4 baseli
 | Skill | Executed task contract |
 | --- | --- |
 | `ask-clarifying-questions` | Ask once, persist the answer, continue; inspect discoverable facts before asking |
-| `bro` | Explicit invocation, concise plain-language restatement with preserved meaning; absent from automatic discovery |
 | `handoff` | Paste-ready continuation and read-only delegation prompts, scope and evidence honesty |
 | `deslop` | Real diff cleanup while preserving behavior, invariant comments, and user-owned files |
-| `tdd` | Actual reachable Node assertion failure, unchanged regression test, then passing fix |
 | `verification-before-completion` | Supported completion, failed-check refusal, practical proof and disclosed historical gaps |
 | `thermo-nuclear-code-quality-review` | Concrete unnecessary-wrapper finding without edits |
 | `ux-review` | Lost accepted work is rejected; a verified static-navigation success is not overcomplicated |
