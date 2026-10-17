@@ -37,9 +37,7 @@ test('answers that skip explicitly required source reads do not pass', () => {
   assert.doesNotThrow(() => check('pi-current-sdk', sdkAnswer, reads(['proposal.md', 'runtime.json', '/sdk/dist/core/sdk.d.ts', '/sdk/dist/core/model-runtime.d.ts'])));
 });
 
-test('restatement meaning and the actual reversed diagram edge are required', () => {
-  assert.throws(() => check('plain-language', 'Bananas are yellow.'));
-  assert.doesNotThrow(() => check('plain-language', 'We will test that the background tasks work together.'));
+test('the actual reversed diagram edge is required', () => {
   const events = reads(['flow.json', 'diagram.png']);
   assert.throws(() => check('diagram-inspects-image', JSON.stringify({ incorrectEdge: { from: 'Client', to: 'API' }, expectedEdge: { from: 'API', to: 'Database' } }), events));
   assert.doesNotThrow(() => check('diagram-inspects-image', JSON.stringify({ incorrectEdge: { from: 'Database', to: 'API' }, expectedEdge: { from: 'API', to: 'Database' } }), events));

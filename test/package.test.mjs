@@ -8,7 +8,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const skillsDir = path.join(root, "skills");
 const expectedSkills = [
   "ask-clarifying-questions",
-  "bro",
   "clef",
   "code-smells",
   "deslop",
@@ -18,7 +17,6 @@ const expectedSkills = [
   "pi-extension-development",
   "propose-then-ship-pi",
   "ssh-unix-ops",
-  "tdd",
   "test-audit",
   "thermo-nuclear-code-quality-review",
   "ux-review",

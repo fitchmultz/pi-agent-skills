@@ -91,18 +91,21 @@ test('native evaluation asks, writes and verifies the same real fixture', async 
 });
 
 test('native command execution records a real RED/GREEN regression', async t => {
-  const selected = cases.find(item => item.id === 'tdd-reachable-regression');
+  const selected = cases.find(item => item.id === 'verify-practical-proof');
   const { host } = await scriptedHost(t, [
-    call('ls', { path: 'test' }),
-    call('write', { path: 'test/greet.test.mjs', content: selected.files['test/greet.test.mjs'] + "test('trims whitespace', () => assert.equal(greet(' Ada '), 'Hello Ada'));\n" }),
+    call('edit', { path: 'src/greet.js', edits: [{ oldText: '${name.trim()}', newText: '${name}' }] }),
     call('bash', { command: 'npm test' }),
     call('edit', { path: 'src/greet.js', edits: [{ oldText: '${name}', newText: '${name.trim()}' }] }),
     call('bash', { command: 'npm test' }),
     answer('Regression failed before the fix and passes afterward.'),
   ]);
-  const result = await runCase(host, selected, { skillsDir });
+  const result = await runCase(host, {
+    id: 'native-command-regression', skill: selected.skill, files: selected.files,
+    writable: ['src/greet.js'], prompt: 'Verify whitespace trimming with the existing regression test.', check() {},
+  }, { skillsDir });
   assert.equal(result.passed, true, result.failure);
   assert.deepEqual(result.commands.map(command => command.exitCode), [1, 0]);
+  assert.match(result.commands[0].output, /ERR_ASSERTION/);
 });
 
 test('dogfood can write its evidence report without editing application files', async t => {
@@ -158,14 +161,13 @@ test('documentation completion evidence records the actual checked files and dif
   assert.equal(result.events.filter(event => event.type === 'result' && event.isError).length, 0);
 });
 
-test('manual-only skills expand explicitly and disappear from no-skills controls', async t => {
-  const selected = cases.find(item => item.id === 'plain-language');
+test('explicit skill invocation disappears from no-skills controls', async t => {
+  const selected = cases.find(item => item.id === 'handoff-delegate');
   for (const withoutSkills of [false, true]) {
-    const { host, contexts } = await scriptedHost(t, [answer('We will test the background tasks.')]);
+    const { host, contexts } = await scriptedHost(t, [answer('Inspect only src/cache.js for duplicated TTL calculations. This is read-only; do not edit files. Report findings and unresolved questions.')]);
     const result = await runCase(host, selected, { skillsDir, withoutSkills });
     assert.equal(result.passed, true, result.failure);
-    assert.equal(contexts[0].includes('Stop using jargon and speak coherently.'), !withoutSkills);
-    assert.equal(contexts[0].includes('<name>bro</name>'), false, 'bro stays hidden from automatic skill discovery');
+    assert.equal(contexts[0].includes('# Handoff'), !withoutSkills);
   }
 });
 
@@ -283,11 +285,12 @@ test('routing preserves cancellation diagnostics and rejects failures before a d
 });
 
 test('listing skill resources hides graders without recording a violation', async t => {
-  const { host } = await scriptedHost(t, [call('ls', { path: join(skillsDir, 'tdd') }), answer('Listed the references.')]);
-  const result = await runCase(host, { id: 'listing', skill: 'tdd', prompt: 'List skill resources.', check() {} }, { skillsDir });
+  const { host } = await scriptedHost(t, [call('ls', { path: join(skillsDir, 'code-smells') }), answer('Listed the references.')]);
+  const result = await runCase(host, { id: 'listing', skill: 'code-smells', prompt: 'List skill resources.', check() {} }, { skillsDir });
   assert.equal(result.passed, true, result.failure);
   const listing = result.events.find(event => event.type === 'result' && event.tool === 'ls');
   assert.match(listing.text, /SKILL.md/);
+  assert.match(listing.text, /references/);
   assert.doesNotMatch(listing.text, /evals/);
 });
 

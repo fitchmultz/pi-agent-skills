@@ -58,7 +58,6 @@ export function routingTools(context) {
 }
 
 const packageFile = '{"type":"module","scripts":{"test":"node --test"}}\n';
-const originalGreet = 'export function greet(name) { return `Hello ${name}`; }\n';
 const originalTest = "import assert from 'node:assert/strict';\nimport test from 'node:test';\nimport { greet } from '../src/greet.js';\ntest('greets a name', () => assert.equal(greet('Ada'), 'Hello Ada'));\n";
 async function verifyModule(cwd, source) {
   const path = join(cwd, 'acceptance.mjs');
@@ -78,10 +77,6 @@ export const cases = [
     prompt: 'Tell me the test command for this repository. Read package.json first; ask only if it leaves a material choice unresolved.',
     files: { 'package.json': packageFile }, tools: context => [questionTool(context)],
     check: (r, { cwd }) => { assert(wasRead(r, 'package.json', cwd), 'Read the repository test command'); assert.equal(called(r, 'ask_question').length, 0); assert.match(r.output, /npm test/); },
-  },
-  {
-    id: 'plain-language', skill: 'bro', invoke: true, previousAnswer: 'We will instantiate an orchestration substrate to operationalize validation of the asynchronous execution topology.',
-    prompt: 'Restate your previous answer in plain language.', check: r => { assert(r.output.trim().length > 0); assert(r.output.split(/\s+/).length <= 60); assert.doesNotMatch(r.output, /orchestration substrate|operationalize|asynchronous execution topology|```/i); assert.match(r.output, /test|check|verif|make sure|ensure|validat/i); assert.match(r.output, /background|tasks|jobs|together/i); noWrites(r); },
   },
   {
     id: 'handoff-continue', skill: 'handoff',
@@ -104,20 +99,6 @@ export const cases = [
       assert.doesNotMatch(r.files['src/twice.js'], /This function takes|catch\s*\(/); assert.match(r.files['src/twice.js'], /Precision invariant/);
       assert.equal(await readFile(join(cwd, 'notes.md'), 'utf8'), 'User-owned notes: keep this exact text.\n');
       await verifyModule(cwd, "import assert from 'node:assert/strict'; import { twice, precision } from './src/twice.js'; for (const n of [-3,0,2.5]) assert.equal(twice(n), n*2); assert.equal(precision,2);");
-    },
-  },
-  {
-    id: 'tdd-reachable-regression', skill: 'tdd', invoke: true, git: true,
-    files: { 'package.json': packageFile, 'src/greet.js': originalGreet, 'test/greet.test.mjs': originalTest },
-    writable: ['src/greet.js', 'test/greet.test.mjs'],
-    prompt: 'Use TDD to fix greet in src/greet.js (existing tests: test/greet.test.mjs): trim leading and trailing whitespace from the name, preserving interior spaces. Add a regression test first, demonstrate its expected failure with npm test, then fix and run the same test. Preserve the public greet export.',
-    check: async (r, { cwd }) => {
-      const redIndex = r.commands.findIndex(c => c.command === 'npm test' && c.exitCode !== 0 && /ERR_ASSERTION/.test(c.output));
-      assert(redIndex >= 0, 'Reachable failing assertion required');
-      const red = r.commands[redIndex]; const green = r.commands.slice(redIndex + 1).find(c => c.command === 'npm test' && c.exitCode === 0);
-      assert(green, 'The same command must pass after the fix'); assert.equal(red.files['src/greet.js'], originalGreet, 'RED must use the broken implementation');
-      assert.equal(red.files['test/greet.test.mjs'], green.files['test/greet.test.mjs'], 'Do not weaken the regression after RED');
-      await verifyModule(cwd, "import assert from 'node:assert/strict'; import { greet } from './src/greet.js'; for (const name of [' Ada ','Bob\\n','\\tJo ',' Ada Lovelace ']) assert.equal(greet(name), 'Hello '+name.trim());");
     },
   },
   {

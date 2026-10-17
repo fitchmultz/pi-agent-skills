@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-pi-agent-skills adds 16 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
+pi-agent-skills adds 14 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
 
 ![A task leads Pi to a skill, its SKILL.md instructions, and the helper files that the task needs.](.github/readme/skill-workflow.png)
 
@@ -28,15 +28,11 @@ Pi can choose a skill from your request. For example, ask it to review a PR for 
 Enter `/skill:name` to choose a skill yourself:
 
 ```text
-/skill:tdd add a failing test, then fix the bug
 /skill:diagram-creation draw the request flow for this service
 /skill:code-smells
 /skill:code-smells packages/server/src/auth
 /skill:code-smells give me the top 10
-/skill:bro
 ```
-
-`bro` requires an explicit command.
 
 Some skills require extra tools. The skill pages below list their requirements.
 
@@ -45,7 +41,6 @@ Some skills require extra tools. The skill pages below list their requirements.
 | Skill | Use it for |
 | --- | --- |
 | [`ask-clarifying-questions`](skills/ask-clarifying-questions/SKILL.md) | Settle a decision that could change what gets built. |
-| [`bro`](skills/bro/SKILL.md) | Restate the previous response in plain language. |
 | [`clef`](skills/clef/SKILL.md) | Evaluate text or JSON with Cloudflare's decision models. |
 | [`code-smells`](skills/code-smells/SKILL.md) | Analyze the current project or a selected area with evidence helpers and full Clef through Cloudflare AI Gateway; rank any requested top-N list after analysis. |
 | [`deslop`](skills/deslop/SKILL.md) | Remove AI-generated noise from a branch or PR. |
@@ -55,7 +50,6 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`pi-extension-development`](skills/pi-extension-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
 | [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. |
 | [`ssh-unix-ops`](skills/ssh-unix-ops/SKILL.md) | Work on Linux, macOS, or WSL2 hosts over SSH. |
-| [`tdd`](skills/tdd/SKILL.md) | Write a test that fails, make it pass, then refactor. |
 | [`test-audit`](skills/test-audit/SKILL.md) | Find brittle or redundant tests and check the value of new tests. |
 | [`thermo-nuclear-code-quality-review`](skills/thermo-nuclear-code-quality-review/SKILL.md) | Review a branch or PR for maintainability problems. |
 | [`ux-review`](skills/ux-review/SKILL.md) | Review user-facing changes for usability and complete workflows. |
