@@ -1,0 +1,37 @@
+[
+  {
+    "query": "lyrics for everlong by foo fighters",
+    "should_trigger": true,
+    "reason": "Direct song lyrics request expecting a fetched, rewritten block."
+  },
+  {
+    "query": "/skill:lyrics crazy train",
+    "should_trigger": true,
+    "reason": "Explicit skill invocation with a song title."
+  },
+  {
+    "query": "rewrite these lyrics for suno: I got a check sheesh sheesh",
+    "should_trigger": true,
+    "reason": "Pasted-lyrics rewrite for Suno vocal synthesis with no fetch needed."
+  },
+  {
+    "query": "suno keeps mispronouncing my lyrics, can you fix the spelling for singing",
+    "should_trigger": true,
+    "reason": "Phonetic lyric rewriting for vocal synthesis without a song fetch."
+  },
+  {
+    "query": "what song is playing in this video?",
+    "should_trigger": false,
+    "reason": "Song identification, not lyrics fetch or rewrite."
+  },
+  {
+    "query": "write me original lyrics about the ocean",
+    "should_trigger": false,
+    "reason": "Creating new lyrics, outside the skill scope."
+  },
+  {
+    "query": "translate these lyrics into spanish",
+    "should_trigger": false,
+    "reason": "Translation is outside the skill scope."
+  }
+]

@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-pi-agent-skills adds 14 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
+pi-agent-skills adds 15 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
 
 ![A task leads Pi to a skill, its SKILL.md instructions, and the helper files that the task needs.](.github/readme/skill-workflow.png)
 
@@ -47,6 +47,7 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`diagram-creation`](skills/diagram-creation/SKILL.md) | Create diagrams with editable SVG or D2 source. |
 | [`dogfood`](skills/dogfood/SKILL.md) | Test browser flows and capture evidence of UI problems. |
 | [`handoff`](skills/handoff/SKILL.md) | Write instructions for the next session or a delegated task. |
+| [`lyrics`](skills/lyrics/SKILL.md) | Fetch song lyrics and rewrite them phonetically for Suno-style vocal synthesis. |
 | [`pi-extension-development`](skills/pi-extension-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
 | [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. |
 | [`ssh-unix-ops`](skills/ssh-unix-ops/SKILL.md) | Work on Linux, macOS, or WSL2 hosts over SSH. |
