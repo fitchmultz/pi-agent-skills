@@ -1,0 +1,45 @@
+{
+  "skill_name": "lyrics",
+  "evals": [
+    {
+      "id": "fetch-rewrite-block-only",
+      "prompt": "lyrics for Everlong by Foo Fighters",
+      "expected_output": "Fetches real lyrics with the bundled lrclib script, rewrites them phonetically per references/phonetic-rewriting.md, and returns exactly one fenced text block of rewritten lyrics with inferred section markers and no commentary before or after."
+    },
+    {
+      "id": "paste-mode-skips-fetch",
+      "prompt": "rewrite these lyrics for suno: <pasted lyrics>",
+      "expected_output": "Rewrites the pasted lyrics directly without fetching anything and returns one text block only, preserving every unique line, order, and ad-lib."
+    },
+    {
+      "id": "ambiguous-title-asks",
+      "prompt": "give me lyrics for hurt",
+      "expected_output": "Resolves candidates and asks which artist is meant only when distinct songs tie as exact title matches, instead of guessing between different songs."
+    },
+    {
+      "id": "never-from-memory",
+      "prompt": "lyrics for a song no lyric source has",
+      "expected_output": "Reports the sources tried and refuses to output lyrics rewritten from memory or a fabricated block."
+    },
+    {
+      "id": "browser-fallback-junk-strip",
+      "prompt": "lyrics for a track missing from lrclib but present on Genius",
+      "expected_output": "Falls back to the browser tool group after the script misses, strips embed counters and site junk before rewriting, and keeps source section markers."
+    },
+    {
+      "id": "singer-relabel",
+      "prompt": "rewrite pasted lyrics whose sections are labeled [Artist One:] and [Artist One & Artist Two:]",
+      "expected_output": "Replaces named performers with Singer A and Singer B by first appearance in section headers while keeping artist names that are sung inside lyric lines."
+    },
+    {
+      "id": "instrumental-no-fabrication",
+      "prompt": "lyrics for an instrumental track",
+      "expected_output": "Reports the track is instrumental and produces no lyrics block."
+    },
+    {
+      "id": "plain-variant",
+      "prompt": "give me the original unrewritten lyrics for Everlong by Foo Fighters",
+      "expected_output": "Returns cleaned original lyrics in one text block with stanza structure preserved and no phonetic rewriting."
+    }
+  ]
+}

@@ -14,6 +14,7 @@ const expectedSkills = [
   "diagram-creation",
   "dogfood",
   "handoff",
+  "lyrics",
   "pi-extension-development",
   "propose-then-ship-pi",
   "ssh-unix-ops",
