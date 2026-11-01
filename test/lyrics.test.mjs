@@ -175,6 +175,27 @@ test("lyrics CLI enforces artist matching, Unicode titles, free-text queries, an
   assert.equal(titleStartsWithArtist.status, 0, titleStartsWithArtist.stderr);
   assert.match(titleStartsWithArtist.stdout, /Title: Heart of the Storm\nArtist: Heart/);
 
+  // Space-separated "<Artist> <Title>" records still match as a secondary candidate when no canonical record exists.
+  const spacePrefixedArtist = runLyrics(["--title", "Hello", "--artist", "Adele"], {
+    "/api/get": { status: 404, body: null },
+    "/api/search": {
+      status: 200,
+      body: [
+        {
+          id: 51,
+          trackName: "Adele Hello",
+          artistName: "Adele",
+          albumName: "25",
+          duration: 295,
+          instrumental: false,
+          plainLyrics: "Hello from the other side",
+        },
+      ],
+    },
+  });
+  assert.equal(spacePrefixedArtist.status, 0, spacePrefixedArtist.stderr);
+  assert.match(spacePrefixedArtist.stdout, /Title: Adele Hello\nArtist: Adele/);
+
   // Empty 200 on the first search form falls through to the second URL form in a single pass.
   const emptyFirstSearchForm = runLyrics(["--title", "Everlong"], {
     "/api/search?track_name=Everlong": { status: 200, body: [] },

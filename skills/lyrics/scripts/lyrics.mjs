@@ -116,7 +116,15 @@ function extractTrack(trackName, artistName) {
       }
     }
   }
-  return { rawTrack, baseTrack, stuffedArtist };
+  let spaceStrippedTrack = null;
+  if (!stuffedArtist && gotArtist && baseTrack !== gotArtist) {
+    if (baseTrack.startsWith(`${gotArtist} `)) {
+      spaceStrippedTrack = baseTrack.slice(gotArtist.length).trim() || null;
+    } else if (baseTrack.endsWith(` ${gotArtist}`)) {
+      spaceStrippedTrack = baseTrack.slice(0, -gotArtist.length).trim() || null;
+    }
+  }
+  return { rawTrack, baseTrack, spaceStrippedTrack, stuffedArtist };
 }
 
 function scoreArtist(gotArtist, wantArtist) {
@@ -135,14 +143,14 @@ function scoreArtist(gotArtist, wantArtist) {
 
 function scoreCandidate(record, title, artist) {
   const wantTrack = norm(title);
-  const { rawTrack, baseTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
+  const { rawTrack, baseTrack, spaceStrippedTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
   const gotArtist = norm(record.artistName);
   const wantArtist = artist ? norm(artist) : "";
   if (!wantTrack || !rawTrack) return { trackScore: 0, artistScore: 0, total: 0 };
 
   let trackScore = 0;
   if (rawTrack === wantTrack && !stuffedArtist) trackScore = 100;
-  else if (rawTrack === wantTrack || baseTrack === wantTrack) trackScore = 90;
+  else if (rawTrack === wantTrack || baseTrack === wantTrack || spaceStrippedTrack === wantTrack) trackScore = 90;
   else {
     const wantWords = new Set(wantTrack.split(" ").filter(Boolean));
     const gotWords = baseTrack.split(" ").filter(Boolean);
@@ -191,13 +199,14 @@ function scoreQueryVariant(want, candidateTrack, isCanonical, gotArtist) {
 function scoreQueryCandidate(record, query) {
   const want = norm(query);
   const wantWords = [...new Set(want.split(" ").filter(Boolean))];
-  const { rawTrack, baseTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
+  const { rawTrack, baseTrack, spaceStrippedTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
   const gotArtist = norm(record.artistName);
   if (!want || !rawTrack || wantWords.length === 0) return { trackScore: 0, artistScore: 0, total: 0 };
 
   const variants = [
     scoreQueryVariant(want, rawTrack, !stuffedArtist, gotArtist),
     baseTrack !== rawTrack ? scoreQueryVariant(want, baseTrack, false, gotArtist) : null,
+    spaceStrippedTrack ? scoreQueryVariant(want, spaceStrippedTrack, false, gotArtist) : null,
   ].filter(Boolean);
 
   if (variants.length > 0) {
