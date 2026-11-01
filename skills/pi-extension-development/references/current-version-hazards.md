@@ -28,7 +28,7 @@ The `fitchmultz/pi` fork's revision-matched `FORK.md` ([floor `9e0674ef667e90a63
 - Fork binary self-update (`pi update --fork`)
 - Android Termux interactive support
 - Complete native working-session state (`openWorkingSession`, `parseWorkingSession`, `readWorkingSession`, `writeWorkingSession`, `WorkingSession*` types, `session.acquireWorkingSession(...)`, `session.bindWorkingSessionHost(...)`, `createAgentSession({ workingSession })`, `docs/working-session.md`)
-- Credential store isolation (`packages/ai/src/credentials/`)
+- Provider credential isolation (routing providers do not read unrelated stored credentials; `packages/coding-agent/src/core/model-runtime.ts`, `docs/custom-provider.md`)
 - Fallback credential chains (`pi.registerProviderAuthFallback`, `ModelRuntime.registerProviderAuthFallback`, `ProviderAuthFallback`, `docs/custom-provider.md`)
 - Opt-in performance diagnostics (`PI_EXTENSION_PERFORMANCE=1`, `docs/environment-variables.md`)
 - Opt-in passive cache tracing (`PI_CACHE_TRACE_DIR`, `docs/cache-tracing.md`)
@@ -120,4 +120,4 @@ Last-verified baseline — official `1.4.0` (`4a080252f06caf63a525d7873c5d94d3c2
 - `packages/agent/{CHANGELOG.md,package.json,src/index.ts}`
 - `packages/ai/{package.json,src/{index,compat,models}.ts,src/providers/model-schema.ts}`
 - `packages/tui/{CHANGELOG.md,src/{index,tui,terminal,terminal-colors,components/editor,components/input,utils}.ts}`
-- Fork-only repository paths (floor `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`; check latest `main` for newer files): `FORK.md`, `packages/coding-agent/docs/{instruction-groups,restart,working-session,cache-tracing}.md`, `packages/coding-agent/src/extensions/{instruction-groups,background-command}/`, `packages/coding-agent/src/core/{working-session,model-runtime,provider-composer}.ts`, `packages/ai/src/utils/cache-trace.ts`.
+- Fork-only repository paths (floor `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`; check latest `main` for newer files): `FORK.md`, `packages/coding-agent/docs/{instruction-groups,restart,working-session,cache-tracing}.md`, `packages/coding-agent/src/extensions/{instruction-groups,background-command}/`, `packages/coding-agent/src/core/working-session.ts`, `packages/ai/src/utils/cache-trace.ts`.
