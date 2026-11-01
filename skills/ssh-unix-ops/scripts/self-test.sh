@@ -6,7 +6,7 @@ usage() {
 Usage: ./scripts/self-test.sh --host user@example-host [--workdir /tmp/ssh-unix-ops-self-test-NAME]
 
 --workdir must be an absolute remote scratch path matching:
-  /tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+
+  /tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+ (or under $TMPDIR)
 
 Example: ./scripts/self-test.sh --host user@example-host
 Exit codes: 0 success/help; 2 argument refusal; other nonzero values indicate failed checks or commands.
@@ -45,8 +45,17 @@ fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 HELPER="$SCRIPT_DIR/ssh-unix-ops.py"
+LOCAL_TMP_ROOT="${TMPDIR:-/tmp}"
+LOCAL_TMP_ROOT="${LOCAL_TMP_ROOT%/}"
 WORKDIR="${WORKDIR:-/tmp/ssh-unix-ops-self-test-$$}"
-if [[ ! "$WORKDIR" =~ ^/tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]]; then
+if [[ ! "$WORKDIR" =~ ^/tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]] && {
+  [[ ! "$LOCAL_TMP_ROOT" =~ ^/[A-Za-z0-9._/+-]+$ ]] ||
+  [[ "$LOCAL_TMP_ROOT" == "/" ]] ||
+  [[ "$LOCAL_TMP_ROOT" == *".."* ]] ||
+  [[ "$LOCAL_TMP_ROOT" == *"//"* ]] ||
+  [[ "$WORKDIR" != "$LOCAL_TMP_ROOT/"* ]] ||
+  [[ ! "${WORKDIR#"$LOCAL_TMP_ROOT/"}" =~ ^ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]]
+}; then
   echo "refusing unsafe --workdir: $WORKDIR" >&2
   echo "expected an absolute remote scratch path like /tmp/ssh-unix-ops-self-test-$USER" >&2
   exit 2
