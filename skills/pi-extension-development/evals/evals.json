@@ -3,23 +3,23 @@
   "evals": [
     {
       "id": "fork-native-head-context-preservation",
-      "prompt": "My context_with_system hook prepends a policy message and replaces the first tools declaration. An old fork repaired that automatically; make it portable on official Pi 1.0 and the minimal maintained fork without losing my policy.",
+      "prompt": "My context_with_system hook prepends a policy message and replaces the first tools declaration. An old fork repaired that automatically; make it portable on official Pi 1.4.0 and the fitchmultz/pi 1.4.0 fork without losing my policy.",
       "expected_output": "Inspects exact context hook types/source. Preserves the leading system declaration and later tool updates in their positions, edits supported sections/content deliberately, and does not rely on the retired fork native-head guard or mutate private agent state. Validates the actual provider transcript on each available target."
     },
     {
       "id": "fork-integration-discovery-boundary",
-      "prompt": "Review browser instruction discovery for official Pi 1.0 and the minimal maintained fork. Can I just suppress instructions while tools are inactive or turn them all into deferred tools?",
+      "prompt": "Review browser instruction discovery for official Pi 1.4.0 and the fitchmultz/pi 1.4.0 fork. Can I just suppress instructions while tools are inactive or turn them all into deferred tools?",
       "expected_output": "Checks the confirmed synchronous session_start pi:instruction-groups collector with register(group)/isManaged and group name/description/tools/instructions(ctx), plus optional discover_tools enable string array. Distinguishes confirmed design from a qualified candidate. Keeps full official prompt sections when absent/unmanaged, instruction-before-effect guards, restrictions and recovery. Rejects retired ToolDefinition.discovery/sectionTools metadata and a settings inventory. Native deferred tools are callable when inactive; tool_search/provider search/MCP gateways do not enforce group instructions. Performs no edits for review-only scope."
     },
     {
       "id": "fork-live-result-decoration",
-      "prompt": "My extension used live_tool_result on an older fork. Modernize its model-facing result decoration for both Pi 1.0 targets without changing saved history or reviving dropped APIs.",
+      "prompt": "My extension used live_tool_result on an older fork. Modernize its model-facing result decoration for both Pi 1.4.0 targets without changing saved history or reviving dropped APIs.",
       "expected_output": "Checks the actual public tool_result/context boundaries and provider path. Removes the obsolete fork event branch, preserves saved data and result/error/structured-content semantics, and validates model-facing decoration instead of adding an unsupported shim."
     },
     {
       "id": "public-extension-shared-host-policy",
-      "prompt": "Update a public Pi extension for Mitch. His installed fork supports an API absent from the latest official Pi. Both report 1.0.0, PI_PACKAGE_DIR points to the fork, and the PATH-selected smoke passes. Can the extension require the fork or count that as both-host verification? Do old results need repeating?",
-      "expected_output": "Keeps the public extension compatible with both fitchmultz/pi and latest official Pi using shared native behavior; Posthorse retain-none compaction is portable. Checks the current stable official release and intended fork revision, resolves distinct absolute launchers/package roots with --pi when PI_PACKAGE_DIR would override discovery, records distribution/revision/Node identity, and exercises each actual loader and affected path in isolated state against the same source/artifact. Does not count matching semver, package-only resolution, or one PATH-selected smoke as two-host proof. Avoids hard fork imports and no-op shims; reports a missing target or unavailable required capability as a gap. Reuses still-valid evidence without repeating unrelated checks or publication."
+      "prompt": "Update a public Pi extension for Mitch. His installed fork supports an API absent from the latest official Pi. Both report 1.4.0, PI_PACKAGE_DIR points to the fork, and the PATH-selected smoke passes. Can the extension require the fork or count that as both-host verification? Do old results need repeating?",
+      "expected_output": "Keeps the public extension compatible with both the latest fitchmultz/pi fork and the latest official Pi release (1.4.0+ floor) using shared native behavior; Posthorse retain-none compaction is portable. Queries and targets the current latest stable official release and latest fork commit HEAD rather than treating 1.4.0 as a static pin, resolves distinct absolute launchers/package roots with --pi when PI_PACKAGE_DIR would override discovery, records distribution/revision/Node identity, and exercises each actual loader and affected path in isolated state against the same source/artifact. Does not count matching semver, package-only resolution, or one PATH-selected smoke as two-host proof. Avoids hard fork imports and no-op shims; reports a missing target or unavailable required capability as a gap. Reuses still-valid evidence without repeating unrelated checks or publication."
     },
     {
       "id": "official-fork-lifecycle-boundary",
@@ -29,7 +29,7 @@
     {
       "id": "optional-tools-and-execution-cwd",
       "prompt": "I am using the latest official Pi without the companion skills. Move this task to its existing worktree, ask a required approval question in print mode, and start a child there.",
-      "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd or verifies that the installed pi-subagents 0.39.0+ and pi-change-working-dir 0.5.0+ pair resolves the selected directory for new delegation; does not assume an ordinary continuation retargets a saved child. Discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
+      "expected_output": "Discovers optional change_dir, ask_question, and delegation tools rather than treating them as core. Uses absolute paths or change_dir only when installed; does not claim execution cwd reloads trust, AGENTS, skills, or settings. Passes explicit absolute child cwd or verifies that the installed @fitchmultz/pi-subagents (0.52.6+) and pi-change-working-dir (0.6.0+) pair resolves the selected directory for new delegation; does not assume an ordinary continuation retargets a saved child. Discovers delegate/agent_runs before advanced load_subagent. Reports the required dialog/approval boundary when print mode cannot service it rather than granting approval. Uses relevant current project/vendor sources if optional companion skills are absent."
     },
     {
       "id": "edge-choose-prompt-template-not-extension",
@@ -98,7 +98,7 @@
     },
     {
       "id": "full-native-provider-registration",
-      "prompt": "Convert my Pi 0.84.0 custom provider from the legacy config shape to a complete pi-ai Provider with custom auth, credential filtering, dynamic models, and streaming.",
+      "prompt": "Convert my Pi 1.4.0 custom provider from the legacy config shape to a complete pi-ai Provider with custom auth, credential filtering, dynamic models, and streaming.",
       "expected_output": "First checks whether the legacy config already suffices; if native ownership is required, reads current Provider/createProvider, extension overload, loader, composer, and ModelRuntime code. Imports createProvider/auth helpers from the pi-ai root and concrete API factories from /compat, avoiding /api/* for bundled-loader portability; uses complete model records with model-level request routing, provider-owned auth/filter/refresh/streams, and context-aware cache/network handling. Validates typecheck, real Pi loader registration/listing, configured/unconfigured auth, one stubbed or live stream, reload replacement, and explicit removal without leaking credentials."
     },
     {
@@ -108,28 +108,28 @@
     },
     {
       "id": "model-runtime-sdk-auth-migration",
-      "prompt": "Upgrade my legacy embedded Pi SDK harness and companion extension to Pi 0.84.0. AuthStorage, modelRegistry session options, and direct request auth no longer compile.",
-      "expected_output": "Reads every crossed changelog entry through 0.84.0 plus current generated types/implementation before docs/examples; creates one async ModelRuntime, injects a pi-ai CredentialStore such as InMemoryCredentialStore for isolated tests, passes modelRuntime to createAgentSession, and uses modelRuntime.getAuth for SDK request auth. Awaits setRuntimeApiKey/removeRuntimeApiKey when used, keeps extension-facing ctx.modelRegistry where appropriate, awaits modelRegistry.refresh before synchronous reads, uses readStoredCredential only for one-off file inspection, scans for removed runtime projections, and validates typecheck plus the real SDK/extension path."
+      "prompt": "Upgrade my legacy embedded Pi SDK harness and companion extension to Pi 1.4.0. AuthStorage, modelRegistry session options, and direct request auth no longer compile.",
+      "expected_output": "Reads current generated 1.4.0 types/implementation before docs/examples; creates one async ModelRuntime, injects a pi-ai CredentialStore such as InMemoryCredentialStore for isolated tests, passes modelRuntime to createAgentSession, and uses modelRuntime.getAuth for SDK request auth. Awaits setRuntimeApiKey/removeRuntimeApiKey when used, keeps extension-facing ctx.modelRegistry where appropriate, awaits modelRegistry.refresh before synchronous reads, uses readStoredCredential only for one-off file inspection, scans for removed runtime projections, and validates typecheck plus the real SDK/extension path."
     },
     {
       "id": "dynamic-provider-model-refresh",
-      "prompt": "Teach my Pi 0.84.0 provider extension to refresh its remote model catalog without fetching synchronously during every startup.",
+      "prompt": "Teach my Pi 1.4.0 provider extension to refresh its remote model catalog without fetching synchronously during every startup.",
       "expected_output": "Verifies config-form ProviderConfig.refreshModels, createProvider/fetchModels, and handwritten native Provider.refreshModels against active types/source, then chooses the smallest fitting form. Leaves createProvider fetch callbacks and return-only config callbacks unchanged. Handwritten providers restore from read-only context.stored and commit persistence plus synchronous state only through generation-checked context.publish, stopping when publication loses its generation. Honors allowNetwork, force, the concrete signal, and optional credential; keeps a static or stored baseline; preserves the prior catalog on fetch or persistence failure; and validates cached/offline startup, interactive/RPC background refresh, /model refresh, abort, stale-generation suppression, and print/list cache-only behavior."
     },
     {
       "id": "kimi-deferred-tool-loading",
-      "prompt": "Add progressive tool search to my Pi 0.84.0 extension for Kimi K3 without sending every tool definition up front.",
-      "expected_output": "Reads the crossed deferred-tool/Kimi changelog entries and verifies exact provider/model IDs in current generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, mid-conversation system/tool-addition support, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, uses the installed mid-conversation compatibility fields rather than a nonexistent deferredToolsMode, and validates the immediate next-turn definition path."
+      "prompt": "Add progressive tool search to my Pi 1.4.0 extension for Kimi K3 without sending every tool definition up front.",
+      "expected_output": "Reads current deferred-tool/Kimi generated metadata and implementation. Distinguishes kimi-coding/k3 (Anthropic compatibility, empty-signature replay, low/high/max) from moonshotai/kimi-k3 (OpenAI Completions, thinkingFormat openai, supportsReasoningEffort, mid-conversation system/tool-addition support, low/high/max, route-specific pricing). Registers all tools, keeps only the loader active, activates matches through a purely additive pi.setActiveTools change, uses the installed mid-conversation compatibility fields rather than a nonexistent deferredToolsMode, and validates the immediate next-turn definition path."
     },
     {
       "id": "pi-ai-compat-import-migration",
-      "prompt": "Fix my legacy pi extension TypeScript errors after upgrading to Pi 0.84.0: getModel and stream are no longer exported from @earendil-works/pi-ai.",
+      "prompt": "Fix my legacy pi extension TypeScript errors after upgrading to Pi 1.4.0: getModel and stream are no longer exported from @earendil-works/pi-ai.",
       "expected_output": "Reads the current changelog and @earendil-works/pi-ai package .d.ts files, recognizes the old global API moved to @earendil-works/pi-ai/compat while extension runtime aliases root imports temporarily, updates type-checked source to import /compat or migrate to createModels/provider factories, does not use removed /base entrypoints, and validates type-check/runtime load."
     },
     {
       "id": "agent-core-shell-exec-options-migration",
       "prompt": "Fix my embedded pi SDK harness TypeScript errors after upgrading: ExecutionEnvExecOptions is missing.",
-      "expected_output": "Checks agent-core 1.0 root/exports: the experimental harness ExecutionEnv and its option types are removed, not renamed. Chooses the public coding-agent SDK/tool operations for ordinary extension work; explicit durable/remote requirements need their own complete contract. Preserves cancellation/result semantics and validates types plus the real host."
+      "expected_output": "Checks @earendil-works/pi-agent-core 1.4.0 root/exports: the experimental harness ExecutionEnv and its option types are removed, not renamed. Chooses the public coding-agent SDK/tool operations for ordinary extension work; explicit durable/remote requirements need their own complete contract. Preserves cancellation/result semantics and validates types plus the real host."
     },
     {
       "id": "custom-provider-chat-template-thinking",
@@ -143,7 +143,7 @@
     },
     {
       "id": "session-json-format-parser",
-      "prompt": "Update my Pi 0.84.0 JSON event and session JSONL parser for current compaction, usage, and session metadata.",
+      "prompt": "Update my Pi 1.4.0 JSON event and session JSONL parser for current compaction, usage, and session metadata.",
       "expected_output": "Reads current AgentSessionEvent, session-manager, print-mode, compaction, and usage-totals implementation before docs. Discriminates the leading SessionHeader record with type session from later AgentSessionEvent records; handles agent_settled, entry_appended, session_info_changed, thinking_level_changed, agent_end.willRetry, and summarization_retry_scheduled/attempt_start/finished; parses persisted v3 header/entry timestamps as ISO strings while preserving message-internal millisecond timestamps; accepts top-level usage on tool results, compaction, and branch summaries; uses id/parentId; and rejects copying harness retainedTail into coding-agent CompactionEntry."
     },
     {
@@ -163,7 +163,7 @@
     },
     {
       "id": "custom-editor-current-docs-contract",
-      "prompt": "Validate the Pi 0.84.0 VimEditor custom-editor snippet before I copy it into my extension.",
+      "prompt": "Validate the Pi 1.4.0 VimEditor custom-editor snippet before I copy it into my extension.",
       "expected_output": "Checks installed docs, examples, and emitted types rather than preserving older hazard guidance; confirms the current CustomEditor(tui, theme, keybindings, options?) contract and docs callback shape, then validates typecheck/runtime UI behavior."
     },
     {
@@ -253,43 +253,43 @@
     },
     {
       "id": "rpc-command-provenance-contract",
-      "prompt": "My Pi RPC client reads get_commands using the documented location and path fields, but provenance is always missing on 0.84.0. Fix the client.",
+      "prompt": "My Pi RPC client reads get_commands using the documented location and path fields, but provenance is always missing on 1.4.0. Fix the client.",
       "expected_output": "Treats the RPC prose example as stale, resolves the active package, and verifies RpcSlashCommand plus rpc-mode implementation; reads canonical sourceInfo with path, source, scope, origin, and optional baseDir instead of legacy top-level location/path fields; and validates a real get_commands response for extension, prompt, or skill provenance."
     },
     {
       "id": "sdk-settings-and-session-list-doc-hazards",
-      "prompt": "The Pi 0.84.0 SDK docs call SettingsManager.create() with no arguments and SessionManager.listAll(process.cwd()) to list every project. Make this compile and behave as described.",
+      "prompt": "The Pi 1.4.0 SDK docs call SettingsManager.create() with no arguments and SessionManager.listAll(process.cwd()) to list every project. Make this compile and behave as described.",
       "expected_output": "Treats the snippets as stale and verifies emitted types plus implementation; calls SettingsManager.create(cwd, agentDir?, options?) positionally rather than inventing an object overload, uses SessionManager.listAll() for the normal all-project sessions tree or SessionManager.list(cwd) for one project, does not pass cwd as listAll's custom sessionDir, and validates both paths with isolated session data."
     },
     {
       "id": "kimi-coding-0810-compat",
-      "prompt": "Proxy the installed Pi 0.84.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
+      "prompt": "Proxy the installed Pi 1.4.0 Kimi Coding K3 model through my custom provider without breaking thinking replay or supported thinking levels.",
       "expected_output": "Reads active generated Kimi Coding model code and Anthropic request serialization before prose docs; preserves model-level forceAdaptiveThinking and endpoint-verified allowEmptySignature, maps only low/high/max as current metadata does, copies active catalog fields including pricing rather than guessing Moonshot values, does not put compat on legacy provider config or confuse Anthropic Kimi Coding metadata with Moonshot OpenAI thinkingFormat/supportsReasoningEffort/mid-conversation tool-addition fields, and validates replay plus all three thinking levels."
     },
     {
       "id": "qwen-token-plan-model-contract",
-      "prompt": "Use the installed Pi 0.84.0 Qwen Token Plan provider and set qwen3.8-max to max thinking because its name says max.",
+      "prompt": "Use the installed Pi 1.4.0 Qwen Token Plan provider and set qwen3.8-max to max thinking because its name says max.",
       "expected_output": "Verifies current built-in provider source/model metadata rather than inferring behavior from names. Uses exact qwen-token-plan or qwen-token-plan-cn ids and the matching QWEN_TOKEN_PLAN_API_KEY or QWEN_TOKEN_PLAN_CN_API_KEY, rejects max thinking for qwen3.8-max because its verified map supports low, medium, and xhigh while rejecting off, minimal, high, and max, and validates with --list-models plus SDK or RPC thinking-level discovery without making a network request unless authorized."
     },
     {
       "id": "constrained-tool-sampling",
-      "prompt": "Make my Pi 0.84.0 extension tool use strict JSON Schema sampling when the model supports it, without breaking weaker models.",
+      "prompt": "Make my Pi 1.4.0 extension tool use strict JSON Schema sampling when the model supports it, without breaking weaker models.",
       "expected_output": "Reads current Tool/constrainedSampling types and provider capability flags before docs. Sets constrainedSampling to json_schema with strict prefer by default, uses require only when unsupported models must fail, and uses OpenAI grammar variants only when compat.supportsOpenAIGrammarTools is true. Validates one supported and one unsupported model path without leaking credentials."
     },
     {
       "id": "bash-session-env-and-rpc-stream",
-      "prompt": "My Pi 0.84.0 bash wrapper and RPC host need the current model/session identity and streaming bash output.",
+      "prompt": "My Pi 1.4.0 bash wrapper and RPC host need the current model/session identity and streaming bash output.",
       "expected_output": "Verifies createBashTool/createBashToolDefinition inject PI_SESSION_ID, PI_SESSION_FILE when persisted, PI_PROVIDER, PI_MODEL, and PI_REASONING_LEVEL at command start from the selected Pi model. For RPC, verifies direct bash runs extension user_bash handlers before execution, handles bash_execution_update events with optional id and delta, keeps private output on excludeFromContext raw commands when needed, and does not invent env vars for non-bash tools."
     },
     {
       "id": "openrouter-kimi-oauth-login",
-      "prompt": "Set up OpenRouter and Kimi Coding on Pi 0.84.0 without pasting API keys by hand.",
+      "prompt": "Set up OpenRouter and Kimi Coding on Pi 1.4.0 without pasting API keys by hand.",
       "expected_output": "Reads current provider auth source and providers.md. Uses /login openrouter with Sign in with OpenRouter for the PKCE-minted user-controlled key, and /login kimi-coding with Sign in with Kimi Code for device OAuth plus refresh, while still recognizing OPENROUTER_API_KEY and Kimi API-key env fallbacks. Does not log or commit auth.json contents."
     },
     {
       "id": "typebox-1-3-7-migration",
-      "prompt": "My extension written for Pi 0.84 stopped compiling on installed current Pi because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
-      "expected_output": "Resolves the exact target Pi and installed typebox exports (the current inspected official and fork hosts bundle 1.3.27, not the old 1.3.7), reads crossed changelog entries/types, migrates removed APIs to supported typebox APIs without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing."
+      "prompt": "My extension stopped compiling on installed Pi 1.4.0+ because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
+      "expected_output": "Resolves the exact latest target Pi and installed typebox exports (1.4.0+ official and fork hosts bundle TypeBox 1.3.27+), reads emitted types, migrates removed APIs to the current supported typebox APIs without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing."
     },
     {
       "id": "scoped-model-extension-picker",
@@ -304,52 +304,52 @@
     {
       "id": "rpc-user-bash-policy",
       "prompt": "My extension audits user_bash, but commands sent through Pi RPC bash bypass the policy. Fix the host without duplicating shell execution.",
-      "expected_output": "Verifies Pi 0.84 rpc-mode and user_bash event behavior; relies on direct RPC bash emitting user_bash before execution, preserves handler-provided results and operations, keeps excludeFromContext semantics and bash_execution_update correlation, and validates direct RPC plus interactive user-bash paths without adding a second executor."
+      "expected_output": "Verifies Pi 1.4.0 rpc-mode and user_bash event behavior; relies on direct RPC bash emitting user_bash before execution, preserves handler-provided results and operations, keeps excludeFromContext semantics and bash_execution_update correlation, and validates direct RPC plus interactive user-bash paths without adding a second executor."
     },
     {
       "id": "models-request-transforms-and-null-headers",
-      "prompt": "Upgrade my Pi request wrapper to 0.84. ModelsStreamTransforms disappeared, and I forward getApiKeyAndHeaders() into a provider stream.",
+      "prompt": "Upgrade my Pi request wrapper to 1.4.0. ModelsStreamTransforms disappeared, and I forward getApiKeyAndHeaders() into a provider stream.",
       "expected_output": "Verifies pi-ai and coding-agent emitted types/source; renames ModelsStreamTransforms to ModelsRequestTransforms; treats ProviderHeaders as string-or-null values; preserves null header-deletion markers unchanged when forwarding; avoids Record<string, string> casts; and validates authenticated stream plus deferred fetch/cancel header transformation without logging credentials."
     },
     {
       "id": "json-rpc-delta-message-updates",
-      "prompt": "Migrate my JSON and RPC client to Pi 0.84 after message_update.message and assistantMessageEvent.partial disappeared.",
+      "prompt": "Migrate my JSON and RPC client to Pi 1.4.0 after message_update.message and assistantMessageEvent.partial disappeared.",
       "expected_output": "Uses JsonAgentSessionEvent rather than the copied base AgentEvent prose union; initializes live state from message_start; applies text, thinking, and tool-call deltas by contentIndex; buffers toolcall_delta arguments; treats message_end.message as authoritative; distinguishes delta-only wire events from cumulative in-process SDK/extension events; and validates fragmented multi-block output without quadratic accumulation."
     },
     {
       "id": "model-refresh-and-auth-cancellation",
-      "prompt": "After setting a runtime API key on Pi 0.84, refresh only that provider's remote models with cancellation and report failures.",
+      "prompt": "After setting a runtime API key on Pi 1.4.0, refresh only that provider's remote models with cancellation and report failures.",
       "expected_output": "Passes only AuthOperationOptions such as signal to setRuntimeApiKey, awaits and handles CredentialSynchronizationError, then separately calls refresh({ providers: [providerId], signal }) for remote freshness. It checks ModelsRefreshResult.aborted and every errors entry rather than assuming a resolved promise means success, and validates successful, aborted, and provider-error paths."
     },
     {
       "id": "provider-refresh-generation-publication",
-      "prompt": "Migrate my handwritten Pi provider refresh from context.store.read/write to the Pi 0.84 catalog API without stale refreshes winning.",
+      "prompt": "Migrate my handwritten Pi provider refresh from context.store.read/write to the Pi 1.4.0 catalog API without stale refreshes winning.",
       "expected_output": "Reads the active RefreshModelsContext and publication implementation; restores from immutable context.stored through a generation-checked context.publish update; performs network work only when allowNetwork and the concrete signal permit; checks abort before publication; commits persistence and synchronous state in one publish call; stops when publish returns false; and validates stale-generation, persistence-failure, abort, cached, and successful refresh paths. It notes createProvider fetch callbacks need no migration."
     },
     {
       "id": "oauth-refresh-concrete-abort-signal",
-      "prompt": "Fix my config-form extension OAuth provider for Pi 0.84: refreshToken only accepts credentials and refresh can hang.",
+      "prompt": "Fix my config-form extension OAuth provider for Pi 1.4.0: refreshToken only accepts credentials and refresh can hang.",
       "expected_output": "Implements refreshToken(credentials, signal: AbortSignal), checks or propagates the concrete signal through fetch, polling, lock waits, and sleeps, preserves credentials on cancellation/failure, and validates abort releases the refresh path without logging tokens."
     },
     {
       "id": "agent-core-v4-session-repositories",
       "prompt": "Upgrade my old pi-agent-core AgentHarness session code to the latest official Pi and current fitchmultz/pi. Experimental imports and old repository names no longer resolve.",
-      "expected_output": "Checks exact 1.0 exports: agent-core removed AgentHarness/session/storage/repos/node/pico3. Ordinary extensions use coding-agent SessionManager/AgentSession/runtime, not a replacement experimental harness. Explicit durable semantics require inspecting pi-durable and preserving its separate storage/recovery contract; never relabel saved schemas or lose recovery. Validates the adopted public API and actual runtime."
+      "expected_output": "Checks exact 1.4.0+ exports: @earendil-works/pi-agent-core removed AgentHarness/session/storage/repos/node/pico3. Ordinary extensions use coding-agent SessionManager/AgentSession/runtime, not a replacement experimental harness. Explicit durable semantics require inspecting the latest @earendil-works/pi-durable (1.4.0+) and preserving its separate storage/recovery contract; never relabel saved schemas or lose recovery. Validates the adopted public API and actual runtime."
     },
     {
       "id": "agent-core-filesystem-rename",
       "prompt": "My custom pi-agent-core FileSystem stopped satisfying current Pi when I switched to JsonlSessionRepo.",
-      "expected_output": "Identifies that agent-core 1.0 removed JsonlSessionRepo/FileSystem rather than renaming a method. Inspects the chosen supported storage API before implementing; preserves atomic replacement, destination-on-failure, cancellation, cross-filesystem and saved-data recovery guarantees. Does not invent removed types or substitute same-file queues for multi-file publication safety."
+      "expected_output": "Identifies that @earendil-works/pi-agent-core 1.4.0 removed JsonlSessionRepo/FileSystem rather than renaming a method. Inspects the chosen supported storage API before implementing; preserves atomic replacement, destination-on-failure, cancellation, cross-filesystem and saved-data recovery guarantees. Does not invent removed types or substitute same-file queues for multi-file publication safety."
     },
     {
       "id": "remote-session-metadata-snapshot",
-      "prompt": "Upgrade my old RemoteSession/PiClient dashboard to the latest published Pi package. I need live runtime state, not only saved session metadata.",
-      "expected_output": "Checks actual package exports before copying the old remote API. Explains experimental coding-agent client/server surfaces are source-only from 0.85.1; uses supported local SDK/stdio RPC when that meets the dashboard contract, or identifies the explicit source-level integration requirement without pretending a published remote API exists. Distinguishes durable session listings from authoritative acquired/live state and validates the chosen protocol, replacement, and release lifecycle."
+      "prompt": "Upgrade my old RemoteSession/PiClient dashboard to the latest published Pi 1.4.0 package. I need live runtime state, not only saved session metadata.",
+      "expected_output": "Checks actual 1.4.0 package exports before copying the old remote API. Explains experimental coding-agent client/server surfaces are not published SDK exports; uses supported local SDK/stdio RPC when that meets the dashboard contract, or identifies the explicit source-level integration requirement without pretending a published remote API exists. Distinguishes durable session listings from authoritative acquired/live state and validates the chosen protocol, replacement, and release lifecycle."
     },
     {
       "id": "active-session-replacement-persistence",
       "prompt": "Switch Pi sessions while the first of two sequential sibling tool calls is active, and keep the outgoing session history valid.",
-      "expected_output": "Reads current replacement, tree-navigation, and sequential tool-loop implementation; explains that Pi 0.84 aborts and persists the active call but emits no result for later unstarted sequential siblings, so a forced mid-turn switch cannot guarantee balanced history. Waits for AgentSession.waitForIdle() before switching when balanced call/result history is required; otherwise documents the known unmatched sibling, avoids synthetic abort or tool-result writes, uses only the fresh replacement context after the switch, and validates the outgoing JSONL against the chosen policy."
+      "expected_output": "Reads current replacement, tree-navigation, and sequential tool-loop implementation; explains that Pi 1.4.0 aborts and persists the active call but emits no result for later unstarted sequential siblings, so a forced mid-turn switch cannot guarantee balanced history. Waits for AgentSession.waitForIdle() before switching when balanced call/result history is required; otherwise documents the known unmatched sibling, avoids synthetic abort or tool-result writes, uses only the fresh replacement context after the switch, and validates the outgoing JSONL against the chosen policy."
     },
     {
       "id": "approved-task-repository-authority-boundary",
