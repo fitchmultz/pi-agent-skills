@@ -37,7 +37,8 @@ fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER="$SCRIPT_DIR/scripts/ssh-unix-ops.py"
-TMPDIR_LOCAL="$(mktemp -d "${TMPDIR:-/tmp}/ssh-unix-ops-negative.XXXXXX")"
+LOCAL_TMP_DIR="${TMPDIR:-${TMP:-${TEMP:-/tmp}}}"
+TMPDIR_LOCAL="$(mktemp -d "${LOCAL_TMP_DIR%/}/ssh-unix-ops-negative.XXXXXX")"
 trap 'rm -rf -- "$TMPDIR_LOCAL"' EXIT
 
 REGULAR="$TMPDIR_LOCAL/data.bin"

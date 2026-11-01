@@ -12,7 +12,7 @@ test("SSH helper file workflows and refusals work through a local transport subs
   skip: process.platform === "win32",
 }, async (t) => {
   const transportDir = mkdtempSync(join(tmpdir(), "ssh-unix-ops-transport-"));
-  const workdir = mkdtempSync("/tmp/ssh-unix-ops-self-test-bundle-");
+  const workdir = mkdtempSync(join(tmpdir(), "ssh-unix-ops-self-test-bundle-"));
   try {
     // Execute the actual remote payload locally; no SSH daemon, credentials, or network.
     writeFileSync(join(transportDir, "ssh"), `#!/bin/sh

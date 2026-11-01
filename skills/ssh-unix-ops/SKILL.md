@@ -81,7 +81,7 @@ Use `rsync` or a deployment-specific workflow instead of `upload-tree` for large
 ## Available scripts
 
 - `scripts/ssh-unix-ops.py` — main helper for safe SSH commands, file operations, transfer, backup, restore, diff, and hash.
-- `scripts/self-test.sh --host user@example-host [--workdir /tmp/ssh-unix-ops-self-test-NAME]` — end-to-end helper smoke/integration test against a reachable SSH host.
+- `scripts/self-test.sh --host user@example-host [--workdir /tmp/ssh-unix-ops-self-test-NAME]` — end-to-end helper smoke/integration test against a reachable SSH host (`--workdir` also accepts the remote host's `$TMPDIR/ssh-unix-ops-self-test-NAME`).
 - `tests/negative-tests.sh --host user@example-host` — refusal and JSON-output checks.
 - `evals/trigger-evals.json` and `evals/evals.json` — local skill trigger/output review corpora.
 

@@ -6,7 +6,7 @@ usage() {
 Usage: ./scripts/self-test.sh --host user@example-host [--workdir /tmp/ssh-unix-ops-self-test-NAME]
 
 --workdir must be an absolute remote scratch path matching:
-  /tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+
+  /tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+ (or under $TMPDIR)
 
 Example: ./scripts/self-test.sh --host user@example-host
 Exit codes: 0 success/help; 2 argument refusal; other nonzero values indicate failed checks or commands.
@@ -45,10 +45,31 @@ fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 HELPER="$SCRIPT_DIR/ssh-unix-ops.py"
+REMOTE_TMP_ROOT="/tmp"
 WORKDIR="${WORKDIR:-/tmp/ssh-unix-ops-self-test-$$}"
 if [[ ! "$WORKDIR" =~ ^/tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]]; then
+  if [[ "$WORKDIR" =~ ^/[A-Za-z0-9._/+-]+/ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ && "$WORKDIR" != *".."* && "$WORKDIR" != *"//"* ]]; then
+    PROBED_TMP_ROOT="$(python3 "$HELPER" exec --host "$HOST" --cwd / <<'REMOTE' 2>/dev/null | tr -d '\r' | tail -n 1 || true
+candidate="${TMPDIR:-${TMP:-${TEMP:-/tmp}}}"
+candidate="${candidate%/}"
+if [ -n "$candidate" ] && [ -d "$candidate" ] && [ -w "$candidate" ]; then
+  printf '%s\n' "$candidate"
+else
+  printf '/tmp\n'
+fi
+REMOTE
+)"
+    if [[ "$PROBED_TMP_ROOT" =~ ^/[A-Za-z0-9._/+-]+$ && "$PROBED_TMP_ROOT" != "/" && "$PROBED_TMP_ROOT" != *".."* && "$PROBED_TMP_ROOT" != *"//"* ]]; then
+      REMOTE_TMP_ROOT="$PROBED_TMP_ROOT"
+    fi
+  fi
+fi
+if [[ ! "$WORKDIR" =~ ^/tmp/ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]] && {
+  [[ "$WORKDIR" != "$REMOTE_TMP_ROOT/"* ]] ||
+  [[ ! "${WORKDIR#"$REMOTE_TMP_ROOT/"}" =~ ^ssh-unix-ops-self-test-[A-Za-z0-9._-]+$ ]]
+}; then
   echo "refusing unsafe --workdir: $WORKDIR" >&2
-  echo "expected an absolute remote scratch path like /tmp/ssh-unix-ops-self-test-$USER" >&2
+  echo "expected an absolute remote scratch path like $REMOTE_TMP_ROOT/ssh-unix-ops-self-test-${USER:-user}" >&2
   exit 2
 fi
 QPATH="$WORKDIR/quote 'check'.txt"
@@ -61,7 +82,8 @@ TREE_REMOTE_VERBOSE="$WORKDIR/tree-verbose"
 BIN_REMOTE="$WORKDIR/payload.bin"
 BIN_LINK_REMOTE="$WORKDIR/payload-link.bin"
 BACKUP_PATH=""
-LOCAL_TMP_BASE="$(mktemp -d "${TMPDIR:-/tmp}/ssh-unix-ops-self-test.XXXXXX")"
+LOCAL_TMP_DIR="${TMPDIR:-${TMP:-${TEMP:-/tmp}}}"
+LOCAL_TMP_BASE="$(mktemp -d "${LOCAL_TMP_DIR%/}/ssh-unix-ops-self-test.XXXXXX")"
 BIN_LOCAL="$LOCAL_TMP_BASE/payload.bin"
 BIN_LOCAL_LINK="$LOCAL_TMP_BASE/payload.link"
 BIN_DOWNLOADED="$LOCAL_TMP_BASE/payload-downloaded.bin"
