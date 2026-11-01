@@ -58,9 +58,8 @@ async function getJson(url) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// lrclib intermittently answers 503 "ServerOverloaded" (and misses on /get) for
-// individual parameter forms — sometimes with an empty result set — so try each
-// form once, then retry with backoff when transient errors occur.
+// Try each candidate URL form in order (falling through on 404 or empty `[]`),
+// and retry with backoff only when a URL returns a transient 5xx or 429 status.
 async function firstSuccessful(urls) {
   const statuses = [];
   for (let pass = 0; pass < 3; pass++) {
@@ -99,13 +98,22 @@ function extractTrack(trackName, artistName) {
     );
   let baseTrack = norm(withoutTags) || rawTrack;
   let stuffedArtist = false;
-  if (gotArtist && baseTrack !== gotArtist) {
-    if (baseTrack.startsWith(`${gotArtist} `)) {
-      baseTrack = baseTrack.slice(gotArtist.length).trim() || baseTrack;
-      stuffedArtist = true;
-    } else if (baseTrack.endsWith(` ${gotArtist}`)) {
-      baseTrack = baseTrack.slice(0, -gotArtist.length).trim() || baseTrack;
-      stuffedArtist = true;
+  if (gotArtist) {
+    const parts = withoutTags.split(/\s+[-–—:]\s+/);
+    if (parts.length >= 2) {
+      if (norm(parts[0]) === gotArtist) {
+        const rest = norm(parts.slice(1).join(" "));
+        if (rest) {
+          baseTrack = rest;
+          stuffedArtist = true;
+        }
+      } else if (norm(parts.at(-1)) === gotArtist) {
+        const rest = norm(parts.slice(0, -1).join(" "));
+        if (rest) {
+          baseTrack = rest;
+          stuffedArtist = true;
+        }
+      }
     }
   }
   return { rawTrack, baseTrack, stuffedArtist };
@@ -134,7 +142,7 @@ function scoreCandidate(record, title, artist) {
 
   let trackScore = 0;
   if (rawTrack === wantTrack && !stuffedArtist) trackScore = 100;
-  else if (baseTrack === wantTrack) trackScore = 90;
+  else if (rawTrack === wantTrack || baseTrack === wantTrack) trackScore = 90;
   else {
     const wantWords = new Set(wantTrack.split(" ").filter(Boolean));
     const gotWords = baseTrack.split(" ").filter(Boolean);

@@ -154,6 +154,48 @@ test("lyrics CLI enforces artist matching, Unicode titles, free-text queries, an
   assert.equal(qStuffed.status, 0, qStuffed.stderr);
   assert.match(qStuffed.stdout, /Title: Hello\nArtist: Adele\nAlbum: 25/);
 
+  // Titles that legitimately begin with the artist name (without an "Artist - Title" delimiter) remain exact matches.
+  const titleStartsWithArtist = runLyrics(["--title", "Heart of the Storm", "--artist", "Heart"], {
+    "/api/get": { status: 404, body: null },
+    "/api/search": {
+      status: 200,
+      body: [
+        {
+          id: 50,
+          trackName: "Heart of the Storm",
+          artistName: "Heart",
+          albumName: "Brigade",
+          duration: 240,
+          instrumental: false,
+          plainLyrics: "Storm lyrics",
+        },
+      ],
+    },
+  });
+  assert.equal(titleStartsWithArtist.status, 0, titleStartsWithArtist.stderr);
+  assert.match(titleStartsWithArtist.stdout, /Title: Heart of the Storm\nArtist: Heart/);
+
+  // Empty 200 on the first search form falls through to the second URL form in a single pass.
+  const emptyFirstSearchForm = runLyrics(["--title", "Everlong"], {
+    "/api/search?track_name=Everlong": { status: 200, body: [] },
+    "/api/search?q=Everlong": {
+      status: 200,
+      body: [
+        {
+          id: 341098,
+          trackName: "Everlong",
+          artistName: "Foo Fighters",
+          albumName: "The Colour and the Shape",
+          duration: 251,
+          instrumental: false,
+          plainLyrics: "Hello",
+        },
+      ],
+    },
+  });
+  assert.equal(emptyFirstSearchForm.status, 0, emptyFirstSearchForm.stderr);
+  assert.match(emptyFirstSearchForm.stdout, /Title: Everlong\nArtist: Foo Fighters/);
+
   // 4. Bare-title ambiguity and synced-lyrics derivation.
   const ambiguous = runLyrics(["--title", "Hurt"], {
     "/api/search": {
