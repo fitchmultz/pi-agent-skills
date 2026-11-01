@@ -12,7 +12,7 @@ The October 1, 2026 Pi modernization used:
 
 These are dated source checks, not a promise that a moving “latest” URL will stay unchanged. Recheck the relevant primary source before the next refresh. Historical release notes, migration scenarios, and evaluation reports retain the versions they actually describe.
 
-The November 1, 2026 guidance refresh aligns the skills exclusively with official Pi `1.4.0` (`4a080252f06caf63a525d7873c5d94d3c23887e0`), the `fitchmultz/pi` `1.4.0` fork (`9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`) and its revision-matched [`FORK.md`](https://github.com/fitchmultz/pi/blob/9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f/FORK.md), and the latest versions of referenced companion packages and analyzer dependencies.
+The November 1, 2026 guidance refresh raises the minimum supported floor to official Pi `1.4.0` (`4a080252f06caf63a525d7873c5d94d3c23887e0`), `fitchmultz/pi` commit `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` (`1.4.0`) and its revision-matched [`FORK.md`](https://github.com/fitchmultz/pi/blob/9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f/FORK.md), and the latest versions of referenced companion packages and analyzer dependencies, while instructing agents to always resolve and build to the current latest official Pi release, latest fork HEAD, and latest dependency versions.
 
 ## Authoring rules
 
@@ -44,11 +44,11 @@ Validate host-sensitive behavior against the minimum official Pi baseline, curre
 
 ### Minimum and current official hosts
 
-`package.json` pins `@earendil-works/pi-coding-agent` to `1.4.0` for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current official release and fork revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local pinned baseline.
+`package.json` pins the minimum supported official Pi SDK (`@earendil-works/pi-coding-agent` `1.4.0`) for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current latest official release and fork `main` revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
 
-Support is maintained only for the latest official Pi release (`1.4.0`, `4a080252f06caf63a525d7873c5d94d3c23887e0`) and the latest `fitchmultz/pi` fork (`1.4.0`, `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`), plus the latest versions of referenced companion packages and analyzer dependencies. The [version hazards reference](../skills/pi-extension-development/references/current-version-hazards.md) records the exact official and fork source baselines.
+The minimum supported floor is official Pi `1.4.0` (`4a080252f06caf63a525d7873c5d94d3c23887e0`) and `fitchmultz/pi` commit `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` (`1.4.0`), plus the recorded dependency floors (`@fitchmultz/pi-subagents` `0.52.6+`, `pi-change-working-dir` `0.6.0+`, `@earendil-works/pi-durable` `1.4.0+`, `@biomejs/biome` `2.6.4+`, TypeBox `1.3.27+`, PMD `7.29+`, `lizard>=1.24.3`, `pathspec>=1.1.1`). Agents must never build for anything older than those floors, and must always resolve and build to the current latest official Pi release, latest `fitchmultz/pi` commit HEAD, and latest dependency versions. The [version hazards reference](../skills/pi-extension-development/references/current-version-hazards.md) records the last-verified official and fork source baselines.
 
-Guidance uses current 1.4.0 public SDK, session, runtime, model, tool, schema, and TUI contracts, plus the current fork's managed-host, working-session, auth-fallback, background-execution, and built-in extension contracts. Inspecting a revision does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
+Guidance uses `1.4.0+` public SDK, session, runtime, model, tool, schema, and TUI contracts, plus the fork's managed-host, working-session, auth-fallback, background-execution, and built-in extension contracts. Inspecting a revision does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
 
 Run the current-official host-sensitive checks locally without changing the repository's dependency tree. For an exact CI reproduction, select the tag from that run's frozen host receipt instead of querying the latest release:
 

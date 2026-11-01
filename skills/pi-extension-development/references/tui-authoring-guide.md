@@ -22,7 +22,7 @@ Pick the smallest good UI surface:
 
 ## TUI component rules
 
-Pi `1.4.0` defaults to fullscreen. Use the supplied host TUI, not a second terminal or private render loop. Test default fullscreen and regular mode, narrow/wide/CJK, resize, focus, keyboard/mouse, cancellation and disposal. Use `tui.queryTerminalColors()` (`TerminalColors`, `TerminalColorScheme`, `parseTerminalColorSchemeReport`) for palette queries; the old standalone color-scheme/background helpers are removed.
+Pi `1.4.0+` defaults to fullscreen. Use the supplied host TUI, not a second terminal or private render loop. Test default fullscreen and regular mode, narrow/wide/CJK, resize, focus, keyboard/mouse, cancellation and disposal. Use `tui.queryTerminalColors()` (`TerminalColors`, `TerminalColorScheme`, `parseTerminalColorSchemeReport`) for palette queries; the old standalone color-scheme/background helpers are removed.
 
 - `ctx.ui.custom()` takes a factory and returns a `Promise<T>`. Close by calling `done(value)`.
 - For overlays, use `options.onHandle` to receive `OverlayHandle`. Non-overlay custom UI has no public handle.
@@ -36,7 +36,7 @@ Pi `1.4.0` defaults to fullscreen. Use the supplied host TUI, not a second termi
 - Components that need Kitty key-release events, such as games or smooth movement, opt in with `wantsKeyRelease = true`.
 - Components with text cursors should implement `Focusable` and emit `CURSOR_MARKER`; containers with child `Input`/`Editor` must propagate focus.
 - `showHardwareCursor`, `setShowHardwareCursor(true)`, or `PI_HARDWARE_CURSOR=1` can help terminals that need a visible cursor for IME candidate positioning.
-- In `@earendil-works/pi-tui` `1.4.0`, place `CURSOR_MARKER` immediately before a cursor cell wrapped with public `renderFakeCursor(text)`, emitting the position marker only when focused. With hardware cursor off, the TUI resolves fake-cursor markers to reverse video. With it on, the focused marked fake cursor loses its reverse video while its text remains; unfocused fake cursors stay visible. Preserve markers through highlighting, clipping and composition (`compositeTuiLine`, `stripTerminalSequences`), and test native output with hardware cursor both on and off, including narrow/CJK/emoji cells and focus changes. Prefer native `Input`/`CustomEditor` so the host owns cursor behavior; the helper alone does not repair missing focus propagation or `CURSOR_MARKER` semantics.
+- In `@earendil-works/pi-tui` `1.4.0+`, place `CURSOR_MARKER` immediately before a cursor cell wrapped with public `renderFakeCursor(text)`, emitting the position marker only when focused. With hardware cursor off, the TUI resolves fake-cursor markers to reverse video. With it on, the focused marked fake cursor loses its reverse video while its text remains; unfocused fake cursors stay visible. Preserve markers through highlighting, clipping and composition (`compositeTuiLine`, `stripTerminalSequences`), and test native output with hardware cursor both on and off, including narrow/CJK/emoji cells and focus changes. Prefer native `Input`/`CustomEditor` so the host owns cursor behavior; the helper alone does not repair missing focus propagation or `CURSOR_MARKER` semantics.
 - Use `PI_TUI_WRITE_LOG=/tmp/tui-ansi.log` for raw ANSI stream debugging.
 - `PI_TUI_ESC_TIMEOUT` tunes lone-Escape detection on high-latency SSH links where split `Alt+Enter` misparses. `--use-theme <name[/name]>` overrides the per-run theme without saved settings for renderer validation. Built-in fullscreen transcript search (`Ctrl+Shift+F`), unbound half-page scroll actions, and unbound single-line scroll actions exist; keep custom shortcuts clear of them.
 
@@ -71,7 +71,7 @@ Behavior:
 
 ## Actionable hints and mouse input
 
-Both `1.4.0` targets export the mouse APIs below (`MouseRegion`, `TuiMouseEvent`, `TuiMouseEventResult`, `dispatchMouseEvent`, `retargetMouseEvent`). Check the active package's exports before using them.
+Both `1.4.0+` targets export the mouse APIs below (`MouseRegion`, `TuiMouseEvent`, `TuiMouseEventResult`, `dispatchMouseEvent`, `retargetMouseEvent`). Check the active package's exports before using them.
 
 Regular `TuiMainScreen` does not capture mouse input; the terminal owns scrollback. Fullscreen `TuiAltScreen` supplies native pointer routing. Report this boundary and retain regular-mode keyboard flow; do not add raw mouse capture or change Pi core to manufacture support.
 
