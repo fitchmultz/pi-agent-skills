@@ -17,7 +17,7 @@ Minimum floor baselines at last skill update (always prefer newer releases when 
 - Core `@earendil-works/*` packages (`pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`), companion `@earendil-works/pi-durable`, and fork-retained `@earendil-works/chord`: **`1.4.0+`**.
 - Bundled TypeBox: **`1.3.27+`**. Companions may be nested under `pi-coding-agent/node_modules`; resolve from the selected SDK, not the consumer root.
 - Node engine floor: **`>=24.21.0`** (verified on **Node `24.22.2+`** and **npm `12.2.1+`**).
-- Companion extensions and tools: `@fitchmultz/pi-subagents` **`0.52.6+`**, `pi-change-working-dir` **`0.6.0+`**, `@biomejs/biome` **`2.6.4+`**.
+- Companion extensions and tools: `@fitchmultz/pi-subagents` **`0.52.6+`**, `pi-change-working-dir` **`0.6.0+`**, `oxlint` **`1.90.0+`**, `oxfmt` **`0.75.0+`**.
 
 The `fitchmultz/pi` fork's revision-matched `FORK.md` ([floor `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`](https://github.com/fitchmultz/pi/blob/9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f/FORK.md); always check latest `main` `FORK.md` for newer additions) owns the fork-specific inventory:
 - Process restart (`pi restart`, `/restart`, `ctx.managedHost`, `ManagedHost`, `docs/restart.md`)
