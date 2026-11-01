@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["lizard>=1.24.1,<2", "pathspec>=1.0,<2"]
+# dependencies = ["lizard>=1.24.3,<2", "pathspec>=1.1.1,<2"]
 # ///
 """Collect current-file evidence, not smell judgments. No source is modified."""
 

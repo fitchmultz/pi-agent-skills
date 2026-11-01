@@ -10,7 +10,7 @@ import { parseArgs } from 'node:util';
 
 const packages = ['precinct', '@dagrejs/graphlib', 'node-source-walk', 'filing-cabinet', 'fast-xml-parser', 'iconv-lite'];
 const graphExtensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']);
-// ponytail: Static PMD 7.28 extension metadata; refresh from PMD registrations when new formats are needed.
+// ponytail: Static PMD 7.29 extension metadata; refresh from PMD registrations when new formats are needed.
 // Ambiguous extensions require an explicit choice; JSX/TSX are not JS/TS CPD grammars.
 const cpdExtensions = {
   apex: ['cls', 'trigger'], coco: ['coco'], cpp: ['h', 'hpp', 'hxx', 'c', 'cpp', 'cxx', 'cc', 'C'],
@@ -143,7 +143,7 @@ async function duplicateEvidence(files, output, modules, overrides) {
       'PMD maximal lexical clone groups, not every repeated substring or semantic equivalence; whitespace/comments are ignored by the language lexer.',
       'Minimum one token is the nonempty token unit. Trivial coincidences are preserved for parent-model review, not ranked as smells.',
       'Project CPD-OFF/CPD-ON and language-specific suppression constructs remain effective; marker locations are textual evidence, not proof of a parsed comment.',
-      'Extension routing follows PMD 7.28 metadata; unfamiliar/ambiguous formats need an explicit language choice or a project-native analyzer.',
+      'Extension routing follows PMD 7.29 metadata; unfamiliar/ambiguous formats need an explicit language choice or a project-native analyzer.',
     ],
   };
   const version = await run('pmd', ['--version'], output, path.join(output, 'pmd-version'));
@@ -177,7 +177,7 @@ async function duplicateEvidence(files, output, modules, overrides) {
     }
     await json(path.join(directory, 'paths.json'), mapping);
     await writeFile(path.join(directory, 'files.txt'), `${Object.keys(mapping).join('\n')}\n`, { flag: 'wx' });
-    // PMD 7.28 --no-skip-blocks leaves C++'s default property enabled.
+    // PMD 7.29 --no-skip-blocks leaves C++'s default property enabled.
     // Explicitly clear the pattern so #if 0 code is still collected.
     const args = ['cpd', '--file-list', 'files.txt', '--language', language, '--minimum-tokens', '1', '--skip-blocks-pattern', '', '--no-fail-on-violation', '--format', 'xml', '--report-file', 'report.xml'];
     const command = await run('pmd', args, directory, path.join(directory, 'pmd'));

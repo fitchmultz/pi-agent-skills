@@ -47,7 +47,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.
 - Runtime `pi.setActiveTools()` changes are persisted or reconstructed when needed.
 - Provider register/unregister timing is clear and validated if model availability matters. Dynamic refresh uses read-only `context.stored` and generation-checked `context.publish()`; no state mutates before successful publication. `createProvider({ fetchModels })` and config callbacks that only return models keep factory-owned publication. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
-- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Official 1.0+ and installed c2031 clear factory caches; older restart-only loader advice is historical. Validate the exact distribution used, with a fresh process when package/runtime identity matters.
+- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Both official `1.4.0` and the `fitchmultz/pi` `1.4.0` fork clear factory caches on reload. Validate the exact distribution used, with a fresh process when package/runtime identity matters.
 
 ## Replacement footguns
 
@@ -68,7 +68,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 
 - TUI-only UI checks `ctx.mode === "tui"`.
 - Dialog-capable flows check `ctx.hasUI`.
-- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events, each carrying the latest cumulative `usage` since 0.84.2, until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output. Fork `background_command` is checked separately because it bypasses `user_bash` while receiving the default session environment.
+- RPC behavior is checked when extension UI should work through clients; hosts accumulate delta-only `message_update` events, each carrying the latest cumulative `usage`, until authoritative `message_end`, query `get_available_thinking_levels` again after model changes, run direct `bash` through extension `user_bash` policy, and consume `bash_execution_update` when streaming output. Fork `background_command` is checked separately because it bypasses `user_bash` while receiving the default session environment.
 - Source-targeted remote clients inspect their exact protocol and distinguish durable discovery metadata from acquired live state. Ordinary published integrations use the supported SDK/RPC contract.
 - Print/JSON behavior is explicit.
 - Non-interactive automation policy is explicit and not accidentally blocked by UI-only assumptions.

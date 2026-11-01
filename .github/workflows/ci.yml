@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   resolve:
-    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@4bdc3d292095a7f04fbf034323cee05c8b3b8641 # main
+    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
     with:
-      automation-ref: 4bdc3d292095a7f04fbf034323cee05c8b3b8641 # main
+      automation-ref: c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
 
   qualify:
     needs: resolve
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: fitchmultz/.github
-          ref: 4bdc3d292095a7f04fbf034323cee05c8b3b8641 # main
+          ref: c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
           path: automation
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,7 +47,7 @@ jobs:
           ref: ${{ needs.resolve.outputs.fork-ref }}
           path: fork
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           check-latest: true
@@ -64,7 +64,7 @@ jobs:
           mkdir "$RUNNER_TEMP/d2"
           tar -xzf "$RUNNER_TEMP/d2.tar.gz" -C "$RUNNER_TEMP/d2"
           sudo install -m 755 "$(find "$RUNNER_TEMP/d2" -type f -name d2 -print -quit)" /usr/local/bin/d2
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - name: Install PMD for real code-smell helper checks
         env:
           GH_TOKEN: ${{ github.token }}
@@ -104,7 +104,7 @@ jobs:
           if [[ "$HOST" == fork ]]; then target="$RUNNER_TEMP/fork-package"; fi
           node automation/scripts/qualify.mjs --repo pi-agent-skills --source "$GITHUB_WORKSPACE/skills" \
             --host "$HOST" --target "$target" --output "$GITHUB_WORKSPACE/evidence"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: qualification-skills-${{ matrix.host }}
