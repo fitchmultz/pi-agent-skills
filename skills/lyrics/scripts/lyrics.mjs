@@ -60,52 +60,154 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // lrclib intermittently answers 503 "ServerOverloaded" (and misses on /get) for
 // individual parameter forms — sometimes with an empty result set — so try each
-// form once, then retry with backoff. Returns the first body that carries data,
-// plus the statuses seen, so callers can tell "unavailable" from "no results".
+// form once, then retry with backoff when transient errors occur.
 async function firstSuccessful(urls) {
   const statuses = [];
   for (let pass = 0; pass < 3; pass++) {
     if (pass > 0) await sleep(pass === 1 ? 1000 : 2000);
+    let sawTransient = false;
     for (const url of urls) {
       const { status, body } = await getJson(url);
       statuses.push(status);
+      if (status >= 500 || status === 429) sawTransient = true;
       if (body === null) continue;
       if (Array.isArray(body) && body.length === 0) continue;
       return { body, statuses };
     }
+    if (!sawTransient) break;
   }
   return { body: null, statuses };
 }
 
-// Lowercase and strip punctuation so "Hurt\u001fHurt" and "foo fighters - everlong" compare sanely.
+// Keep all Unicode letters and numbers while collapsing punctuation/control chars.
 function norm(text) {
   return String(text ?? "")
+    .normalize("NFKC")
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
+}
+
+function extractTrack(trackName, artistName) {
+  const rawTrack = norm(trackName);
+  const gotArtist = norm(artistName);
+  const withoutTags = String(trackName ?? "")
+    .replace(/\s*(?:\([^)]*\)|\[[^\]]*\])\s*/g, " ")
+    .replace(
+      /\s+-\s+(?:(?:\d{4}\s+)?remaster(?:ed)?|live|acoustic|radio\s+edit|mono|stereo|single\s+version|album\s+version|explicit|clean|demo|deluxe|official(?:\s+(?:hd|music|lyric))?(?:\s+video|\s+audio)?)\b.*$/i,
+      "",
+    );
+  let baseTrack = norm(withoutTags) || rawTrack;
+  let stuffedArtist = false;
+  if (gotArtist && baseTrack !== gotArtist) {
+    if (baseTrack.startsWith(`${gotArtist} `)) {
+      baseTrack = baseTrack.slice(gotArtist.length).trim() || baseTrack;
+      stuffedArtist = true;
+    } else if (baseTrack.endsWith(` ${gotArtist}`)) {
+      baseTrack = baseTrack.slice(0, -gotArtist.length).trim() || baseTrack;
+      stuffedArtist = true;
+    }
+  }
+  return { rawTrack, baseTrack, stuffedArtist };
+}
+
+function scoreArtist(gotArtist, wantArtist) {
+  if (!wantArtist || !gotArtist) return 0;
+  if (gotArtist === wantArtist) return 50;
+  const wantWords = wantArtist.split(" ").filter(Boolean);
+  const gotWords = gotArtist.split(" ").filter(Boolean);
+  if (wantWords.length === 0 || gotWords.length === 0) return 0;
+  const wantSet = new Set(wantWords);
+  const gotSet = new Set(gotWords);
+  if (wantWords.every((w) => gotSet.has(w)) || gotWords.every((w) => wantSet.has(w))) {
+    return 25;
+  }
+  return 0;
 }
 
 function scoreCandidate(record, title, artist) {
   const wantTrack = norm(title);
-  const gotTrack = norm(record.trackName);
+  const { rawTrack, baseTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
   const gotArtist = norm(record.artistName);
   const wantArtist = artist ? norm(artist) : "";
+  if (!wantTrack || !rawTrack) return { trackScore: 0, artistScore: 0, total: 0 };
 
   let trackScore = 0;
-  if (gotTrack === wantTrack) trackScore = 100;
-  else if (gotTrack.includes(wantTrack)) trackScore = 60;
+  if (rawTrack === wantTrack && !stuffedArtist) trackScore = 100;
+  else if (baseTrack === wantTrack) trackScore = 90;
   else {
     const wantWords = new Set(wantTrack.split(" ").filter(Boolean));
-    const gotWords = gotTrack.split(" ").filter(Boolean);
+    const gotWords = baseTrack.split(" ").filter(Boolean);
     const hits = gotWords.filter((w) => wantWords.has(w)).length;
-    if (hits > 0) trackScore = Math.round((60 * hits) / Math.max(wantWords.size, 1));
+    if (hits > 0) {
+      trackScore = Math.round((50 * hits) / Math.max(wantWords.size, gotWords.length, 1));
+    }
   }
 
-  let artistScore = 0;
-  if (wantArtist) {
-    if (gotArtist === wantArtist) artistScore = 50;
-    else if (gotArtist.includes(wantArtist) || wantArtist.includes(gotArtist)) artistScore = 25;
+  const artistScore = scoreArtist(gotArtist, wantArtist);
+  return { trackScore, artistScore, total: trackScore + artistScore };
+}
+
+function scoreQueryVariant(want, candidateTrack, isCanonical, gotArtist) {
+  if (!candidateTrack) return null;
+  const padded = ` ${want} `;
+  const needle = ` ${candidateTrack} `;
+  let best = null;
+  for (let from = 0; ; ) {
+    const idx = padded.indexOf(needle, from);
+    if (idx === -1) break;
+    from = idx + 1;
+    const before = padded.slice(0, idx).trim();
+    const after = padded.slice(idx + needle.length).trim();
+    const rem = [before, before ? after : after.replace(/^by\s+/, "")]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    if (!rem) {
+      const trackScore = isCanonical ? 100 : 90;
+      const candidate = { trackScore, artistScore: 0, total: trackScore };
+      if (!best || candidate.total > best.total) best = candidate;
+      continue;
+    }
+
+    const artistScore = scoreArtist(gotArtist, rem);
+    if (artistScore === 0) continue;
+    const trackScore = isCanonical ? 100 : 90;
+    const candidate = { trackScore, artistScore, total: trackScore + artistScore };
+    if (!best || candidate.total > best.total) best = candidate;
   }
+  return best;
+}
+
+function scoreQueryCandidate(record, query) {
+  const want = norm(query);
+  const wantWords = [...new Set(want.split(" ").filter(Boolean))];
+  const { rawTrack, baseTrack, stuffedArtist } = extractTrack(record.trackName, record.artistName);
+  const gotArtist = norm(record.artistName);
+  if (!want || !rawTrack || wantWords.length === 0) return { trackScore: 0, artistScore: 0, total: 0 };
+
+  const variants = [
+    scoreQueryVariant(want, rawTrack, !stuffedArtist, gotArtist),
+    baseTrack !== rawTrack ? scoreQueryVariant(want, baseTrack, false, gotArtist) : null,
+  ].filter(Boolean);
+
+  if (variants.length > 0) {
+    variants.sort((a, b) => b.total - a.total);
+    return variants[0];
+  }
+
+  const trackWords = baseTrack.split(" ").filter(Boolean);
+  const artistWords = gotArtist ? gotArtist.split(" ").filter(Boolean) : [];
+  const trackWordSet = new Set(trackWords);
+  const artistWordSet = new Set(artistWords);
+  const matchedTrackWords = trackWords.filter((w) => wantWords.includes(w));
+  if (matchedTrackWords.length === 0) return { trackScore: 0, artistScore: 0, total: 0 };
+
+  const coveredWords = wantWords.filter((w) => trackWordSet.has(w) || artistWordSet.has(w));
+  const matchedArtistWords = artistWords.filter((w) => wantWords.includes(w));
+  const trackScore = Math.round((50 * coveredWords.length) / Math.max(wantWords.length, trackWords.length, 1));
+  const artistScore = matchedArtistWords.length > 0 ? 10 : 0;
   return { trackScore, artistScore, total: trackScore + artistScore };
 }
 
@@ -161,7 +263,7 @@ function listCandidates(records, title) {
 async function main() {
   const { flags, values } = parseArgs(process.argv.slice(2));
   const { title, artist, q } = values;
-  if (!title && !q) usage();
+  if ((!title && !q) || (title && q) || (artist && !title)) usage();
 
   const enc = encodeURIComponent;
   // Exact lookup when both artist and title are known; falls through to search forms on a miss.
@@ -169,9 +271,12 @@ async function main() {
     const { body } = await firstSuccessful([
       `${BASE}/get?artist_name=${enc(artist)}&track_name=${enc(title)}`,
     ]);
-    if (body && (norm(body.trackName) === norm(title) || norm(body.trackName).includes(norm(title)))) {
-      render(body, { lrc: flags.has("lrc"), json: flags.has("json") });
-      return;
+    if (body) {
+      const exact = scoreCandidate(body, title, artist);
+      if (exact.trackScore >= 60 && exact.artistScore > 0) {
+        render(body, { lrc: flags.has("lrc"), json: flags.has("json") });
+        return;
+      }
     }
   }
 
@@ -196,23 +301,31 @@ async function main() {
   const records = Array.isArray(results) ? results : [];
 
   const scored = records
-    .map((record) => ({ record, ...scoreCandidate(record, q ?? title, artist) }))
+    .map((record) => ({
+      record,
+      ...(q ? scoreQueryCandidate(record, q) : scoreCandidate(record, title, artist)),
+    }))
     .sort((a, b) => b.total - a.total);
 
   const best = scored[0];
-  if (best.trackScore < 60) {
-    listCandidates(scored.map((s) => s.record), q ?? title);
+  if (!best || best.trackScore < 60 || (artist && best.artistScore === 0)) {
+    listCandidates(scored.map((s) => s.record), q ?? `${artist ? `${artist} - ` : ""}${title}`);
     process.exit(1);
   }
 
   // Two different artists tied at the top is a genuine ambiguity for the caller to settle.
   // A rival only counts inside the top 3: one stray cover deeper in the list must not
   // overturn an artist that dominates the exact-title matches.
-  if (!artist && best.trackScore === 100) {
+  if (!artist && best.artistScore === 0 && best.trackScore >= 90) {
     const rival = scored
       .slice(0, 3)
       .slice(1)
-      .find((s) => s.trackScore === 100 && norm(s.record.artistName) !== norm(best.record.artistName));
+      .find(
+        (s) =>
+          s.trackScore === best.trackScore &&
+          s.artistScore === 0 &&
+          norm(s.record.artistName) !== norm(best.record.artistName),
+      );
     if (rival) {
       listCandidates(scored.map((s) => s.record), q ?? title);
       process.exit(1);
