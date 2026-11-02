@@ -65,7 +65,8 @@ Package rules:
 
 - Include the `pi-package` keyword when the package should be discoverable and eligible for the Pi package gallery.
 - Put imported Pi core packages in `peerDependencies` with `"*"` and mark them optional in `peerDependenciesMeta`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, and `typebox`. Pin any direct Pi development dependency used only for validation to the exact supported baseline; do not turn that pin into a runtime dependency.
-- Put required third-party runtime libraries in `dependencies`, not `devDependencies`.
+- Put required third-party runtime libraries in `dependencies`, not `devDependencies`. List `@earendil-works/pi-schema` in `dependencies` when extension code imports it; Pi supplies only the core packages above.
+- For packages that load an extension, keep `CHANGELOG.md` (or `pi.changelogPath`) headings in Pi's format (`## [1.2.0]`) and bump `package.json` `version` for each user-visible release: Pi shows entries newer than the last seen version after an update, and git packages show entries when their version increases.
 - Put Pi resource packages referenced through `node_modules/...` in both `dependencies` and `bundledDependencies`.
 - Do not store mutable data, caches, or generated artifacts inside managed Git package checkouts; Pi may reset and clean them during update.
 - Optional package-gallery previews use `pi.video` (MP4) or `pi.image` (PNG/JPEG/GIF/WebP); video wins when both exist.

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Raise the minimum supported floor across `pi-extension-development`, `clef`, `dogfood`, `propose-then-ship-pi`, and the development SDK to official Pi `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` (`1.5.0`). Teach the Pi 1.5.0 extension contracts: pi-schema tool-argument validation and coercion, `typebox` imports, `StringEnum` type-checking through Pi's extension view, injected key hints, blocking custom UI, `pi.exec()` output caps, package changelogs, `ToolCallArgumentsStream`, and the current fork seams with structural detection. Describe Kimi Coding's OpenAI Completions route, add a pi-schema migration evaluation, and ship floor raises together with their guidance in one pull request.
+
 - Stream bounded remote file reads in `ssh-unix-ops` (`--max-lines >= 0`) with incremental decoding and `splitlines(keepends=True)` so prefix/page reads stop after the requested line range without materializing the entire remote file.
 
 - Add `lyrics`: fetch real lyrics for a requested song through the bundled lrclib.net script (with browser-source fallback) and return one copyable phonetically rewritten block for Suno-style vocal synthesis, plus paste-mode rewriting and an unrewritten-original variant.

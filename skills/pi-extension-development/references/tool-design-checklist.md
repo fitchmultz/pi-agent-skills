@@ -26,7 +26,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 
 ## Schema and prompt metadata
 
-- Parameters use strict TypeBox schemas.
+- Parameters use strict TypeBox schemas imported from `typebox`. Pi validates them as JSON Schema with pi-schema, so `execute()` checks constraints that JSON Schema cannot express, such as `Type.Refine()` refinements, codecs or `Format.Set()` formats.
 - String enum fields use `StringEnum([...])` for Google-compatible schemas.
 - Path fields document cwd/relative behavior and normalize leading `@` when applicable.
 - Avoid aliases and optional-field soup unless compatibility requires them; use `prepareArguments()` for old stored-session compatibility instead of widening the public schema.
@@ -34,7 +34,8 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 - `description` is specific and short.
 - `promptSnippet` is present when the tool should appear in Available tools.
 - `promptGuidelines` explicitly name the tool in every bullet and stay small enough for always-on context.
-- `defineTool()` is used for standalone definitions and SDK `customTools` arrays so TypeBox params stay inferred; inline `pi.registerTool({ ... })` already infers params.
+- `defineTool()` is used for standalone definitions and SDK `customTools` arrays so TypeBox params stay inferred; inline `pi.registerTool({ ... })` already infers params. Type-check `StringEnum` fields against the host's extension view (see `current-version-hazards.md`); against published pi-ai types they infer `unknown`.
+- Tests and model-facing recovery text expect pi-schema validation messages (`- path: missing`), and plain JSON Schema tools receive the same argument coercion as TypeBox tools.
 - `constrainedSampling` is set only when provider-side strict schema or grammar is intended. Use `{ type: "json_schema", strict: "prefer" }` by default; use `"require"` only when unsupported models must fail; use `{ type: "grammar", variants: { openai_lark?: string, openai_regex?: string } }` only with `compat.supportsOpenAIGrammarTools`. Omit or set `false` to opt out.
 
 ## Factory/load timing
