@@ -120,14 +120,27 @@ REMOTE_READ = REMOTE_COMMON + dedent(
     follow_symlinks = sys.argv[5] == '1'
 
     ensure_existing_regular_file(path, action='read', follow_symlinks=follow_symlinks)
-    text = path.read_text(encoding=encoding, errors='replace')
-    lines = text.splitlines(keepends=True)
     start_index = max(start_line - 1, 0)
     if max_lines < 0:
-        selected = lines[start_index:]
+        text = path.read_text(encoding=encoding, errors='replace')
+        lines = text.splitlines(keepends=True)
+        sys.stdout.write(''.join(lines[start_index:]))
     else:
-        selected = lines[start_index:start_index + max_lines]
-    sys.stdout.write(''.join(selected))
+        with path.open('r', encoding=encoding, errors='replace') as fh:
+            if max_lines > 0:
+                stop_index = start_index + max_lines
+                line_index = 0
+                while line_index < stop_index:
+                    chunk = fh.read(16384)
+                    if not chunk:
+                        break
+                    for part in chunk.splitlines(keepends=True):
+                        if line_index >= start_index:
+                            sys.stdout.write(part)
+                        if part[-1] in '\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029':
+                            line_index += 1
+                            if line_index >= stop_index:
+                                break
     '''
 ).strip() + "\n"
 

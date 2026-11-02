@@ -5,6 +5,7 @@ Historical archive notes. Bundled changes are recorded in the [repository change
 ## Unreleased
 
 ### Changed
+- Stream bounded `read` payloads (`--max-lines >= 0`) incrementally instead of reading and splitting the full remote file before slicing.
 - Renamed the skill from `ssh-linux-ops` to `ssh-unix-ops` to reflect Linux, macOS, and WSL2 SSH targets.
 
 ## [0.3.0] - 2026-04-02
