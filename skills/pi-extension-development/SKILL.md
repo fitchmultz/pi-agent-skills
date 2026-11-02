@@ -1,20 +1,20 @@
 ---
 name: pi-extension-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
-compatibility: "Pi 1.4.0+ (official release) and fitchmultz/pi fork (commit 9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f or newer); always resolve and build to the current latest official release, latest fork HEAD, and latest dependency versions. Python 3.9+ for the bundled resolver."
+compatibility: "Pi 1.5.0+ (official release) and fitchmultz/pi fork (commit ea5fe4563fd15e7b630fa33c776865a1e30c7acb or newer); always resolve and build to the current latest official release, latest fork HEAD, and latest dependency versions. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "3.0.0"
-  last-verified-pi: "1.4.0"
-  official-source: "4a080252f06caf63a525d7873c5d94d3c23887e0"
-  fork-source: "9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f"
+  version: "4.0.0"
+  last-verified-pi: "1.5.0"
+  official-source: "f9a26365568127461c47a07a37dcb42c140a3ac5"
+  fork-source: "ea5fe4563fd15e7b630fa33c776865a1e30c7acb"
 ---
 
 # Pi Extension Development
 
 Develop for **both** the current latest official Pi release (`earendil-works/pi`) and the current latest commit HEAD of Mitch's `fitchmultz/pi` fork, preserving requested power-user behavior and checking each exact target contract.
 
-This skill was last updated and verified at official Pi **`1.4.0`** (`4a080252f06caf63a525d7873c5d94d3c23887e0`) and `fitchmultz/pi` **`1.4.0`** commit **`9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`**. Treat those as the **minimum supported floor**, never as a static pin:
-- Never build for or keep compatibility shims/fallbacks for anything older than official Pi `1.4.0`, anything older than fork commit `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f`, or older versions of referenced packages/tools.
+This skill was last updated and verified at official Pi **`1.5.0`** (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` **`1.5.0`** commit **`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`**. Treat those as the **minimum supported floor**, never as a static pin:
+- Never build for or keep compatibility shims/fallbacks for anything older than official Pi `1.5.0`, anything older than fork commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb`, or older versions of referenced packages/tools.
 - Always check and target the **latest** official Pi release, the **latest** `fitchmultz/pi` commit HEAD, and the **latest** versions of all dependencies and companion tools at the time you run. A matching version number does not make official Pi and the fork identical.
 
 ## Scope and prerequisites
@@ -36,14 +36,14 @@ pi --version
 
 The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher, including mise/asdf. An override needs no `pi` on PATH and returns null launcher fields: verify runnable Pi separately. `--pi PATH` deliberately ignores the override.
 
-Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. When the latest official release or fork HEAD is newer than the `1.4.0` / `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` baseline recorded above, read every crossed changelog entry and commit diff since that baseline and target the newest contract directly.
+Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. When the latest official release or fork HEAD is newer than the `1.5.0` / `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` baseline recorded above, read every crossed changelog entry and commit diff since that baseline and target the newest contract directly.
 
-Mitch runs `fitchmultz/pi`; extensions must support **both** the latest official Pi release and the latest `fitchmultz/pi` commit HEAD. `pi-posthorse` uses public retain-none compaction on official Pi `1.4.0+`; it is not a fork-only exception. Verify affected APIs and runtime behavior against both latest targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded in frontmatter are last-verified minimum baselines, never a reason to skip a newer release or commit.
+Mitch runs `fitchmultz/pi`; extensions must support **both** the latest official Pi release and the latest `fitchmultz/pi` commit HEAD. `pi-posthorse` uses public retain-none compaction on official Pi `1.5.0+`; it is not a fork-only exception. Verify affected APIs and runtime behavior against both latest targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded in frontmatter are last-verified minimum baselines, never a reason to skip a newer release or commit.
 
 Select the targets before implementing:
 
-- Query the current latest stable official release (`gh release view --repo earendil-works/pi --json tagName,url`, floor `1.4.0+`) and use that latest official version for implementation and validation. Use its official package/source, not a fork artifact with the same version.
-- Query the current latest `fitchmultz/pi` commit HEAD (`gh api repos/fitchmultz/pi/commits/main --jq .sha`, floor `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` or newer) or active checkout/release manifest. Record installed versus latest revisions separately; do not update the user's runtime merely to validate a change.
+- Query the current latest stable official release (`gh release view --repo earendil-works/pi --json tagName,url`, floor `1.5.0+`) and use that latest official version for implementation and validation. Use its official package/source, not a fork artifact with the same version.
+- Query the current latest `fitchmultz/pi` commit HEAD (`gh api repos/fitchmultz/pi/commits/main --jq .sha`, floor `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` or newer) or active checkout/release manifest. Record installed versus latest revisions separately; do not update the user's runtime merely to validate a change.
 - Resolve each runnable target with `python3 <skill-dir>/scripts/resolve_pi.py --pi /absolute/path/to/target/pi --json` and run that launcher's `--version`. A package-only `PI_PACKAGE_DIR` override proves source identity, not which host will execute tests.
 - Keep a small evidence table: distribution, version/revision, launcher/package root, Node executable, affected checks/results. Use separate temporary projects and agent directories so one host's resources, credentials, or cached state cannot stand in for the other.
 
@@ -53,9 +53,9 @@ When install/runtime identity matters, compare `type -a pi`, `pi --version`, `co
 
 ## Load only the relevant contract
 
-Paths below are relative to the resolved Pi package unless prefixed `references/`. Read `references/current-version-hazards.md` before copying affected APIs; it distinguishes shared contracts from fork additions at the `1.4.0`+ floor.
+Paths below are relative to the resolved Pi package unless prefixed `references/`. Read `references/current-version-hazards.md` before copying affected APIs; it distinguishes shared contracts from fork additions at the `1.5.0`+ floor. Its Pi 1.5.0 contracts section covers tool arguments validated by `@earendil-works/pi-schema`, `typebox` imports, `StringEnum` typing and injected key hints; apply it to every tool, renderer and provider stream you touch.
 
-| Changed surface | Current Pi sources (1.4.0+ floor; verify latest host) | Bundled detail |
+| Changed surface | Current Pi sources (1.5.0+ floor; verify latest host) | Bundled detail |
 | --- | --- | --- |
 | Tools, events, trust, load order, packages | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/configuration.md`, `docs/environment-variables.md`, `docs/packages.md`, `docs/codemode.md`, `docs/mcp.md`, matching examples/types/source | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
 | SDK, CLI integration, RPC, wire formats | `docs/sdk.md`, `docs/cli.md`, `docs/cli-integration.md`, `docs/rpc.md`, `docs/rpc-commands.md`, `docs/rpc-extension-ui.md`, `docs/json.md`, `docs/message-types.md`, matching examples/types/source | `references/runtime-authoring-guide.md` |
@@ -68,7 +68,7 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 | Requested Linux/Docker proof | Exact host/distribution identity and project tests | `references/linux-docker-validation.md` |
 | New extension idea | Existing project and native mechanisms | `references/idea-evaluation-checklist.md` |
 
-`@earendil-works/pi-agent-core` (`1.4.0+`) exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, and agent types; it does not export experimental harness/session/storage/node/pico3 surfaces. Ordinary extensions use coding-agent's SDK/SessionManager/runtime. Explicit durable requirements use the latest `@earendil-works/pi-durable` (`1.4.0+`) and its separate storage contract.
+`@earendil-works/pi-agent-core` (`1.5.0+`) exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types (`AgentTool`, `AgentToolParams`); it does not export experimental harness/session/storage/node/pico3 surfaces. Ordinary extensions use coding-agent's SDK/SessionManager/runtime. Explicit durable requirements use the latest `@earendil-works/pi-durable` (`1.5.0+`) and its separate storage contract.
 
 ## Implementation and validation
 
@@ -76,7 +76,7 @@ Paths below are relative to the resolved Pi package unless prefixed `references/
 2. Design only applicable startup, reload/restart, resume/fork/tree/compact, cancellation, concurrency, and non-UI behavior. Reconstruct durable state and dispose owned resources. Use shared native APIs from the latest release; fork additions must not become requirements for official-host users including Posthorse.
 3. Implement the smallest complete change. Tools execute in parallel by default; queue the entire file read-modify-write window with `withFileMutationQueue()`. One `executionMode: "sequential"` sibling serializes the whole native batch. The file queue is process-local and same-file only, not cross-process ownership or multi-file transaction safety.
 4. Guard terminal-only UI with `ctx.mode === "tui"` and dialog flows with `ctx.hasUI`. Preserve non-interactive workflows with explicit policy rather than assuming dialogs exist. Visually inspect new/changed TUI controls and their native click/key paths across states affected by the task or shared root cause; report unrelated existing omissions separately.
-5. Type-check TypeScript with the repo command or `tsc --noEmit`, recording which target supplies the types. Check affected imports and signatures against both the latest official release and latest fork HEAD; a successful build against fork types alone does not prove official compatibility. Lint and format with the repo's configured commands or the latest `oxlint` (`1.90.0+` floor) and `oxfmt` (`0.75.0+` floor) packages under applicable environment policy, installing them when needed; do not ask again for a covered install. Use `npx --no-install oxlint` and `npx --no-install oxfmt --check` (or `--write`) once available.
+5. Type-check TypeScript with the repo command or `tsc --noEmit`, recording which target supplies the types. Extensions that import from `@earendil-works/pi-ai` type-check against Pi's extension view (`compilerOptions.paths`, see `references/current-version-hazards.md`), not the published pi-ai types. Check affected imports and signatures against both the latest official release and latest fork HEAD; a successful build against fork types alone does not prove official compatibility. Lint and format with the repo's configured commands or the latest `oxlint` (`1.90.0+` floor) and `oxfmt` (`0.75.0+` floor) packages under applicable environment policy, installing them when needed; do not ask again for a covered install. Use `npx --no-install oxlint` and `npx --no-install oxfmt --check` (or `--write`) once available.
 6. Load through the intended package path and exercise the changed command/tool/event/provider/UI/SDK/RPC path. Use explicit `--approve`/`--no-approve` when project trust affects results. For public extensions, validate affected behavior on the latest `fitchmultz/pi` fork and latest official Pi host, including `pi-posthorse`; a shared version number is insufficient. Exercise each target's real loader and changed behavior against the same extension source or packed artifact; a PATH-selected smoke only proves that one host. Repeat host-sensitive checks, not artifact creation or publication. Report an unavailable target as a validation gap. Reuse checks whose relevant inputs remain valid. Add behavior coverage for credible regressions, not assertions that mirror implementation. Complete required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
 7. For factory work, dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`; also inspect steady-state timers, processes, memory, network, and prompt/tool cost. Model settings belong to the host, not a skill-side client or router.
 8. Update affected docs, tests, metadata, and changelog when their contract changes. Report mismatches between docs and runtime rather than copying them.

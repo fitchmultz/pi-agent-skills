@@ -33,6 +33,7 @@ test("Pi contract scenarios remain available to behavioral evaluation", () => {
   const ids = new Set(evals.map(({ id }) => id));
   for (const id of [
     "typebox-1-3-7-migration",
+    "pi-schema-tool-validation-1-5",
     "scoped-model-extension-picker",
     "message-renderer-output-padding",
     "rpc-user-bash-policy",

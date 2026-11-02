@@ -112,13 +112,13 @@ Supported dynamic behavior:
 - Extension contexts expose the current session's resolved model scope through read-only `ctx.scopedModels`. Use it when an extension model UI or action must match `--models`/`enabledModels`; an empty array means there is no scope, not that no models are available.
 - Commands/events can send steering/follow-up messages or inject custom messages when that is the workflow.
 
-Use `/reload` or `ctx.reload()` for resource refresh and extension reinitialization, not ordinary dynamic state. Both official `1.4.0+` and the `fitchmultz/pi` fork (`1.4.0+`) clear factory caches on reload; still use a fresh process when validating package/runtime identity.
+Use `/reload` or `ctx.reload()` for resource refresh and extension reinitialization, not ordinary dynamic state. Both official `1.5.0+` and the `fitchmultz/pi` fork (`1.5.0+`) clear factory caches on reload; still use a fresh process when validating package/runtime identity.
 
 ## Native tools and optional fork instruction discovery
 
 Use native `namespace`, `defaultActive`, `exposure`, `prepareLoadout`, output schemas and tool-context `executeTool` when they preserve the required policy. Direct inactive tools are not callable; codemode/deferred tools are callable whenever registered. Changing exposure to deferred can widen permissions. Nested tool failures resolve `isError: true`; inspect it and preserve usage exactly once. Content redaction must also preserve or replace structured content safely.
 
-The `fitchmultz/pi` `1.4.0+` fork's collector (`builtin:instruction-groups`) is emitted synchronously during `session_start`: `pi:instruction-groups` carries `{ register(group), isManaged() }`; a group is `{ name, description, tools, instructions(ctx) }`. Register synchronously and keep instructions/tool membership extension-owned. `discover_tools({ enable: ["group"] })` returns full instructions without performing an integration action; only subsequent turns can use the restored, previously selected tools. It does not activate optional tools, override exclusions or widen exposure. Read `docs/instruction-groups.md` for readiness and branch/compaction recovery. Do not use retired `ToolDefinition.discovery`/`sectionTools` contracts, a settings inventory, or a custom resolver/activation journal.
+The `fitchmultz/pi` `1.5.0+` fork's collector (`builtin:instruction-groups`) is emitted synchronously during `session_start`: `pi:instruction-groups` carries `{ register(group), isManaged() }`; a group is `{ name, description, tools, instructions(ctx) }`. Register synchronously and keep instructions/tool membership extension-owned. `discover_tools({ enable: ["group"] })` returns full instructions without performing an integration action; only subsequent turns can use the restored, previously selected tools. It does not activate optional tools, override exclusions or widen exposure. Read `docs/instruction-groups.md` for readiness and branch/compaction recovery. Do not use retired `ToolDefinition.discovery`/`sectionTools` contracts, a settings inventory, or a custom resolver/activation journal.
 
 When absent/unmanaged, supply full instructions through official prompt sections and preserve ordinary tool exposure. Native tool search, provider search and an MCP gateway do not guarantee group instructions were loaded before effects, including same-batch calls. Keep integration instruction guards, approval, cancellation and job recovery live; validate discovery/execution, explicit restrictions, late registration, resume/tree/compaction/reload/model changes against the real selected host. Compare task outcomes and cumulative cost, not only initial tokens.
 
@@ -172,7 +172,7 @@ When embedding pi with `AgentSessionRuntime`:
 
 ## Events and mutation
 
-- Pi `1.4.0+` exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
+- Pi `1.5.0+` exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
 - `input` runs after extension commands are checked and before skill/template expansion. Transforms chain; `handled` short-circuits.
 - `before_agent_start` can inspect `systemPromptOptions` and chain system-prompt changes.
 - `context` receives conversation messages without system messages; Pi restores prompt/tool declarations afterward. `context_with_system` owns its full output: preserve the leading system declaration at index zero and later tool updates in their positions. `SessionManager` owns future provider context: append through it and refresh, rather than assigning low-level agent message arrays.
@@ -195,7 +195,9 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Runtime third-party dependencies belong in `dependencies`, even if they are heavy sandbox/client SDKs required by the feature.
 - Do not rely on devDependencies at runtime.
 - Imported pi core packages belong in optional `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`. Exact Pi baseline pins belong only in `devDependencies` when the repo uses them for validation.
-- The `1.4.0+` official and fork packages bundle TypeBox `1.3.27+`. Always use the latest target host's installed `typebox` APIs; do not pin an older peer or add a compatibility shim.
+- Official `1.5.0` bundles TypeBox `1.3.27`; the fork bundles `1.3.37`. Import `Type`/`Static`/`TSchema` from `typebox`, use APIs present in both hosts' copies, and rely on the host's TypeBox through the optional `*` peer. Extensions that import `@earendil-works/pi-schema` declare it in `dependencies`; Pi supplies only the packages listed in `docs/packages.md`.
+- A package that loads at least one extension can show its changelog on the next fresh launch after an update. Pi reads root `CHANGELOG.md`, or `pi.changelogPath` (`""` disables it), and compares headings such as `## [1.2.0]` or `## 1.2.0 - 2026-01-01` with the `package.json` version. A git package shows entries only when that version increases, so bump it with each user-visible release.
+- `pi.exec()` accepts `maxBuffer` and reports `truncated`; size it for the command instead of collecting unbounded output.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
 - `npmCommand` may route installs through wrappers/package managers such as `mise`, `asdf`, `bun`, or `pnpm`; do not assume bare `npm`.
 - Project package settings and missing project package installs participate only after project trust. Package commands accept `--approve` / `--no-approve` for one-command trust behavior, and global `defaultProjectTrust` controls unresolved fallback behavior.
@@ -206,7 +208,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 
 ## Removed experimental harness and remote sessions
 
-`@earendil-works/pi-agent-core` `1.4.0+` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` (`1.4.0+`) exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
+`@earendil-works/pi-agent-core` `1.5.0+` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` (`1.5.0+`) exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
 
 ## RPC mode gotchas
 

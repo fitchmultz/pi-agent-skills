@@ -1,7 +1,7 @@
 ---
 name: clef
 description: "Cloudflare Clef decision models: evaluate supplied text/JSON against defined questions, returning labels, yes/no probabilities, or ordered scores. Use when a separate probabilistic judgment is useful. Do not use for open-ended text generation or retrieving facts."
-compatibility: "Pi 1.4.0+ with native codemode and authenticated cloudflare-workers-ai classifiers."
+compatibility: "Pi 1.5.0+ with native codemode and authenticated cloudflare-workers-ai classifiers."
 ---
 
 # Clef
