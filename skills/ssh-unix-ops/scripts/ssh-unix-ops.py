@@ -130,21 +130,17 @@ REMOTE_READ = REMOTE_COMMON + dedent(
             if max_lines > 0:
                 stop_index = start_index + max_lines
                 line_index = 0
-                pending = ''
                 while line_index < stop_index:
                     chunk = fh.read(16384)
-                    eof = not chunk
-                    buf = pending + chunk
-                    parts = buf.splitlines(keepends=True)
-                    pending = '' if eof else (parts.pop() if parts else '')
-                    for line in parts:
-                        if line_index >= start_index:
-                            sys.stdout.write(line)
-                        line_index += 1
-                        if line_index >= stop_index:
-                            break
-                    if eof:
+                    if not chunk:
                         break
+                    for part in chunk.splitlines(keepends=True):
+                        if line_index >= start_index:
+                            sys.stdout.write(part)
+                        if part[-1] in '\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029':
+                            line_index += 1
+                            if line_index >= stop_index:
+                                break
     '''
 ).strip() + "\n"
 

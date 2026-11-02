@@ -123,6 +123,18 @@ with tempfile.TemporaryDirectory() as directory:
         pathlib.Path.open = orig_open
         pathlib.Path.read_text = orig_read_text
 
+    sparse = root / "sparse.txt"
+    sparse_payload = "z" * (512 * 1024)
+    sparse.write_text(sparse_payload, encoding="utf-8")
+    sys.argv = ["-c", str(sparse), "utf-8", "1", "10", "0"]
+    with contextlib.redirect_stdout(io.StringIO()) as out:
+        exec(compile(payload, "<REMOTE_READ>", "exec"), {})
+    assert out.getvalue() == sparse_payload
+    sys.argv = ["-c", str(sparse), "utf-8", "2", "10", "0"]
+    with contextlib.redirect_stdout(io.StringIO()) as out:
+        exec(compile(payload, "<REMOTE_READ>", "exec"), {})
+    assert out.getvalue() == ""
+
     boundary_crlf = b"a" * 16383 + b"\\r\\nsecond\\nthird\\r4th"
     samples = [
         b"",
