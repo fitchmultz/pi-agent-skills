@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Stream bounded remote file reads in `ssh-unix-ops` (`--max-lines >= 0`) with incremental decoding and `splitlines(keepends=True)` so prefix/page reads stop after the requested line range without materializing the entire remote file.
+
 - Add `lyrics`: fetch real lyrics for a requested song through the bundled lrclib.net script (with browser-source fallback) and return one copyable phonetically rewritten block for Suno-style vocal synthesis, plus paste-mode rewriting and an unrewritten-original variant.
 
 - Raise the minimum supported floor across `pi-extension-development`, `clef`, `code-smells`, `dogfood`, `propose-then-ship-pi`, and repository dependencies to official Pi `1.4.0` (`4a080252f06caf63a525d7873c5d94d3c23887e0`), `fitchmultz/pi` commit `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` (`1.4.0`), and current companion/analyzer baselines (`@fitchmultz/pi-subagents` `0.52.6+`, `pi-change-working-dir` `0.6.0+`, `@earendil-works/pi-durable` `1.4.0+`, `oxlint` `1.90.0+`, `oxfmt` `0.75.0+`, TypeBox `1.3.27+`, PMD `7.29+`, `lizard>=1.24.3`, `pathspec>=1.1.1`, and multimodal Clef/`clef-omni`/`clef-flash` classifiers), while instructing agents to always resolve and build to the current latest official release, latest fork HEAD, and latest dependency versions.
