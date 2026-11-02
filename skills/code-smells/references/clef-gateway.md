@@ -98,7 +98,9 @@ count never becomes a classifier-call budget.
 - [Gateway response log ID](https://developers.cloudflare.com/ai-gateway/evaluations/add-human-feedback-api/#2-retrieve-the-cf-aig-log-id)
 - Active Pi's `docs/codemode.md` and `docs/models.md` for native API details.
 
-The header route is verified on Pi `1.4.0+` (last verified at `fitchmultz/pi` commit
-`9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` and official Pi `4a080252f06caf63a525d7873c5d94d3c23887e0`): native full-Clef calls return typed
-answers and Gateway response receipts. Always check the active latest Pi host's `docs/codemode.md` and `docs/models.md`; this qualifies that setup, not every
+The header route targets Pi `1.5.0+`. On official Pi `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi`
+commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb`, the runner's credential, endpoint, Gateway-header and model checks pass
+against a synthetic transport. Live native full-Clef calls, which return typed answers and Gateway response receipts, were last
+verified at `fitchmultz/pi` commit `9e0674ef667e90a63a5fb64f18fbb476cd1b8a3f` and official Pi
+`4a080252f06caf63a525d7873c5d94d3c23887e0` (`1.4.0`). Always check the active latest Pi host's `docs/codemode.md` and `docs/models.md`; this qualifies that setup, not every
 host version, source-evidence size, or credential.
