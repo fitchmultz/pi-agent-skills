@@ -48,7 +48,7 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`dogfood`](skills/dogfood/SKILL.md) | Test browser flows and capture evidence of UI problems. |
 | [`handoff`](skills/handoff/SKILL.md) | Write instructions for the next session or a delegated task. |
 | [`lyrics`](skills/lyrics/SKILL.md) | Fetch song lyrics and rewrite them phonetically for Suno-style vocal synthesis. |
-| [`pi-extension-development`](skills/pi-extension-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
+| [`pi-development`](skills/pi-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
 | [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. |
 | [`ssh-unix-ops`](skills/ssh-unix-ops/SKILL.md) | Work on Linux, macOS, or WSL2 hosts over SSH. |
 | [`test-audit`](skills/test-audit/SKILL.md) | Find brittle or redundant tests and check the value of new tests. |
@@ -58,7 +58,7 @@ Some skills require extra tools. The skill pages below list their requirements.
 
 ## Compatibility
 
-The skills support official Pi and [`fitchmultz/pi`](https://github.com/fitchmultz/pi). Their extension APIs can differ even when their version numbers match. Read the [version hazards reference](skills/pi-extension-development/references/current-version-hazards.md) before you build an extension.
+The skills support official Pi and [`fitchmultz/pi`](https://github.com/fitchmultz/pi). Their extension APIs can differ even when their version numbers match. Read the [version hazards reference](skills/pi-development/references/current-version-hazards.md) before you build an extension.
 
 ## Development and evaluations
 

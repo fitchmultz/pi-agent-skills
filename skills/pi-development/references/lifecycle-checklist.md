@@ -41,6 +41,7 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - `session_tree` rehydrates if branch navigation changes meaning.
 - `agent_end` is per-low-level-run. Local-run notifications use shared `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` after continuations/retries, never low-level `session.agent.waitForIdle()`. On the inspected hosts, actionable final-boundary work uses `agent_before_settle`; settlement is notification-only. Extension-owned detached jobs are not completed by local settlement.
 - `session_shutdown` cleans timers, watchers, processes, subscriptions, raw input listeners, overlays/widgets, and handles.
+- On current fork sources, idle RPC `ctx.shutdown()` runs immediately when no command is active; an active command writes its response first. Print mode still exits through its own completion path. Let the host finish started OAuth refresh persistence during shutdown rather than killing it on the first signal.
 
 ## Runtime mutation
 

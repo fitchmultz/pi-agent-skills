@@ -89,7 +89,7 @@ export async function runCase(host, testCase, { skillsDir, thinking = 'max', tim
       ...['npm test', 'node --test'].map(command => [command, [process.execPath, ['--permission', `--allow-fs-read=${cwd}`, '--experimental-test-isolation=none', '--test']]]),
       ['pi --version', [process.execPath, [join(host.root, 'dist', 'bundle', 'cli.js'), '--version']]],
     ]);
-    if (!withoutSkills) commandMap.set(`python3 ${join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-extension-development/scripts/resolve_pi.py'), '--json']]);
+    if (!withoutSkills) commandMap.set(`python3 ${join(skillsDir, 'pi-development/scripts/resolve_pi.py')} --json`, ['python3', [join(skillsDir, 'pi-development/scripts/resolve_pi.py'), '--json']]);
     const commandParts = command => command.split('&&').map(value => value.trim());
     const isInspection = (name, args) => name === 'read' || name === 'ls' || (name === 'bash' && typeof args?.command === 'string'
       && commandParts(args.command).every(part => commandMap.has(part) && part !== 'npm test' && part !== 'node --test'));
