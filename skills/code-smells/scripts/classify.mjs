@@ -106,7 +106,7 @@ async function main() {
   if (input === outputTarget) throw new Error("Input and output must be different files");
   const scriptDir = dirname(fileURLToPath(import.meta.url));
   const resolution = JSON.parse(execFileSync("python3", [
-    resolve(scriptDir, "../../pi-extension-development/scripts/resolve_pi.py"), "--json",
+    resolve(scriptDir, "../../pi-development/scripts/resolve_pi.py"), "--json",
   ], { encoding: "utf8" }));
   const { ModelRuntime, readStoredCredential } = await import(pathToFileURL(resolve(resolution.packageRoot, "dist/index.js")).href);
   // ponytail: Native in-memory auth is core-only; use a public export when Pi provides one.

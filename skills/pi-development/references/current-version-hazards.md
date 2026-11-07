@@ -1,19 +1,19 @@
-# Version and Distribution Hazards
+# Version and distribution hazards
 
 ## Evidence and support policy
 
-This reference was last updated when official Pi was **`1.5.0`** (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` was at commit **`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`** (`1.5.0`). Those versions and commits are the **minimum supported floor**, never a ceiling or static pin:
+The minimum supported baselines are official Pi **`1.5.0`** (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` commit **`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`** (`1.5.0`). The November 7, 2026 refresh also inspects fork [`e3cabf1de0775895e2b2086729dbbe65ed3f426f`](https://github.com/fitchmultz/pi/tree/e3cabf1de0775895e2b2086729dbbe65ed3f426f), including upstream main through `085c84e98`. These newer source contracts do not raise the official release floor or make upstream main a released package.
 
 - **Always build to the current latest version:** resolve the latest official Pi release (`gh release view --repo earendil-works/pi --json tagName,url` / npm `@earendil-works/pi-coding-agent@latest`), the latest `fitchmultz/pi` commit HEAD (`main`), and the latest release of every referenced dependency or companion tool. When newer releases or commits exist beyond the floor below, read the crossed changelog entries/commits and build to the newest contract.
 - **Support both hosts:** extensions must work on both the latest official vanilla Pi release and the latest `fitchmultz/pi` fork commit.
 - **Never target older versions:** do not build for or maintain compatibility branches, shims, or legacy fallbacks for anything older than official Pi `1.5.0`, anything older than fork commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb`, or older dependency versions.
 
-| Distribution | Minimum supported floor (last-verified baseline) | Target rule |
+| Distribution | Minimum supported floor | Target rule |
 | --- | --- | --- |
 | Official Pi (`earendil-works/pi`) | `1.5.0+` / floor [`f9a26365568127461c47a07a37dcb42c140a3ac5`](https://github.com/earendil-works/pi/tree/f9a26365568127461c47a07a37dcb42c140a3ac5) | Always resolve and target the **latest** published official release (`@earendil-works/{pi-coding-agent,pi-agent-core,pi-ai,pi-tui,pi-telemetry,pi-codemode,pi-mcp}` and companion `pi-durable`, public SDK `dist/index.js`, declarations, and schemas) |
 | `fitchmultz/pi` fork | `1.5.0+` / floor [`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`](https://github.com/fitchmultz/pi/tree/ea5fe4563fd15e7b630fa33c776865a1e30c7acb) | Always resolve and target the **latest** `fitchmultz/pi` commit HEAD (and active installed fork release), verified against its revision-matched `FORK.md`, SDK exports, and bundled CLI |
 
-Minimum floor baselines at last skill update (always prefer newer releases when available):
+Minimum dependency baselines (always resolve current releases):
 - Core `@earendil-works/*` packages (`pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`), companion `@earendil-works/pi-durable`, and fork-retained `@earendil-works/chord`: **`1.5.0+`**.
 - Bundled TypeBox: **`1.3.27+`** on official `1.5.0`; the fork bundles `1.3.37`. Code that must run on official Pi uses only TypeBox `1.3.27` APIs. Companions may be nested under `pi-coding-agent/node_modules`; resolve from the selected SDK, not the consumer root.
 - Node engine floor: **`>=24.21.0`** (verified on **Node `24.22.2+`** and **npm `12.2.1+`**).
@@ -45,20 +45,40 @@ Detect fork seams structurally at the call site, as `pi-subagents` does: `Reflec
 
 ## Pi 1.5.0 contracts (both hosts)
 
-Target these contracts directly. Each item was checked against official `1.5.0` sources and published packages; the fork shares them.
+These describe official `1.5.0` sources and published packages. The fork shares them except for the post-release changes below.
 
-- **Pi validates tool arguments as JSON Schema with `@earendil-works/pi-schema`**, whatever built the schema. TypeBox features outside JSON Schema stay outside validation: check `Type.Refine()` constraints in `execute()`; `Type.BigInt()`, `Type.Undefined()` and `Type.Void()` reject every argument; codecs pass the encoded JSON value; Pi checks the standard formats plus `url` and `json-pointer-uri-fragment` (`Format.Set()` formats stay unchecked); property names match literally, not as regular expressions; and `additionalProperties` applies only to undeclared properties. An unresolved `$ref` rejects only arguments at its place.
+- **Pi validates tool arguments with `@earendil-works/pi-schema`**, whatever built the schema. On official `1.5.0`, check `Type.Refine()` constraints in `execute()`; `Type.BigInt()`, `Type.Undefined()` and `Type.Void()` reject every argument. Current fork sources add BigInt and Undefined conversion as described below. Codecs pass the encoded JSON value; Pi checks the standard formats plus `url` and `json-pointer-uri-fragment` (`Format.Set()` formats stay unchecked); property names match literally, not as regular expressions; and `additionalProperties` applies only to undeclared properties. An unresolved `$ref` rejects only arguments at its place.
 - Coercion covers every tool schema, including plain JSON Schema and MCP tools: numeric strings become numbers, `"true"` becomes `true`, a single value becomes a one-item array, and `null` in an optional property is dropped. The model reads pi-schema messages such as `- path: missing` or `- limit: expected number, got string`, and tests match that text.
 - **Import `Type`, `Static` and `TSchema` from `typebox`.** The published `@earendil-works/pi-ai` types export no TypeBox (`TS2305` on those names). At run time Pi resolves `@earendil-works/pi-ai` and `/compat` to its extension view (compat entry plus TypeBox `Type`/`Static`/`TSchema`), so existing imports load; new code imports from `typebox`.
 - `ToolDefinition`, `defineTool()` and `pi.registerTool()` are TypeBox-typed (`TParams extends TSchema`), so extension tools use TypeBox schemas. pi-schema builders such as `obj()` compile there with `unknown` params, and `@earendil-works/pi-schema` is the extension's own dependency rather than a host-provided import. pi-ai `Tool` and agent-core `AgentTool` accept any JSON Schema object (`TParameters extends object`); agent-core infers TypeBox's common kinds and gives `unknown` for Enum, Tuple and Intersect.
 - **`StringEnum` has two typings.** Inside Pi it returns a TypeBox `TUnsafe<T>`; the published pi-ai types return a pi-schema `Schema<T>`, which makes the property `unknown` inside `Type.Object`. Type-check against the module extensions get at run time, as upstream's `examples/tsconfig.json` does: map `"@earendil-works/pi-ai"` in `compilerOptions.paths` to `./node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/pi-ai-extension-view.d.ts`, with `pi-coding-agent` as a development dependency. Verified with official `1.5.0` packages and `tsc` `7.0.2`.
 - Renderers receive `keyText()` and `keyHint()` on `ToolRenderContext`, `MessageRenderOptions` and `EntryRenderOptions` (`KeybindingHints`). Use the injected functions: they read the user's keybindings, while an imported helper can resolve the extension's own `pi-coding-agent` copy and render hints without keys. Persisted-entry `messageId` and ISO `timestamp` arrive only on `MarkdownTransformContext` (undefined while live).
-- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input while visible; overlays ignore it.
+- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input while visible. Official `1.5.0` overlays ignore it; current fork overlays honor it until `done()`, even while hidden.
 - `pi.exec(command, args, { maxBuffer })` caps stdout plus stderr and returns `truncated`. The default cap is the smaller of 256 MiB and the runtime string limit; a command that ignores SIGTERM after timeout or abort gets SIGKILL 5 seconds later.
 - Packages that load an extension can show their changelog on the next fresh launch after an update: Pi reads `pi.changelogPath` in `package.json`, else root `CHANGELOG.md`, and shows entries newer than the last seen `package.json` version (`collapseChangelog` condenses them; git packages show entries when their version increases). Startup continues past a configured package that fails to install: Pi skips it, reports an extension warning and retries on the next start or `/reload`, while explicit install and update commands exit nonzero. `pi -e npm:<pkg>` and `-e git:<repo>@<branch>` refresh on each start and `/reload`.
 - A saved trust decision takes precedence over auto-trust, so `ctx.isProjectTrusted()` returns `false` after "Do not trust" even in a folder without trust-requiring resources. `pi.setActiveTools()` keeps the order of tools that stay active and appends new ones.
 - pi-tui provides `replaceControlCharacters()`, `Component.capturesViewportInput` and `getSelectPageIndex()`. `Markdown` reuses rendered blocks until `invalidate()`, which a theme change must call; `Text.setText()` with unchanged text keeps its wrapped lines.
 - Provider streams use `ToolCallArgumentsStream`, keep stream state off content blocks, and report `totalFromProvider` and `responseModel`; see `provider-model-guide.md`.
+
+## Post-1.5.0 source contracts
+
+The latest official release at this refresh is still `v1.5.0`. The following upstream changes are present in the updated fork, but must not be assumed on that official release. Check the selected host's implementation and declarations rather than its `1.5.0` version string.
+
+| Contract | Current fork behavior | Primary source |
+| --- | --- | --- |
+| Schema conversion | `Type.BigInt()` converts numeric strings and numbers to bigint; `Type.Undefined()` converts `null` to `undefined`. `Type.Void()` still rejects JSON arguments. Keep portable tool inputs JSON-compatible. | Upstream `af79b0c3d`; `packages/schema/src/{coerce,compiler,explain}.ts` |
+| Markdown transformers | `registerMarkdownTransformer(transformer, { messageTypes })` can select `custom`, `summary`, and `changelog`, in addition to the default user, assistant and thinking Markdown. One registration per extension; a later registration replaces it. | Upstream `eebd5d90c`; `core/extensions/{types,loader,runner}.ts` |
+| Custom overlays | `blocked` lasts until `done()`, including while hidden. Reload and session replacement dispose every owned overlay, including hidden ones. | Upstream `7f47a2ed0`; `modes/interactive/interactive-mode.ts` |
+| Native read and grep | `ReadOperations.createReadStream` optionally supplies an async iterable. Grep gets context from ripgrep, removes `GrepOperations.readFile`, and matches globs relative to `path`. Remote grep needs an `execute()` override. | Upstream `3a7bb6f48`, `8da141c2a`, `6bf2ab9bb`; `core/tools/{read,grep}.ts` |
+| Local schema references | Tool search and codemode summaries follow referenced `$defs` without looping on recursion. `pi-codemode` exports `resolveSchemaRef`; malformed URI escapes render as unknown instead of breaking every script. | Upstream `2a32a605a`; `packages/codemode/src/declarations.ts`, `extensions/{tool-search,codemode}/tool.ts` |
+| Provider continuation | Anthropic message threads use native per-session state; `disableContinuation` keeps cache-warming requests out of it. `before_provider_request` sees the full payload even when transport sends only a continuation. | Upstream `a758f3ae4`; `packages/ai/src/api/anthropic-messages.ts`, `packages/ai/src/types.ts` |
+| OpenAI-compatible requests | `requiresNonNullAssistantContent`, `requiresToolsWithToolHistory`, and `promptCacheKeyMode` describe endpoint behavior. With no current tools, the default now omits `tools`, even with tool history. | Upstream `14b804d80`, `7a6bd5a97`, `0f4d5e960`; `packages/ai/src/providers/compat-schema.ts` |
+| Authentication and shutdown | `pi auth login/logout` works outside a session. Idle RPC `ctx.shutdown()` starts immediately unless a command is active; shutdown waits for a started OAuth refresh to save. | Upstream `9b9cb30ae`, `1708b4788`, `b2cb62923`; `docs/cli.md`, `modes/rpc/rpc-mode.ts` |
+| Prompt arguments | Quotes open only at an argument's start. Apostrophes inside words and unmatched quotes stay literal; escaping the matching quote inside a quoted argument preserves it. | Upstream `96667f342`; `core/prompt-templates.ts` |
+
+Source paths without a package prefix are under `packages/coding-agent/`. These are source-contract checks, not claims of live provider qualification.
+
+The fork also adds source-aware fullscreen selection (`d492bcc89`): native Markdown selections retain source syntax and real line breaks, while `/copy` still copies the whole message. Prefer native Markdown/Text components; inspect `packages/tui/src/{selection-source,selection-markers}.ts` before implementing custom source mapping. This is a fork enhancement, not an official-host requirement.
 
 ## Portable session and lifecycle contracts
 
@@ -139,7 +159,7 @@ In `@earendil-works/pi-tui` `1.5.0+` (both official and fork), public cursor API
 
 ## Source map (`1.5.0+` floor; verify against latest host)
 
-Last-verified baseline — official `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and fork `1.5.0` (`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`):
+Minimum-baseline sources: official `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and fork `1.5.0` (`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`). The post-release table above identifies newer inspected contracts:
 - `packages/coding-agent/{CHANGELOG.md,schemas/*.schema.json,docs/{sdk,extensions,sessions,session-format,rpc,tui,packages,codemode,mcp}.md,src/{index.ts,core/{sdk,agent-session,agent-session-runtime,session-manager,model-runtime,model-registry,key-id-schema,keybindings-schema,model-config,settings-schema}.ts,core/extensions/{types,loader,runner}.ts,core/tools/file-mutation-queue.ts,modes/interactive/theme/{theme-schema,theme}.ts,modes/rpc/{rpc-client,rpc-mode,rpc-types}.ts}}`
 - `packages/agent/{CHANGELOG.md,package.json,src/index.ts}`
 - `packages/ai/{package.json,src/{index,compat,models}.ts,src/providers/model-schema.ts}`

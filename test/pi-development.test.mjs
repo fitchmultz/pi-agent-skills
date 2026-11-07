@@ -7,7 +7,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-const skillDir = fileURLToPath(new URL("../skills/pi-extension-development/", import.meta.url));
+const skillDir = fileURLToPath(new URL("../skills/pi-development/", import.meta.url));
 const skill = readFileSync(path.join(skillDir, "SKILL.md"), "utf8");
 const { evals } = JSON.parse(readFileSync(path.join(skillDir, "evals/evals.json"), "utf8"));
 

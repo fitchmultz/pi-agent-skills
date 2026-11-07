@@ -15,7 +15,7 @@ const expectedSkills = [
   "dogfood",
   "handoff",
   "lyrics",
-  "pi-extension-development",
+  "pi-development",
   "propose-then-ship-pi",
   "ssh-unix-ops",
   "test-audit",

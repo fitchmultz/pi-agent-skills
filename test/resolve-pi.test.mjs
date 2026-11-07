@@ -7,7 +7,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const script = path.join(root, "skills", "pi-extension-development", "scripts", "resolve_pi.py");
+const script = path.join(root, "skills", "pi-development", "scripts", "resolve_pi.py");
 const overridePackage = realpathSync(path.join(root, "node_modules", "@earendil-works", "pi-coding-agent"));
 const systemPath = ["/usr/local/bin", "/usr/bin", "/bin"].join(path.delimiter);
 

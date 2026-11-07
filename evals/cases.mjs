@@ -161,7 +161,7 @@ export const cases = [
     check: (r, { cwd }) => { assert(wasRead(r, 'journey.md', cwd)); const answer = JSON.parse(r.output); assert.equal(answer.verdict, 'approve'); assert.deepEqual(answer.findings, []); noWrites(r); },
   },
   {
-    id: 'pi-current-sdk', skill: 'pi-extension-development', invoke: true,
+    id: 'pi-current-sdk', skill: 'pi-development', invoke: true,
     files: { 'proposal.md': "Proposed SDK code:\n```js\nimport { getModel } from '@earendil-works/pi-ai';\nconst session = await createAgentSession({ model: getModel('openai', 'gpt-6-astra'), tools: [createReadTool(process.cwd())] });\n```\n" },
     prompt: 'Review proposal.md against the exact installed package identified in runtime.json. Use its emitted SDK types/source to check model lookup and tool selection. Show the corrected API shape; do not implement or publish anything. This is an SDK review, not a release task.',
     check: (r, { cwd, host }) => {

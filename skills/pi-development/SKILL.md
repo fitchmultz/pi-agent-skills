@@ -1,19 +1,19 @@
 ---
-name: pi-extension-development
+name: pi-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Pi 1.5.0+ (official release) and fitchmultz/pi fork (commit ea5fe4563fd15e7b630fa33c776865a1e30c7acb or newer); always resolve and build to the current latest official release, latest fork HEAD, and latest dependency versions. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   last-verified-pi: "1.5.0"
   official-source: "f9a26365568127461c47a07a37dcb42c140a3ac5"
-  fork-source: "ea5fe4563fd15e7b630fa33c776865a1e30c7acb"
+  fork-source: "e3cabf1de0775895e2b2086729dbbe65ed3f426f"
 ---
 
-# Pi Extension Development
+# Pi development
 
 Develop for **both** the current latest official Pi release (`earendil-works/pi`) and the current latest commit HEAD of Mitch's `fitchmultz/pi` fork, preserving requested power-user behavior and checking each exact target contract.
 
-This skill was last updated and verified at official Pi **`1.5.0`** (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` **`1.5.0`** commit **`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`**. Treat those as the **minimum supported floor**, never as a static pin:
+The minimum supported baselines are official Pi **`1.5.0`** (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` **`1.5.0`** commit **`ea5fe4563fd15e7b630fa33c776865a1e30c7acb`**. The [version hazards reference](references/current-version-hazards.md) distinguishes these floors from the latest inspected revisions and post-release contracts. Treat the floors as minimums, never as static pins:
 - Never build for or keep compatibility shims/fallbacks for anything older than official Pi `1.5.0`, anything older than fork commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb`, or older versions of referenced packages/tools.
 - Always check and target the **latest** official Pi release, the **latest** `fitchmultz/pi` commit HEAD, and the **latest** versions of all dependencies and companion tools at the time you run. A matching version number does not make official Pi and the fork identical.
 
@@ -36,9 +36,9 @@ pi --version
 
 The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher, including mise/asdf. An override needs no `pi` on PATH and returns null launcher fields: verify runnable Pi separately. `--pi PATH` deliberately ignores the override.
 
-Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. When the latest official release or fork HEAD is newer than the `1.5.0` / `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` baseline recorded above, read every crossed changelog entry and commit diff since that baseline and target the newest contract directly.
+Record package root, version, distribution/revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs/examples. Read relevant sections of version-matched docs and examples, follow links needed to establish the affected contracts, and verify copied APIs against matching implementation/types. Read crossed changelog entries and relevant commit diffs since the last inspected revision. Upstream `main` is not the latest official release: a change already integrated into the fork can still be absent from the published official host.
 
-Mitch runs `fitchmultz/pi`; extensions must support **both** the latest official Pi release and the latest `fitchmultz/pi` commit HEAD. `pi-posthorse` uses public retain-none compaction on official Pi `1.5.0+`; it is not a fork-only exception. Verify affected APIs and runtime behavior against both latest targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded in frontmatter are last-verified minimum baselines, never a reason to skip a newer release or commit.
+Mitch runs `fitchmultz/pi`; extensions must support **both** the latest official Pi release and the latest `fitchmultz/pi` commit HEAD. `pi-posthorse` uses public retain-none compaction on official Pi `1.5.0+`; it is not a fork-only exception. Verify affected APIs and runtime behavior against both latest targets using their matching sources/types, prefer shared native capabilities, and reuse still-valid evidence. The source versions recorded in frontmatter identify inspected sources, not a reason to skip a newer release or commit.
 
 Select the targets before implementing:
 

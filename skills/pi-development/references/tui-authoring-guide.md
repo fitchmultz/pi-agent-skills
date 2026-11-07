@@ -64,7 +64,7 @@ Behavior:
 - `CustomEditor.handleInput()` gives extension shortcuts and app-level actions a chance before normal editor text handling.
 - Use `pi.registerShortcut()` for extension hotkeys.
 - Use the injected `keybindings.matches(data, namespacedId)` and `getKeys(id)` for configurable actions. In tool renderers, format hints with `context.keyHint(id, description)`/`context.keyText(id)` from the `ToolRenderContext` argument; message and entry renderers get the same functions on their `options` argument (`MessageRenderOptions`/`EntryRenderOptions` extend `KeybindingHints`, `1.5.0+`); an imported `keyHint()` can resolve the extension's own `pi-coding-agent` copy and render without the user's keys. Elsewhere, `rawKeyHint(keybindings.getKeys(id).join("/"), description)` formats the injected bindings.
-- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input (OSC 7501 program status) while the component is visible, for approval prompts and similar dialogs; overlays ignore it.
+- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input (OSC 7501 program status) while visible. Official `1.5.0` overlays ignore it. Current fork overlays report blocked status until `done()`, even while hidden with `setHidden()`. Hiding an overlay does not complete its question.
 - A focused component that sets `capturesViewportInput` receives the fullscreen viewport keys (`tui.altScreen.*` scrolling and prompt jumps) instead of the transcript; `getSelectPageIndex()` computes a custom list's selection after `tui.select.pageUp` or `tui.select.pageDown`.
 - Pi-tui `Markdown` reuses rendered blocks and highlighted code until `invalidate()`; call it on theme changes. Use `replaceControlCharacters()` before rendering untrusted titles or labels.
 - Native hint helpers display Alt as Option on macOS. Keep canonical `alt` binding IDs, config, and behavior unchanged; format only owned key labels, never arbitrary user/agent text. Do not add a platform mapper or deep-import internal `formatKeyText`/`keyDisplayText`; those are not public root exports.
@@ -126,6 +126,12 @@ Custom messages and entries:
 - Use `pi.appendEntry(customType, data)` plus `pi.registerEntryRenderer(customType, renderer)` for persisted display-only transcript state excluded from model context. Entry renderers are interactive-only and may return `undefined` to hide an entry.
 - Message renderers receive `(message, { expanded, outputPad }, theme)`; use `outputPad` for their root horizontal spacing so custom messages align with built-in output. Entry renderers receive `(entry, { expanded }, theme)` and do not receive `outputPad`.
 - Keep model-visible `content` useful as fallback and richer UI state in `details`. Use both surfaces for durable session UX, not transient controls.
+
+Markdown transformers:
+
+- Official `1.5.0` transforms user, assistant and thinking Markdown. Current fork sources also accept `registerMarkdownTransformer(transformer, { messageTypes })` to opt into `custom`, `summary`, or `changelog`. The option selects the entire set, not additions to the default. Check both hosts' types before using it.
+- The hook is display-only and synchronous. Preserve the original session/model content, and keep work cheap during streaming and resize. Registering again replaces the extension's prior transformer.
+- On the current fork, highlighted fullscreen copies use native source mapping to retain Markdown and real line breaks. Prefer native components; `/copy` remains the whole-message command. Do not require this fork-only selection behavior on official Pi.
 
 ## Mode behavior
 
