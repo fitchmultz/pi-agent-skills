@@ -8,8 +8,8 @@
     },
     {
       "id": "fork-integration-discovery-boundary",
-      "prompt": "Review browser instruction discovery for official Pi 1.5.0 and the fitchmultz/pi 1.5.0 fork. Can I just suppress instructions while tools are inactive or turn them all into deferred tools?",
-      "expected_output": "Checks the confirmed synchronous session_start pi:instruction-groups collector with register(group)/isManaged and group name/description/tools/instructions(ctx), plus optional discover_tools enable string array. Distinguishes confirmed design from a qualified candidate. Keeps full official prompt sections when absent/unmanaged, instruction-before-effect guards, restrictions and recovery. Rejects retired ToolDefinition.discovery/sectionTools metadata and a settings inventory. Native deferred tools are callable when inactive; tool_search/provider search/MCP gateways do not enforce group instructions. Performs no edits for review-only scope."
+      "prompt": "Review browser tool discovery for official Pi 1.5.0 and the current fitchmultz/pi fork. Can I just suppress instructions while tools are inactive or turn them all into deferred tools?",
+      "expected_output": "Uses native exposure \"deferred\" with tool_search on both hosts and notes that fork main retired instruction groups (discover_tools, pi:instruction-groups) and pi.refreshTools(). Activates a registered tool_search that declares reachesTools at session_start and session_tree unless the branch recorded removing it, and warns once when neither tool_search nor codemode is active, like Pi's MCP extension. Keeps short always-needed guidance in an official prompt section and integration guards, restrictions and recovery in the tools. Native deferred tools are callable when inactive; tool_search/provider search/MCP gateways do not guarantee instructions were read before effects. Performs no edits for review-only scope."
     },
     {
       "id": "fork-live-result-decoration",

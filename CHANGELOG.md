@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Teach native deferred tools in place of the fork's retired instruction groups. `pi-development`, `dogfood`, `propose-then-ship-pi`, `lyrics`, their evaluations and the maintenance guide now find deferred tools with `tool_search` on both official Pi and the fork. Fork main removed `discover_tools`, `pi:instruction-groups` and `pi.refreshTools()` in [`c48f833ef37241e66d7e61efda45f09d940d40ed`](https://github.com/fitchmultz/pi/commit/c48f833ef37241e66d7e61efda45f09d940d40ed).
+
 - Shorten nine model-listed skill descriptions to 124–140 characters, keeping their selection criteria and the exclusions that separate sibling skills. `ask-clarifying-questions` and `pi-development` keep their full descriptions because shorter versions misrouted in the routing suite. Make `lyrics` and `propose-then-ship-pi` command-only with `disable-model-invocation: true`; their `/skill:` commands are unchanged. Remove their description-routing prompts (both `trigger-evals.json` files and the held-out `propose-then-ship-pi` prompt), and run the `shipping-plan-only` behavior case through explicit invocation.
 
 - Rename `pi-extension-development` to `pi-development` without changing its extension-development scope. Preserve all bundled helpers, references and evaluation cases, and update their consumers. Refresh the guidance for current fork contracts while distinguishing unreleased upstream changes from official Pi 1.5.0.

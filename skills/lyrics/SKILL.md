@@ -33,7 +33,7 @@ Never rewrite lyrics from memory. If every source fails, report which sources we
    It queries lrclib.net, scores candidates, derives plain lyrics from synced lyrics when needed, and prints track metadata followed by the lyrics. Exit 0 found, 1 not found or ambiguous (candidates on stderr), 2 usage or network error. `--lrc` returns timestamped lyrics, `--json` the raw record.
 
 2. With an artist, an exit-0 exact-get result is authoritative. Without an artist, run with only `--title`; when the script exits 1 as ambiguous, ask the user which song is meant (for example "Hurt" — Nine Inch Nails or Johnny Cash).
-3. If the script finds nothing, try the browser tool group (Genius, then AZLyrics), enabling it through `discover_tools` (`builtin:instruction-groups`) before declaring it unavailable. Before rewriting, strip site junk: embed counters, "Submit Corrections", ticket and merch lines, contributor credits, "You might also like", navigation, and ads. Keep any source section markers.
+3. If the script finds nothing, try the browser (Genius, then AZLyrics), searching for `agent_browser` with `tool_search` if it is not active before declaring it unavailable. Before rewriting, strip site junk: embed counters, "Submit Corrections", ticket and merch lines, contributor credits, "You might also like", navigation, and ads. Keep any source section markers.
 4. Prefer the standard studio version. Report an instrumental track instead of writing lyrics for it.
 
 ## Rewrite step
