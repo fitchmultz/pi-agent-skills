@@ -10,7 +10,7 @@ Resolve only decisions that materially change the work. Discover facts from the 
 ## Workflow
 
 1. Identify the must-have decisions about objectives, acceptance, scope, environment, or user-owned tradeoffs. Ask only questions whose wrong answer would change implementation, cause churn, cost, data loss, or unwanted behavior.
-2. Ask one focused question at a time, and wait for the answer before asking the next. Ask as many questions as needed across turns, starting with the question that eliminates the largest branch of work. Follow the user or harness's requested question format rather than imposing a survey.
+2. Ask one focused question at a time, and wait for the answer before asking the next. Ask as many questions as needed across turns, starting with the question that eliminates the largest branch of work. With `ask_question`, send one question per call. Follow the user or harness's requested question format rather than imposing a survey.
 3. Prefer the harness question tool when installed and usable. `ask_question` is an optional extension, and its dialogs need TUI or an RPC client that answers them; plain print mode is not a dialog surface. Otherwise ask in plain text.
 4. Make answers easy:
    - Prefer multiple choice or yes/no; put the recommended/default option first without labeling it recommended.
