@@ -1,6 +1,6 @@
 ---
 name: dogfood
-description: "Dogfood or exploratory-QA browser-visible products through real user flows: web apps, local URLs, visual bug hunts, jank/flicker/streaming, and terminal/TUI redraw via VFR. Do not use for backend/unit-test-only checks, code review, trivial visual tweaks, or fixing bugs unless asked."
+description: "Exploratory QA of web apps and terminal UIs through real user flows, including visual jank. Not backend-only checks, code review, or fixes."
 compatibility: "Requires separately installed agent_browser tools and an image-capable read tool. Cloudflare work uses configured cloudflare_api_docs/search/execute. Motion capture needs Python 3.9+ and FFmpeg 5.1+ on Pi's PATH; terminal capture needs ttyd; optional deep analysis uses uv."
 ---
 

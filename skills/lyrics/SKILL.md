@@ -1,6 +1,7 @@
 ---
 name: lyrics
 description: "Fetch real lyrics for a requested song and return one copy-pasteable block of phonetically rewritten lyrics for Suno-style vocal synthesis, or rewrite pasted lyrics without fetching. Use when the user asks for lyrics for a song or artist, wants lyrics rewritten for Suno/TTS singing, or invokes /skill:lyrics. Do not use for song identification, writing original lyrics, or translating lyrics."
+disable-model-invocation: true
 compatibility: "Song fetching runs the bundled Node script against lrclib.net; browser fallback needs the separately installed browser tool group."
 ---
 

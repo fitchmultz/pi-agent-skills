@@ -1,6 +1,6 @@
 ---
 name: deslop
-description: "Remove AI-generated noise from changed branch/PR hunks while preserving behavior: redundant comments, scaffolding, casts, catches, wrappers, and test ceremony. Not feature work, bug triage, broad audits, generated-code cleanup, or repo-wide formatting."
+description: "Strip AI noise (redundant comments, casts, catches, wrappers, scaffolding) from changed branch/PR hunks, preserving behavior."
 ---
 
 # Deslop

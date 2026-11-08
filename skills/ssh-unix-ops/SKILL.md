@@ -1,6 +1,6 @@
 ---
 name: ssh-unix-ops
-description: "Operate on Linux, macOS, or WSL2 hosts over SSH: commands, inspection, exact text edits, transfer, backup/restore, and diff/hash checks. Not local-only work, browser UI, cloud APIs, native Windows admin, privilege setup, or large exact syncs; use only for SSH preflight/verification around those workflows."
+description: "Run commands, inspect, edit, transfer, back up, and diff files on Linux, macOS, or WSL2 hosts over SSH. Not local-only or Windows work."
 license: MIT
 compatibility: "Local: OpenSSH, Python 3, and tar. Remote: SSH access to a Linux, macOS, or WSL2 host. bash, python3, and tar unlock the full workflow; sh-only fallback is supported for basic command execution."
 metadata:

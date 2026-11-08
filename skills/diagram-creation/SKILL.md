@@ -1,6 +1,6 @@
 ---
 name: diagram-creation
-description: "Create rendered technical diagrams with editable SVG or D2 source and PNG/SVG exports: architecture, sequence, data flow, dependency, lifecycle, state, and before/after. Not statistical charts, slide decks, illustrations, image editing, or product screenshots."
+description: "Rendered technical diagrams (architecture, sequence, data flow, state) with editable SVG/D2 source. Not charts, slides, or illustrations."
 metadata:
   version: "2.1.1"
   owner: "local"

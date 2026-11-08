@@ -1,6 +1,6 @@
 ---
 name: code-smells
-description: "Detect and list code smells in the current project or a user-selected directory, file, or subsystem. Read-only analysis with bundled evidence helpers and full Cloudflare Clef through AI Gateway. Use for smell inventories, duplication, tangled dependencies, and low cohesion; the parent model ranks findings and honors requests such as top 10. Not automatic refactoring or a diff-only PR review."
+description: "Read-only code-smell inventory (duplication, tangled dependencies, low cohesion) for a project or area. Not refactoring or diff-only review."
 compatibility: "Node 24, Python 3.10+, uv, PMD/Java for clone evidence, and Pi with authenticated native full Clef routed through Cloudflare AI Gateway."
 ---
 

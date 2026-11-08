@@ -1,6 +1,6 @@
 ---
 name: ux-review
-description: "Review user-visible PRs, designs, plans, and workflows for usability, completion, recovery, truthful outcomes, scope, and capability boundaries. Default read-only. Not backend-only changes without user impact, maintainability-only review, or live exploratory QA."
+description: "Read-only review of user-visible changes, designs, and workflows for usability, recovery, and truthful outcomes. Not live QA."
 ---
 
 # End-User Experience Review

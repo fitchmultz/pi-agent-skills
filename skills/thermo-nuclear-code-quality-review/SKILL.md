@@ -1,6 +1,6 @@
 ---
 name: thermo-nuclear-code-quality-review
-description: "Read-only deep maintainability review of branch/PR changes: structural simplification, 1k-line growth, tangled branching, abstractions, types, and boundaries. Not whole-repo audits, quick nits, security-only review, bug triage, or implementation."
+description: "Read-only deep maintainability review of branch/PR changes: structure, growth, branching, abstractions, types. Not nits or bug triage."
 ---
 
 # Thermo-Nuclear Code Quality Review

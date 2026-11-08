@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Shorten nine model-listed skill descriptions to 124–140 characters, keeping their selection criteria and the exclusions that separate sibling skills. `ask-clarifying-questions` and `pi-development` keep their full descriptions because shorter versions misrouted in the routing suite. Make `lyrics` and `propose-then-ship-pi` command-only with `disable-model-invocation: true`; their `/skill:` commands are unchanged. Remove their description-routing prompts (both `trigger-evals.json` files and the held-out `propose-then-ship-pi` prompt), and run the `shipping-plan-only` behavior case through explicit invocation.
+
 - Rename `pi-extension-development` to `pi-development` without changing its extension-development scope. Preserve all bundled helpers, references and evaluation cases, and update their consumers. Refresh the guidance for current fork contracts while distinguishing unreleased upstream changes from official Pi 1.5.0.
 
 - Raise the minimum supported floor across `pi-extension-development`, `clef`, `code-smells`, `dogfood`, `propose-then-ship-pi`, and the development SDK to official Pi `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` (`1.5.0`). Teach the Pi 1.5.0 extension contracts: pi-schema tool-argument validation and coercion, `typebox` imports, `StringEnum` type-checking through Pi's extension view, injected key hints, blocking custom UI, `pi.exec()` output caps, package changelogs, `ToolCallArgumentsStream`, and the current fork seams with structural detection. Describe Kimi Coding's OpenAI Completions route, add a pi-schema migration evaluation, and ship floor raises together with their guidance in one pull request.

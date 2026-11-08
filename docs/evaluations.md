@@ -60,7 +60,7 @@ The default profile has no ambient instructions, extensions, or skills. Add `--p
 | --- | --- |
 | `behavior` | Seventeen task cases across the ten skills with behavior fixtures: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits, truthful evidence, review findings, merge holds, and image inspection. |
 | `routing` | Existing `skills/*/evals/trigger-evals.json` prompts through native discovery. This measures initial skill selection after inspection and before task execution. |
-| `held-out` | Ten independently written routing prompts, kept separate from the existing trigger examples. |
+| `held-out` | Nine independently written routing prompts, kept separate from the existing trigger examples. |
 
 Routing and held-out probes allow native `read`, `ls`, and the declared read-only Bash commands before a decision. Bash uses the same exact command list and `&&` splitting as behavior fixtures; `npm test`, `node --test`, and any unmapped command are task actions. Mixed inspection/action Bash calls remain wholly inert. Reading another skill may continue: observation ends after the first turn containing a successful target-skill read or a non-inspection task action, or when the agent answers naturally. All tool-call siblings in that decisive turn are observed; task actions are stubbed rather than executed. Later skill use during task execution is outside this initial-routing measure, and prompt labels are unchanged.
 
