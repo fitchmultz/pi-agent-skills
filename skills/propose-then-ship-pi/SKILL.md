@@ -1,6 +1,7 @@
 ---
 name: propose-then-ship-pi
 description: "Research and rank repo improvements, stop for the user's direction, then implement in a worktree and deliver a verified PR through authorized merge. Use for the full propose-then-ship workflow, not research-only requests, an already-decided change, or an existing PR."
+disable-model-invocation: true
 compatibility: "Pi with a separately installed delegation extension and ask_question in TUI or dialog-capable RPC. Needs git worktrees, a configured GitHub CLI executable, Bash, and jq."
 metadata:
   version: "1.5.10"

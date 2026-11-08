@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "Write a paste-ready continuation or bounded delegation prompt when the user asks for /handoff continue, /handoff delegate, or a new-session handoff. Produces instructions; does not launch another agent."
+description: "Write a paste-ready continuation or bounded delegation prompt (/handoff continue, /handoff delegate). Does not launch another agent."
 ---
 
 # Handoff

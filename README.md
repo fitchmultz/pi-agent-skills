@@ -47,9 +47,9 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`diagram-creation`](skills/diagram-creation/SKILL.md) | Create diagrams with editable SVG or D2 source. |
 | [`dogfood`](skills/dogfood/SKILL.md) | Test browser flows and capture evidence of UI problems. |
 | [`handoff`](skills/handoff/SKILL.md) | Write instructions for the next session or a delegated task. |
-| [`lyrics`](skills/lyrics/SKILL.md) | Fetch song lyrics and rewrite them phonetically for Suno-style vocal synthesis. |
+| [`lyrics`](skills/lyrics/SKILL.md) | Fetch song lyrics and rewrite them phonetically for Suno-style vocal synthesis. Command only: `/skill:lyrics`. |
 | [`pi-development`](skills/pi-development/SKILL.md) | Build, debug, review, or package Pi extensions. |
-| [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. |
+| [`propose-then-ship-pi`](skills/propose-then-ship-pi/SKILL.md) | Research improvements, get your direction, then deliver a verified PR. Command only: `/skill:propose-then-ship-pi`. |
 | [`ssh-unix-ops`](skills/ssh-unix-ops/SKILL.md) | Work on Linux, macOS, or WSL2 hosts over SSH. |
 | [`test-audit`](skills/test-audit/SKILL.md) | Find brittle or redundant tests and check the value of new tests. |
 | [`thermo-nuclear-code-quality-review`](skills/thermo-nuclear-code-quality-review/SKILL.md) | Review a branch or PR for maintainability problems. |
