@@ -66,7 +66,7 @@ Use for provider registration, auth, dynamic catalogs, model metadata, or SDK mo
 
 The [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model) describes vendor API capabilities, not automatic Pi support. Verify model/endpoint, transport, accepted reasoning parameters, and Pi serialization before adopting async tools, WebSocket steering, reasoning configuration updates, or cache controls. API-key, subscription, and proxy routes may differ. Preserve the host's selected model/effort; this skill must not create a second model router or blindly copy vendor request examples.
 
-Optional fork instruction groups use the confirmed synchronous session_start collector, not old ToolDefinition.discovery/sectionTools metadata. Keep full official instructions when unmanaged. Native tool_search/provider search and gateway composition have different contracts. Read `runtime-authoring-guide.md` before changing exposure or instruction gates; native codemode/deferred tools are callable even when inactive.
+Optional tools use native deferred exposure with `tool_search` on both hosts; fork main retired instruction groups. Native tool_search, provider-native search and gateway composition have different contracts. Read `runtime-authoring-guide.md` before changing exposure or instruction gates; native codemode/deferred tools are callable even when inactive.
 
 ## Validation and safety
 
