@@ -10,13 +10,13 @@ Resolve only decisions that materially change the work. Discover facts from the 
 ## Workflow
 
 1. Identify the must-have decisions about objectives, acceptance, scope, environment, or user-owned tradeoffs. Ask only questions whose wrong answer would change implementation, cause churn, cost, data loss, or unwanted behavior.
-2. Ask the smallest useful set: usually 1–3 questions. Favor questions that eliminate whole branches of work; follow the user or harness's requested question format rather than imposing a survey.
+2. Ask one focused question at a time, and wait for the answer before asking the next. Ask as many questions as needed across turns, starting with the question that eliminates the largest branch of work. With `ask_question`, send one question per call. Follow the user or harness's requested question format rather than imposing a survey.
 3. Prefer the harness question tool when installed and usable. `ask_question` is an optional extension, and its dialogs need TUI or an RPC client that answers them; plain print mode is not a dialog surface. Otherwise ask in plain text.
 4. Make answers easy:
    - Prefer multiple choice or yes/no; put the recommended/default option first without labeling it recommended.
    - Do not add a custom-answer option when the UI supplies one.
    - Use multi-select only when multiple answers are valid.
-   - In plain text, number questions and offer a compact reply format such as `1a 2b 3defaults` when useful.
+   - In plain text, label options clearly so the user can reply compactly (for example, `a` or `defaults`).
 5. Pause only implementation that depends on unresolved must-have ambiguity. Continue independent authorized work, including discovery that can resolve the question.
 6. Apply answers already given and resume dependent work without another confirmation. If the user wants to proceed without answers, state safe assumptions briefly; do not require confirmation for routine defaults. A timeout or unavailable dialog is not consent to a material scope, safety, or acceptance choice.
 7. If answers materially change the plan, restate the clarified objective, constraints, and success criteria before acting.

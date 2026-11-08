@@ -10,13 +10,13 @@
     {
       "id": "edge-no-dialog-plain-text-fallback",
       "prompt": "The available facts leave a material scope choice unresolved. This session is plain print mode, so ask_question cannot show a dialog. Ask the blocking question before implementing.",
-      "expected_output": "Uses the permitted numbered plain-text question fallback with concise options. Does not invent a dialog answer or start work that depends on the unanswered material choice; continues independent authorized work.",
+      "expected_output": "Uses the plain-text question fallback with clearly labeled, concise options for one blocking question. Does not invent a dialog answer or start work that depends on the unanswered material choice; continues independent authorized work.",
       "files": []
     },
     {
       "id": "success-material-ambiguity",
       "prompt": "Build the admin export feature. It might include user PII and should support either CSV or JSON; ask before implementing if needed.",
-      "expected_output": "Identifies material ambiguity around data scope, PII handling, and export format; asks only the blocking questions with concise options ordered by the safest/default path; pauses only implementation dependent on those answers while continuing independent authorized work.",
+      "expected_output": "Identifies material ambiguity around data scope, PII handling, and export format; asks one blocking question at a time with concise options ordered by the safest/default path and waits for the answer before asking the next; pauses only implementation dependent on unresolved answers while continuing independent authorized work.",
       "files": []
     },
     {
