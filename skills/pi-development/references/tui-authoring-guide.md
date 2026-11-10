@@ -1,6 +1,6 @@
 # TUI Authoring Guide
 
-Read for terminal UI, renderers, overlays, widgets, custom editors, shortcuts, autocomplete, or mode-specific UI behavior.
+Read for terminal UI, renderers, overlays, widgets, custom editors, shortcuts, autocomplete, or mode-specific UI behavior. For Mitch's packages and the fork, [house-conventions-ux.md](house-conventions-ux.md) owns how cards, messages, notices, status segments, commands, hints, words, colors, and symbols look and read; this guide keeps the API mechanics.
 
 ## TUI capability ladder
 
@@ -103,29 +103,31 @@ Tool renderer facts:
 - `renderCall(args, theme, context)` renders call/pending view.
 - `renderResult(result, { expanded, isPartial }, theme, context)` renders result/partial view.
 - `renderShell: "self"` skips the default box shell.
-- `context` includes `args`, `toolCallId`, `invalidate()`, `lastComponent`, `state`, `cwd`, `executionStarted`, `argsComplete`, `isPartial`, `expanded`, `showImages`, and `isError`.
+- `context` includes `args`, `toolCallId`, `invalidate()`, `lastComponent`, `state`, `cwd`, `executionStarted`, `argsComplete`, `isPartial`, `expanded`, `showImages`, `isError`, `durationMs`, `outputPad`, `keyText`, and `keyHint`.
 - Use `context.state` for row-level shared state.
 - Use `context.lastComponent` to update/reuse expensive components.
-- Honor `isPartial`, `expanded`, and `context.isError`.
-- Collapsed rendering should be a compact summary; expanded rendering can show details.
+- An HTML export renders each call one time and keeps only that rendering; results are exported collapsed and expanded. Official Pi renders the exported call with `expanded: false`, `isPartial: true`, and `executionStarted: true`.
+- The result part honors `isPartial`, `expanded`, and `context.isError`. A thrown error arrives with `details: {}`. The call part shows no live state.
 
-A registered tool with no custom renderer gets Pi's basic title/text fallback; model-visible output still comes from tool result `content`, not the TUI renderer. Add a custom renderer when a watched tool needs richer progress or summary UI:
+A registered tool with no custom renderer gets Pi's basic title/text fallback; model-visible output still comes from tool result `content`, not the TUI renderer. Add a custom renderer when a watched tool needs richer progress or summary UI. [Tool cards](house-conventions-ux.md#tool-cards) owns the rules for row 1, the collapsed preview, the hint row, and what an export keeps; [Colors and symbols](house-conventions-ux.md#colors-and-symbols) owns the theme tokens and the state symbols (`✓`, `✗`, `…`, `⊘`). The mechanics that stay here:
 
-- Lead the collapsed view with a one-line headline that tells the story: a status glyph (✓/✗/●/spinner), the primary result or count, and the most useful 1-2 metrics. The collapsed line is what the user sees 90% of the time, so make it scannable, not a raw dump.
+- Lead the collapsed result with a one-line headline that tells the story: a state symbol, the primary result or count, and the most useful 1-2 metrics. Make it scannable, not a raw dump.
 - Color and emphasize with the supplied theme, for example `theme.fg("success", text)`, `theme.fg("error", text)`, or `theme.fg("muted", text)`. Never hardcode ANSI; use `theme.bold()` and other declared helpers when needed.
-- Distinguish states visibly: pending/running (`renderCall` + `isPartial`), success, and `context.isError` should each look different at a glance.
-- Stream progress so long tools feel alive instead of frozen: emit `onUpdate` partials and render `isPartial` with a running summary (lines processed, current step) rather than a static "running…".
-- Reserve heavy layout (tables, trees, diffs, side-by-side, sparklines) for the expanded view; keep collapsed cheap and one-to-three lines.
+- Distinguish states in the result part: running (`renderResult` with `isPartial`), success, and `context.isError` each look different at a glance. Do not show the running state in `renderCall`: an export keeps that text.
+- Stream progress so long tools feel alive instead of frozen: emit `onUpdate` partials and render `isPartial` as one row with a running summary (lines processed, current step) rather than a static "running…".
+- Reserve heavy layout (tables, trees, diffs, side-by-side, sparklines) for the expanded view; keep the collapsed result a bounded preview that ends with the hint row.
 - Use `renderShell: "self"` only when you intentionally own the whole frame; otherwise keep the built-in box for consistency with other tools.
-- For durable, rich in-conversation UI beyond a single tool row, pair `pi.sendMessage({ customType, content, display: true, details })` with `registerMessageRenderer`.
-- Do not over-decorate: every line must fit `width`, degrade gracefully in non-TUI modes, and never bury the actual result under ASCII art. Visually inspect the rendered collapsed and expanded states before claiming done.
+- For durable, rich in-conversation UI beyond a single tool row, pair `pi.sendMessage({ customType, content, display: true, details })` with `registerMessageRenderer`. The model reads that message again with every later request, and an export shows `content`, not the renderer; when the model must not read it, use `appendEntry` with `registerEntryRenderer`.
+- Do not over-decorate: every line must fit `width`, degrade gracefully in non-TUI modes, and never bury the actual result under ASCII art. Visually inspect the rendered collapsed and expanded states and an HTML export before claiming done.
 
 Custom messages and entries:
 
 - Use `pi.sendMessage({ customType, content, display: true, details })` plus `pi.registerMessageRenderer(customType, renderer)` when the content should participate in model context.
 - Use `pi.appendEntry(customType, data)` plus `pi.registerEntryRenderer(customType, renderer)` for persisted display-only transcript state excluded from model context. Entry renderers are interactive-only and may return `undefined` to hide an entry.
-- Message renderers receive `(message, { expanded, outputPad }, theme)`; use `outputPad` for their root horizontal spacing so custom messages align with built-in output. Entry renderers receive `(entry, { expanded }, theme)` and do not receive `outputPad`.
+- Message renderers receive `(message, { expanded, outputPad, keyText, keyHint }, theme)`; use `outputPad` for their root horizontal spacing so custom messages align with built-in output. Entry renderers receive `(entry, { expanded, keyText, keyHint }, theme)` and do not receive `outputPad`.
+- On the fork, message renderers also receive `compactView`.
 - Keep model-visible `content` useful as fallback and richer UI state in `details`. Use both surfaces for durable session UX, not transient controls.
+- Which surface to choose, the collapsed form of a message card, and the click rule are in [Messages and entries in the transcript](house-conventions-ux.md#messages-and-entries-in-the-transcript).
 
 Markdown transformers:
 
@@ -148,4 +150,4 @@ Markdown transformers:
 
 Use `ctx.hasUI` for dialog-capable flows that can work through RPC. Use `ctx.mode === "tui"` for terminal-only custom components, overlays, editor replacement, autocomplete, raw terminal input, component widgets, editor-state reads/paste semantics, and theme mutation.
 
-If an action’s only authorization path is an interactive confirmation, define what happens without UI. For automation extensions, explicit non-interactive config/CLI/env policy is a valid design; do not add blanket blocking that defeats the requested workflow.
+If an action’s only authorization path is an interactive confirmation, define what happens without UI. For automation extensions, explicit non-interactive config/CLI/env policy is a valid design; do not add blanket blocking that defeats the requested workflow. The house rules for notices, permission questions, and reports without a UI are in [Without a UI](house-conventions-ux.md#without-a-ui).

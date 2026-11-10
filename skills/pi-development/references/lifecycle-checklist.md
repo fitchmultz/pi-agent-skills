@@ -36,7 +36,8 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - In-memory state can be reconstructed.
 - Branch-aware state is stored in tool result `details` or branch-scanned custom entries; nested-model token/cost accounting stays in top-level `usage`, not `details`.
 - Non-model state is stored with `pi.appendEntry()` when needed; `registerEntryRenderer()` is paired with it only for persisted display-only transcript UI.
-- `session_start` rehydrates from `ctx.sessionManager.getBranch()` or `getEntries()` intentionally.
+- `session_start` rehydrates from `ctx.sessionManager.getBranch()` for anything that tree navigation can undo, and from `getEntries()` only for facts that hold for the whole session file.
+- Custom type names, the size and versioning of stored records, where package files live, and the state snapshot the model needs after a compaction follow [State](house-conventions-tool-contract.md#state).
 - `session_info_changed` updates any UI/state that depends on the current display name.
 - `session_tree` rehydrates if branch navigation changes meaning.
 - `agent_end` is per-low-level-run. Local-run notifications use shared `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` after continuations/retries, never low-level `session.agent.waitForIdle()`. On the inspected hosts, actionable final-boundary work uses `agent_before_settle`; settlement is notification-only. Extension-owned detached jobs are not completed by local settlement.

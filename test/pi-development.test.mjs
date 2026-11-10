@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -19,6 +19,9 @@ test("Pi guidance links its shipped resolver and conditional references", () => 
     "references/lifecycle-checklist.md",
     "references/tool-design-checklist.md",
     "references/tui-authoring-guide.md",
+    "references/house-conventions-ux.md",
+    "references/house-conventions-tool-contract.md",
+    "references/house-conventions-delivery.md",
     "references/provider-model-guide.md",
     "references/idea-evaluation-checklist.md",
     "references/linux-docker-validation.md",
@@ -27,6 +30,24 @@ test("Pi guidance links its shipped resolver and conditional references", () => 
     assert.ok(skill.includes(file), `missing entry-point link: ${file}`);
     assert.ok(existsSync(path.join(skillDir, file)), `missing resource: ${file}`);
   }
+});
+
+test("Pi references link to files and headings that exist", () => {
+  const markdown = readdirSync(skillDir, { recursive: true }).filter(file => file.endsWith(".md"));
+  const slugs = file => new Set([...readFileSync(file, "utf8").matchAll(/^#{1,6} +(.+)$/gm)]
+    .map(([, heading]) => heading.trim().toLowerCase().replace(/[^\p{L}\p{N} _-]/gu, "").replaceAll(" ", "-")));
+  let links = 0;
+  for (const file of markdown) {
+    const source = path.join(skillDir, file);
+    for (const [, target] of readFileSync(source, "utf8").matchAll(/\]\((?!https?:)([^)\s]+)\)/g)) {
+      const [relative, anchor] = target.split("#");
+      const linked = relative ? path.resolve(path.dirname(source), relative) : source;
+      assert.ok(existsSync(linked), `${file}: missing link target ${target}`);
+      if (anchor) assert.ok(slugs(linked).has(anchor), `${file}: missing heading ${target}`);
+      links += 1;
+    }
+  }
+  assert.ok(links > 0, "no relative links found");
 });
 
 test("Pi contract scenarios remain available to behavioral evaluation", () => {
@@ -49,6 +70,14 @@ test("Pi contract scenarios remain available to behavioral evaluation", () => {
     "public-extension-shared-host-policy",
     "official-fork-lifecycle-boundary",
     "optional-tools-and-execution-cwd",
+    "house-tool-card-running-state",
+    "house-cut-result-next-call",
+    "house-tool-failure-returned",
+    "house-pre-push-gate",
+    "house-npm-channel-merge-is-release",
+    "house-notice-without-ui",
+    "house-new-tool-exposure",
+    "house-switch-command-and-status",
   ]) assert.ok(ids.has(id), `missing eval: ${id}`);
 });
 

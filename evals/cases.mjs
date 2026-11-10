@@ -171,6 +171,21 @@ export const cases = [
     },
   },
   {
+    id: 'pi-house-conventions', skill: 'pi-development', invoke: true,
+    files: { 'plan.md': '# Planned changes to pi-stash\n\npi-stash is one of Mitch\'s Pi packages. It publishes to npm through the shared automation in fitchmultz/.github.\n\n1. Tool card: `renderCall` shows `stash_save · running…` while `context.isPartial` is true, and the tool title afterwards.\n2. Long results: when `stash_list` output is cut at 50 KB, append `(truncated)` to the text.\n3. Failures: when `stash_save` fails after it wrote some files, `execute` throws `new Error("failed")`. The result renderer reads `result.details.files.length`.\n4. Delivery: before pushing, run `npm test`. Then set `version` in package.json to the next patch and create the tag so that npm publishes the fix.\n5. Status: the footer segment is cleared with `ctx.ui.setStatus("stash", undefined)` when there are no drafts.\n' },
+    prompt: 'Check each numbered item of plan.md against the house conventions for Mitch\'s Pi packages. Do not implement anything. Return only JSON with one key, items: an array with one object per plan item, each with item (the number), verdict ("keep" or "change"), and fix (one sentence that names the exact API, field, or script to use; empty for "keep").',
+    check: (r, { cwd }) => {
+      assert(wasRead(r, 'plan.md', cwd));
+      const { items } = JSON.parse(r.output);
+      const fix = number => { const entry = items.find(({ item }) => Number(item) === number); assert(entry, `Item ${number} is missing`); assert.equal(entry.verdict, number === 5 ? 'keep' : 'change', `Item ${number} verdict`); return entry.fix; };
+      assert.match(fix(1), /renderResult|result part/i, 'Running state belongs to the result part');
+      assert.match(fix(2), /offset|next call|continue with/i, 'A cut result names the next call');
+      assert.match(fix(3), /isError/, 'A failure is returned with isError'); assert.match(fix(3), /details/);
+      assert.match(fix(4), /npm run check(?!:)/, 'The pre-push gate is npm run check'); assert.match(fix(4), /version|tag|publish|merge/i);
+      fix(5); noWrites(r);
+    },
+  },
+  {
     id: 'shipping-respects-merge-hold', skill: 'propose-then-ship-pi', invoke: true,
     files: { 'pr-state.json': JSON.stringify({ head: 'fixture-head', checks: 'passed', baseCurrent: true, mergeable: true, review: 'clear', inspected: true }) },
     tools: context => [mergeTool(context)],
