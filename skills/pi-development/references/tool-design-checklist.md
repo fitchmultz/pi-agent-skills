@@ -52,10 +52,10 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 - Errors that should be model-visible failures are thrown, not returned as ad hoc flags.
 - Result-level `terminate: true` is used only for final structured-output behavior when every finalized sibling in the batch may skip the follow-up LLM turn. Blocked `tool_call` handlers can also return `{ block: true, terminate: true }`; termination applies only to blocked calls, and the follow-up turn is skipped only when every finalized batch result terminates.
 - Tools stay parallel by default. `tool_call` preflight is sequential, but sibling results are unavailable there; result events may interleave by completion while final tool-result messages use assistant source order.
-- Shared non-file state has an explicit concurrency plan. `executionMode: "sequential"` is batch-wide: one sequential sibling makes Pi execute every call in that assistant response in source order. Fork-native asynchronous work detached from earlier responses continues unless the global mode is sequential.
+- Shared non-file state has an explicit concurrency plan. `executionMode: "sequential"` is batch-wide: one sequential sibling makes Pi execute every call in that assistant response in source order. A fork background run (`ctx.runInBackground`) continues after the response that started it; its `ctx.executeTool()` calls still wait in the nested-call queue when the called tool or the agent's `toolExecution` is sequential.
 - Independent resources use keyed queues instead of batch-wide serialization when possible.
 - File mutations use `withFileMutationQueue()` on the resolved absolute path and queue the whole read-modify-write window.
-- `tool_call` handlers use `isToolCallEventType()` for typed narrowing; `tool_result` handlers use built-in result guards such as `isBashToolResult()` instead of relying on direct `toolName` comparisons. Current fork guards match unnamespaced built-ins only, so namespaced or overridden tools need their own verified identity path.
+- `tool_call` handlers use `isToolCallEventType()` for typed narrowing; `tool_result` handlers use built-in result guards such as `isBashToolResult()` instead of relying on direct `toolName` comparisons. On both hosts a guard only compares `toolName` with the built-in name: a namespaced tool does not match, and an override that keeps the name does. Those tools need their own verified identity path.
 
 ## Built-in wrappers and overrides
 

@@ -4,15 +4,13 @@ This repository owns the bundled skill instructions, references, scripts, and as
 
 ## Current guidance
 
-The October 1, 2026 Pi modernization used:
+Skill guidance follows these sources:
 
 - [OpenAI's latest-model guide](https://developers.openai.com/api/docs/guides/latest-model), currently covering GPT-6 Astra, Sol, and Luna: infer routine intent, finish authorized work, ask only consequential questions, make instruction conflicts explicit, delegate useful independent work, and calibrate verification to the change.
 - [Agent Skills authoring practices](https://agentskills.io/skill-creation/best-practices) and [specification](https://agentskills.io/specification): precise routing descriptions, concise task-specific instructions, progressive disclosure, and scripts for fragile repeatable operations.
-- Version-matched [official Pi skill documentation](https://github.com/earendil-works/pi/blob/v1.5.0/packages/coding-agent/docs/skills.md) and the inspected [fitchmultz/pi fork](https://github.com/fitchmultz/pi/tree/e3cabf1de0775895e2b2086729dbbe65ed3f426f). The [version hazards reference](../skills/pi-development/references/current-version-hazards.md) owns exact inspected source identities and distribution differences.
+- The skill documentation that ships with the target Pi release ([`docs/skills.md`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md)) and the [`fitchmultz/pi` fork](https://github.com/fitchmultz/pi). The [version hazards reference](../skills/pi-development/references/current-version-hazards.md) owns the exact source identities and the differences between the two distributions.
 
-These are dated source checks, not a promise that a moving “latest” URL will stay unchanged. Recheck the relevant primary source before the next refresh. Historical release notes, migration scenarios, and evaluation reports retain the versions they actually describe.
-
-The November 2, 2026 guidance refresh raises the minimum supported floor to official Pi `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`), `fitchmultz/pi` commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` (`1.5.0`) and its revision-matched [`FORK.md`](https://github.com/fitchmultz/pi/blob/ea5fe4563fd15e7b630fa33c776865a1e30c7acb/FORK.md), and the latest versions of referenced companion packages and analyzer dependencies, while instructing agents to always resolve and build to the current latest official Pi release, latest fork HEAD, and latest dependency versions.
+These sources move, and a “latest” URL does not stay unchanged. Recheck the relevant primary source at each refresh. Historical release notes, migration scenarios, and evaluation reports retain the versions they actually describe.
 
 ## Authoring rules
 
@@ -20,7 +18,7 @@ The November 2, 2026 guidance refresh raises the minimum supported floor to offi
 - Treat skills as workflow guidance under current system, harness, and user instructions. A skill cannot grant external-write authority, impersonate approval, reopen a settled decision, or silently narrow the requested outcome. Preserve real authorization and safety boundaries.
 - Explain concrete failure modes and useful defaults rather than adding generic checklists. Keep `SKILL.md` below 500 lines; link larger references with explicit conditions for reading them.
 - Put selection criteria in the description. Preserve manual-only invocation where deliberate, and distinguish review, planning, and implementation requests.
-- Inspect the active tool catalog and supported discovery before declaring an optional capability unavailable. Fork integration discovery does not make the underlying extensions native to official Pi.
+- Inspect the active tool catalog and supported discovery before declaring an optional capability unavailable. Tool discovery does not make the underlying extensions native to Pi.
 - Preserve bundled helpers and their contracts. Change executable behavior in its own focused PR rather than hiding it in an instruction refresh.
 
 ## Validation
@@ -44,11 +42,11 @@ Validate host-sensitive behavior against the minimum official Pi baseline, curre
 
 ### Minimum and current official hosts
 
-`package.json` pins the minimum supported official Pi SDK (`@earendil-works/pi-coding-agent` `1.5.0`) for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current latest official release and fork `main` revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
+`package.json` pins the minimum supported official Pi SDK (`@earendil-works/pi-coding-agent`) for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current latest official release and fork `main` revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
 
-The minimum supported floor is official Pi `1.5.0` (`f9a26365568127461c47a07a37dcb42c140a3ac5`) and `fitchmultz/pi` commit `ea5fe4563fd15e7b630fa33c776865a1e30c7acb` (`1.5.0`), plus the recorded dependency floors (`@fitchmultz/pi-subagents` `0.52.6+`, `pi-change-working-dir` `0.6.0+`, `@earendil-works/pi-durable` `1.5.0+`, `oxlint` `1.90.0+`, `oxfmt` `0.75.0+`, TypeBox `1.3.27+`, PMD `7.29+`, `lizard>=1.24.3`, `pathspec>=1.1.1`). Agents must never build for anything older than those floors, and must always resolve and build to the current latest official Pi release, latest `fitchmultz/pi` commit HEAD, and latest dependency versions. The [version hazards reference](../skills/pi-development/references/current-version-hazards.md) records the last-verified official and fork source baselines.
+The minimum supported floor is official Pi `1.5.1` and the `fitchmultz/pi` commit that [Targets and floors](../skills/pi-development/references/current-version-hazards.md#targets-and-floors) names. That section owns the exact commits and the Pi companion versions; other files point to it and do not repeat them. The code-smells analyzer floors are PMD `7.29+`, `lizard>=1.24.3`, and `pathspec>=1.1.1`. Agents never build for anything older than a floor. They always resolve and build against the latest official Pi release, the latest `fitchmultz/pi` `main`, and the latest dependency versions.
 
-Guidance uses `1.5.0+` public SDK, session, runtime, model, tool, schema (pi-schema tool validation, `typebox` imports), and TUI contracts, plus the fork's `ManagedHost`, working-session (`acquireWorkingSession`, `bindWorkingSessionHost`, `openWorkingSession`/`writeWorkingSession`, `working_session_save`), auth-fallback (`registerProviderAuthFallback`), background-execution (`builtin:background-command`, `ctx.runInBackground`), and root `resolveModelReference` contracts. Optional tools use native deferred exposure with `tool_search` on both hosts; fork main retired instruction groups and `pi.refreshTools()`. Inspecting a revision does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
+Guidance uses the public SDK, session, runtime, model, tool, schema (pi-schema tool validation, `typebox` imports), and TUI contracts that both hosts share, plus the fork's `ManagedHost`, working-session (`acquireWorkingSession`, `bindWorkingSessionHost`, `openWorkingSession`/`writeWorkingSession`, `working_session_save`), auth-fallback (`registerProviderAuthFallback`), background-execution (`builtin:background-command`, `ctx.runInBackground`), and root `resolveModelReference` contracts. Optional tools use native deferred exposure with `tool_search` on both hosts; instruction groups and `pi.refreshTools()` no longer exist. Inspecting a revision does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
 
 Run the current-official host-sensitive checks locally without changing the repository's dependency tree. For an exact CI reproduction, select the tag from that run's frozen host receipt instead of querying the latest release:
 

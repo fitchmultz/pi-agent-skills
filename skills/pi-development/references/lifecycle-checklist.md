@@ -41,14 +41,14 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - `session_tree` rehydrates if branch navigation changes meaning.
 - `agent_end` is per-low-level-run. Local-run notifications use shared `agent_settled`, `AgentSession.waitForIdle()`, or `ExtensionCommandContext.waitForIdle()` after continuations/retries, never low-level `session.agent.waitForIdle()`. On the inspected hosts, actionable final-boundary work uses `agent_before_settle`; settlement is notification-only. Extension-owned detached jobs are not completed by local settlement.
 - `session_shutdown` cleans timers, watchers, processes, subscriptions, raw input listeners, overlays/widgets, and handles.
-- On current fork sources, idle RPC `ctx.shutdown()` runs immediately when no command is active; an active command writes its response first. Print mode still exits through its own completion path. Let the host finish started OAuth refresh persistence during shutdown rather than killing it on the first signal.
+- Idle RPC `ctx.shutdown()` runs immediately when no command is active; an active command writes its response first. Print mode still exits through its own completion path. Let the host finish started OAuth refresh persistence during shutdown rather than killing it on the first signal.
 
 ## Runtime mutation
 
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.
 - Runtime `pi.setActiveTools()` changes are persisted or reconstructed when needed.
 - Provider register/unregister timing is clear and validated if model availability matters. Dynamic refresh uses read-only `context.stored` and generation-checked `context.publish()`; no state mutates before successful publication. `createProvider({ fetchModels })` and config callbacks that only return models keep factory-owned publication. Same-id native registration discards prior legacy state and replaces native ownership; switching back deletes native ownership and starts from the new legacy fragment. Only later legacy re-registrations merge defined fields. Any removed/renamed conditional extension provider may survive `/reload` until explicitly unregistered or the runtime is rebuilt.
-- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Both official `1.5.0+` and the `fitchmultz/pi` `1.5.0+` fork clear factory caches on reload. Validate the exact distribution used, with a fresh process when package/runtime identity matters.
+- `/reload` refreshes resources/reinitializes extensions, not ordinary dynamic state. Both hosts clear factory caches on reload. Validate the exact distribution used, with a fresh process when package/runtime identity matters.
 
 ## Replacement footguns
 

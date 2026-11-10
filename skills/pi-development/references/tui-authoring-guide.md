@@ -22,7 +22,7 @@ Pick the smallest good UI surface:
 
 ## TUI component rules
 
-Pi `1.5.0+` defaults to fullscreen. Use the supplied host TUI, not a second terminal or private render loop. Test default fullscreen and regular mode, narrow/wide/CJK, resize, focus, keyboard/mouse, cancellation and disposal. Use `tui.queryTerminalColors()` (`TerminalColors`, `TerminalColorScheme`, `parseTerminalColorSchemeReport`) for palette queries; the old standalone color-scheme/background helpers are removed.
+Pi defaults to fullscreen. Use the supplied host TUI, not a second terminal or private render loop. Test default fullscreen and regular mode, narrow/wide/CJK, resize, focus, keyboard/mouse, cancellation and disposal. Use `tui.queryTerminalColors()` (`TerminalColors`, `TerminalColorScheme`, `parseTerminalColorSchemeReport`) for palette queries; the old standalone color-scheme/background helpers are removed.
 
 - `ctx.ui.custom()` takes a factory and returns a `Promise<T>`. Close by calling `done(value)`.
 - For overlays, use `options.onHandle` to receive `OverlayHandle`. Non-overlay custom UI has no public handle.
@@ -36,7 +36,7 @@ Pi `1.5.0+` defaults to fullscreen. Use the supplied host TUI, not a second term
 - Components that need Kitty key-release events, such as games or smooth movement, opt in with `wantsKeyRelease = true`.
 - Components with text cursors should implement `Focusable` and emit `CURSOR_MARKER`; containers with child `Input`/`Editor` must propagate focus.
 - `showHardwareCursor`, `setShowHardwareCursor(true)`, or `PI_HARDWARE_CURSOR=1` can help terminals that need a visible cursor for IME candidate positioning.
-- In `@earendil-works/pi-tui` `1.5.0+`, place `CURSOR_MARKER` immediately before a cursor cell wrapped with public `renderFakeCursor(text)`, emitting the position marker only when focused. With hardware cursor off, the TUI resolves fake-cursor markers to reverse video. With it on, the focused marked fake cursor loses its reverse video while its text remains; unfocused fake cursors stay visible. Preserve markers through highlighting, clipping and composition (`compositeTuiLine`, `stripTerminalSequences`), and test native output with hardware cursor both on and off, including narrow/CJK/emoji cells and focus changes. Prefer native `Input`/`CustomEditor` so the host owns cursor behavior; the helper alone does not repair missing focus propagation or `CURSOR_MARKER` semantics.
+- Place `CURSOR_MARKER` immediately before a cursor cell wrapped with public `renderFakeCursor(text)`, emitting the position marker only when focused. With hardware cursor off, the TUI resolves fake-cursor markers to reverse video. With it on, the focused marked fake cursor loses its reverse video while its text remains; unfocused fake cursors stay visible. Preserve markers through highlighting, clipping and composition (`compositeTuiLine`, `stripTerminalSequences`), and test native output with hardware cursor both on and off, including narrow/CJK/emoji cells and focus changes. Prefer native `Input`/`CustomEditor` so the host owns cursor behavior; the helper alone does not repair missing focus propagation or `CURSOR_MARKER` semantics.
 - Use `PI_TUI_WRITE_LOG=/tmp/tui-ansi.log` for raw ANSI stream debugging.
 - `PI_TUI_ESC_TIMEOUT` tunes lone-Escape detection on high-latency SSH links where split `Alt+Enter` misparses. `--use-theme <name[/name]>` overrides the per-run theme without saved settings for renderer validation. Built-in fullscreen transcript search (`Ctrl+Shift+F`), unbound half-page scroll actions, and unbound single-line scroll actions exist; keep custom shortcuts clear of them.
 
@@ -63,18 +63,18 @@ Behavior:
 - `CustomEditor` constructor is `(tui, theme, keybindings, options?)`; call `super.handleInput(data)` for unhandled keys.
 - `CustomEditor.handleInput()` gives extension shortcuts and app-level actions a chance before normal editor text handling.
 - Use `pi.registerShortcut()` for extension hotkeys.
-- Use the injected `keybindings.matches(data, namespacedId)` and `getKeys(id)` for configurable actions. In tool renderers, format hints with `context.keyHint(id, description)`/`context.keyText(id)` from the `ToolRenderContext` argument; message and entry renderers get the same functions on their `options` argument (`MessageRenderOptions`/`EntryRenderOptions` extend `KeybindingHints`, `1.5.0+`); an imported `keyHint()` can resolve the extension's own `pi-coding-agent` copy and render without the user's keys. Elsewhere, `rawKeyHint(keybindings.getKeys(id).join("/"), description)` formats the injected bindings.
-- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input (OSC 7501 program status) while visible. Official `1.5.0` overlays ignore it. Current fork overlays report blocked status until `done()`, even while hidden with `setHidden()`. Hiding an overlay does not complete its question.
+- Use the injected `keybindings.matches(data, namespacedId)` and `getKeys(id)` for configurable actions. In tool renderers, format hints with `context.keyHint(id, description)`/`context.keyText(id)` from the `ToolRenderContext` argument; message and entry renderers get the same functions on their `options` argument (`MessageRenderOptions`/`EntryRenderOptions` extend `KeybindingHints`); an imported `keyHint()` can resolve the extension's own `pi-coding-agent` copy and render without the user's keys. Elsewhere, `rawKeyHint(keybindings.getKeys(id).join("/"), description)` formats the injected bindings.
+- Inline `ctx.ui.custom(factory, { blocked: { kind, message } })`, with `kind` `"question"`, `"permission"` or `"auth"`, reports Pi as waiting for user input (OSC 7501 program status) while visible. Overlays report blocked status from when they are shown until `done()`, even while hidden with `setHidden()`. Hiding an overlay does not complete its question.
 - A focused component that sets `capturesViewportInput` receives the fullscreen viewport keys (`tui.altScreen.*` scrolling and prompt jumps) instead of the transcript; `getSelectPageIndex()` computes a custom list's selection after `tui.select.pageUp` or `tui.select.pageDown`.
 - Pi-tui `Markdown` reuses rendered blocks and highlighted code until `invalidate()`; call it on theme changes. Use `replaceControlCharacters()` before rendering untrusted titles or labels.
 - Native hint helpers display Alt as Option on macOS. Keep canonical `alt` binding IDs, config, and behavior unchanged; format only owned key labels, never arbitrary user/agent text. Do not add a platform mapper or deep-import internal `formatKeyText`/`keyDisplayText`; those are not public root exports.
-- On hosts with published schemas, use `schemas/keybindings.schema.json` for canonical key spelling/case and `schemas/theme.schema.json` for strict theme fields/tokens. Custom action IDs remain allowed; validate the selected host's theme loader as well as JSON shape, not only file existence or a `--no-themes` CLI smoke. See `current-version-hazards.md` for the exact revision boundary and supported fallbacks.
+- Use the published `schemas/keybindings.schema.json` for canonical key spelling/case and `schemas/theme.schema.json` for strict theme fields/tokens. Custom action IDs remain allowed; validate the selected host's theme loader as well as JSON shape, not only file existence or a `--no-themes` CLI smoke. See `current-version-hazards.md` for the schema rules.
 - Stack autocomplete with `ctx.ui.addAutocompleteProvider(factory)`, declare `triggerCharacters` for natural triggers such as `#` or `$`, and delegate to the current provider when your syntax does not match.
 - Use `ctx.ui.onTerminalInput(handler)` only for advanced global interception. It runs before focused component routing; return `{ consume: true }` to swallow input or `{ data }` to rewrite it. It is no-op outside TUI.
 
 ## Actionable hints and mouse input
 
-Both `1.5.0+` targets export the mouse APIs below (`MouseRegion`, `TuiMouseEvent`, `TuiMouseEventResult`, `dispatchMouseEvent`, `retargetMouseEvent`). Check the active package's exports before using them.
+`@earendil-works/pi-tui` exports `MouseRegion`, `MouseRegionHandler`, `TuiMouseEvent`, and `TuiMouseEventResult` on both hosts. `dispatchMouseEvent` and `retargetMouseEvent` are internal, not root exports. Check the active package's exports before using a mouse API.
 
 Regular `TuiMainScreen` does not capture mouse input; the terminal owns scrollback. Fullscreen `TuiAltScreen` supplies native pointer routing. Report this boundary and retain regular-mode keyboard flow; do not add raw mouse capture or change Pi core to manufacture support.
 
@@ -129,9 +129,9 @@ Custom messages and entries:
 
 Markdown transformers:
 
-- Official `1.5.0` transforms user, assistant and thinking Markdown. Current fork sources also accept `registerMarkdownTransformer(transformer, { messageTypes })` to opt into `custom`, `summary`, or `changelog`. The option selects the entire set, not additions to the default. Check both hosts' types before using it.
+- By default a transformer runs on user, assistant and thinking Markdown. `registerMarkdownTransformer(transformer, { messageTypes })` can also select `custom`, `summary`, or `changelog`. The option selects the entire set, not additions to the default.
 - The hook is display-only and synchronous. Preserve the original session/model content, and keep work cheap during streaming and resize. Registering again replaces the extension's prior transformer.
-- On the current fork, highlighted fullscreen copies use native source mapping to retain Markdown and real line breaks. Prefer native components; `/copy` remains the whole-message command. Do not require this fork-only selection behavior on official Pi.
+- On the fork, highlighted fullscreen copies use native source mapping to retain Markdown and real line breaks. Prefer native components; `/copy` remains the whole-message command. Do not require this fork-only selection behavior on official Pi.
 
 ## Mode behavior
 
