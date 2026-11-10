@@ -69,8 +69,8 @@ test('selected SDK owns native documentation despite an inherited package overri
   assert.equal(result.host.resourceRoot, host.root);
   assert.equal(result.commands[0].exitCode, 0);
   assert.equal(result.commands[0].output.trim(), host.identity.version);
-  assert(contexts[0].includes(join(host.root, 'docs')));
-  assert(contexts[0].includes(join(host.root, 'README.md')));
+  // Official Pi names README.md and docs under the package root; the fork names the package root once.
+  assert(contexts[0].includes(host.root));
   assert(!contexts[0].includes(unrelatedRoot));
 });
 
