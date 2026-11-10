@@ -2,7 +2,7 @@
 
 Evaluated on 2026-09-22. The 0.7.0 release covered twelve skills, refreshed their Pi contracts, and reduced repeated instructions. The comparisons found and corrected two instruction problems: a QA report could use the wrong directory, and the shorter Pi description lost explicit platform-work exclusions.
 
-These are historical results for the archived 0.7.0 bundle, not scores for the current bundle. The current behavior suite has 17 cases across ten skills, and the held-out suite has nine prompts. Historical aggregate counts below remain unchanged; the coverage table lists only skills still bundled.
+These are historical results for the archived 0.7.0 bundle, not scores for the current bundle. The current behavior suite has 18 cases across ten skills, and the held-out suite has nine prompts. Historical aggregate counts below remain unchanged; the coverage table lists only skills still bundled.
 
 The behavior-qualified candidate completed all 19 task cases on both hosts after the two documented wording-only grading corrections below. The final description-only refinement matched all 32 Pi routing labels on both hosts. Some broader routing probes still disagree with their labels or encounter missing-repository fixture boundaries. These are bounded results, not a guarantee of universal routing accuracy or reliability.
 

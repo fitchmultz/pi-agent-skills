@@ -12,6 +12,8 @@ Skill guidance follows these sources:
 
 These sources move, and a “latest” URL does not stay unchanged. Recheck the relevant primary source at each refresh. Historical release notes, migration scenarios, and evaluation reports retain the versions they actually describe.
 
+The house conventions of `pi-development` (`references/house-conventions-ux.md`, `references/house-conventions-tool-contract.md`, `references/house-conventions-delivery.md`) are the owner's rules for his own Pi packages and the fork. Their CI and release rules follow the shared automation repository [`fitchmultz/.github`](https://github.com/fitchmultz/.github) (`fleet.json`, `docs/integration.md`, `docs/qualification.md`, `docs/npm-releases.md`). A change to a convention is the owner's decision; a host fact in those files is checked like any other.
+
 ## Authoring rules
 
 - Keep general-purpose skills model-independent. Model selection, effort, transport, and provider capabilities belong to the host and selected route; a vendor API feature is not automatically available through Pi.

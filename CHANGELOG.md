@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- Add the house conventions to `pi-development`. They are binding for Mitch's Pi packages and the `fitchmultz/pi` fork, so that every package looks, reads, and ships the same way. `SKILL.md` names three new references and when to read each:
+  - `references/house-conventions-ux.md`: tool cards (no live state in the call part, a bounded result preview, one hint row, what an HTML export keeps), messages and entries, notices, work without a UI, the status line, commands, key hints, settings, one word list, and one symbol set.
+  - `references/house-conventions-tool-contract.md`: what each text slot of a tool holds, parameter names, exposure, what a cut result ends with, returned failures, `details`, stored records, hooks and the prompt cache, and messages to the model.
+  - `references/house-conventions-delivery.md`: layout, `npm run check` as the gate before a push and `npm run check:compat` in shared CI, the Pi floor, the automatic npm release on merge, changelog notes and pull request titles, and the document set.
+  - Correct the existing references where they said the opposite: `description` is the contract and `promptSnippet` the one-line label; a failure can be returned with `isError: true`, and only that form keeps `details`; the running state of a tool belongs in the result part, not in `renderCall`; the state symbols are `✓`, `✗`, `…`, and `⊘`; message and entry renderers receive `keyText` and `keyHint`; tool guidance goes in `promptGuidelines` or in a prompt section only while the tool is declared.
+  - `references/publishing/workflow.md` now starts with the release channel. A package on an automatic npm channel releases on merge and uses no npm token; the manual tag and publish flow is only for a package with no release automation. The paragraph about the first `@fitchmultz/pi-workflows` publication is gone.
+  - Add eight evaluation scenarios and the behavior case `pi-house-conventions`, and test that every relative link and heading anchor in the skill resolves.
+
 - Record the supported official Pi release and `fitchmultz/pi` commit once, as the `pi-development` stamp: `metadata.last-verified-pi` and `metadata.fork-source` in its frontmatter. The stamp values are unchanged.
   - Remove the other records of the pair: `metadata.official-source`, the official commit, the merged upstream commit, and the verification date. The hazards reference links the official release by its tag, and states the fork's package version by pointing at the fork commit. The `compatibility` field, the maintenance guide, and `AGENTS.md` point at the stamp.
   - `test/pi-development.test.mjs` fails when a repeated value differs from the stamp: an official version or a fork commit in `SKILL.md` or the references, the development SDK pin, or a `Pi X.Y.Z` floor in the README, `clef`, or `code-smells`.

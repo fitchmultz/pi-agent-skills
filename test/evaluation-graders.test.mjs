@@ -37,6 +37,17 @@ test('answers that skip explicitly required source reads do not pass', () => {
   assert.doesNotThrow(() => check('pi-current-sdk', sdkAnswer, reads(['proposal.md', 'runtime.json', '/sdk/dist/core/sdk.d.ts', '/sdk/dist/core/model-runtime.d.ts'])));
 });
 
+test('house conventions require the result-part state, the next call, a returned failure, and the gate', () => {
+  const answer = fixes => JSON.stringify({ items: fixes.map((fix, index) => ({ item: index + 1, verdict: fix ? 'change' : 'keep', fix })) });
+  const follows = ['Show the running row in renderResult while options.isPartial.', 'End the cut result with a bracketed line that gives the next call and its offset.',
+    'Return { isError: true, content, details } and let the renderer accept any details.', 'Run npm run check, then merge: the bot sets the version and the tag.', ''];
+  assert.doesNotThrow(() => check('pi-house-conventions', answer(follows), reads(['plan.md'])));
+  assert.throws(() => check('pi-house-conventions', answer(follows)), 'plan.md must be read');
+  const earlier = ['', 'Name the saved file.', 'Throw a clearer error and guard details.', 'Run npm run check:compat, then tag and publish with the npm token.', ''];
+  for (const index of [0, 1, 2, 3]) assert.throws(() => check('pi-house-conventions', answer(follows.with(index, earlier[index])), reads(['plan.md'])), `item ${index + 1}`);
+  assert.throws(() => check('pi-house-conventions', answer(follows.with(4, 'Add an emoji.')), reads(['plan.md'])), 'item 5 stays');
+});
+
 test('the actual reversed diagram edge is required', () => {
   const events = reads(['flow.json', 'diagram.png']);
   assert.throws(() => check('diagram-inspects-image', JSON.stringify({ incorrectEdge: { from: 'Client', to: 'API' }, expectedEdge: { from: 'API', to: 'Database' } }), events));

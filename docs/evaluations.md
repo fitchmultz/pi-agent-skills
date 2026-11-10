@@ -58,7 +58,7 @@ The default profile has no ambient instructions, extensions, or skills. Add `--p
 
 | Suite | Boundary |
 | --- | --- |
-| `behavior` | Seventeen task cases across the ten skills with behavior fixtures: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits, truthful evidence, review findings, merge holds, and image inspection. |
+| `behavior` | Eighteen task cases across the ten skills with behavior fixtures: explicit invocation, natural selection, questions and continuation, read-only scope, actual code edits, truthful evidence, review findings, merge holds, and image inspection. |
 | `routing` | Existing `skills/*/evals/trigger-evals.json` prompts through native discovery. This measures initial skill selection after inspection and before task execution. |
 | `held-out` | Nine independently written routing prompts, kept separate from the existing trigger examples. |
 

@@ -2,6 +2,16 @@
 
 Use for Pi package preparation, release, publish, install, or update verification. Runtime hooks/tools/UI/providers still follow the main skill.
 
+## Find the release channel first
+
+Read the repository's release documents and workflows before any release step. The channel decides which parts of this file apply:
+
+- **Automatic npm channel.** Mitch's npm packages release through the shared automation in `fitchmultz/.github` (`docs/npm-releases.md`): the fleet entry has `npmRelease: "automatic"` and the repository has `npm-version.yml` and `npm-release.yml`. A merge to `main` is the release. A bot opens the version pull request, creates the tag and the GitHub Release, and publishes with npm trusted publishing. Do not edit `version`, tag, create a release, publish, or read an npm token. [Release](../house-conventions-delivery.md#release) has the rules. The [Explicit release flow](#explicit-release-flow) and the npm part of [Post-release verification](#post-release-verification) do not apply.
+- **Git-only package.** There is no npm publication. Follow [Release](../house-conventions-delivery.md#release) and the repository's own documents.
+- **A package with no release automation**, when the user authorizes a manual release: the complete flow below applies.
+
+For a package in the shared fleet, `npm run check` and the required `Pi compatibility` check already install a fresh copy and start the real CLI on the latest official Pi and the current fork `main`, and compare the packed tarball with the Git install for npm channels. Use the [Preparation gate](#preparation-gate) when the package is outside the fleet, or when the task asks for local proof of a release artifact.
+
 ## Authorization boundary
 
 Preparation is not permission to release or publish external artifacts.
@@ -11,7 +21,7 @@ Preparation is not permission to release or publish external artifacts.
 - Tags, GitHub Release creation, npm publish, external artifact release, any defined deployment that publishes or releases an external artifact, production-control changes outside the repository's defined deployment, and release credential reads each require user authorization that covers that action.
 - Audits are read-only. Delete or rewrite local files only when the requested preparation scope authorizes working-tree edits; otherwise report cleanup findings.
 - Stop only when branch, tag, registry scope, package name, version, account, or repository ambiguity could change the authorized outcome or external action; choose routine reversible working-branch names without asking.
-- Use the shell-preloaded `NPM_TOKEN`; if it is missing, source `~/.secrets` only inside the isolated publish subshell. Never use `set -a`, and never expose the temporary auth config to npm lifecycle scripts.
+- Read an npm token only in the manual flow for a package with no release automation. There, use the shell-preloaded `NPM_TOKEN`; if it is missing, source `~/.secrets` only inside the isolated publish subshell. Never use `set -a`, and never expose the temporary auth config to npm lifecycle scripts. An automatic npm channel publishes with trusted publishing and needs no token.
 
 ## Current source of truth
 
@@ -66,7 +76,7 @@ Package rules:
 - Include the `pi-package` keyword when the package should be discoverable and eligible for the Pi package gallery.
 - Put imported Pi core packages in `peerDependencies` with `"*"` and mark them optional in `peerDependenciesMeta`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, and `typebox`. Pin any direct Pi development dependency used only for validation to the exact supported baseline; do not turn that pin into a runtime dependency.
 - Put required third-party runtime libraries in `dependencies`, not `devDependencies`. List `@earendil-works/pi-schema` in `dependencies` when extension code imports it; Pi supplies only the core packages above.
-- For packages that load an extension, keep `CHANGELOG.md` (or `pi.changelogPath`) headings in Pi's format (`## [1.2.0]`) and bump `package.json` `version` for each user-visible release: Pi shows entries newer than the last seen version after an update, and git packages show entries when their version increases.
+- For packages that load an extension, keep `CHANGELOG.md` (or `pi.changelogPath`) version headings in a form Pi reads: `## 1.2.0 - 2026-01-01`, which the shared release bot writes, or `## [1.2.0]`. Pi shows entries newer than the last seen version after an update, and git packages show entries when their `version` increases. On an automatic npm channel the bot raises `version`; elsewhere a user-visible release raises it.
 - Put Pi resource packages referenced through `node_modules/...` in both `dependencies` and `bundledDependencies`.
 - Do not store mutable data, caches, or generated artifacts inside managed Git package checkouts; Pi may reset and clean them during update.
 - Optional package-gallery previews use `pi.video` (MP4) or `pi.image` (PNG/JPEG/GIF/WebP); video wins when both exist.
@@ -225,7 +235,9 @@ Run steps 2-8 in one persistent Bash process; their fenced blocks are sequential
 
 ## Explicit release flow
 
-Follow the repository's established channel first. Git/GitHub-only or private packages (including pi-agent-skills) must not run the npm publication recipe or borrow a foreign npm name. The owner has explicitly authorized pi-workflows to establish `@fitchmultz/pi-workflows`, continuing its existing version history with Git installation retained as a fallback; unscoped `pi-workflows` is not this project and must not be published to, deprecated, or otherwise changed. This specific scoped-channel authorization is not a waiver for other Git-only or foreign packages. Check actual tags/releases and select a non-reused version; GitHub-only delivery retains source/tag/artifact evidence without inventing a registry channel. The npm steps below apply only to an explicitly authorized owned npm channel, including this specifically authorized first publication.
+This flow is for a package with no release automation. A package on an automatic npm channel never uses it: its merge to `main` is the release (see [Find the release channel first](#find-the-release-channel-first)). The first publication of a new name on the shared automation follows `docs/npm-releases.md` in `fitchmultz/.github`, not this flow.
+
+Follow the repository's established channel first. Git/GitHub-only or private packages (including pi-agent-skills) must not run the npm publication recipe or borrow a foreign npm name. Check actual tags/releases and select a non-reused version; GitHub-only delivery retains source/tag/artifact evidence without inventing a registry channel. The npm steps below apply only to an explicitly authorized owned npm channel that publishes manually.
 
 Run only the authorized actions, in order, and verify each before continuing:
 
@@ -392,7 +404,7 @@ Do not repack after step 3. Run the artifact-preparation shell before any push, 
 
 Stop here. Inspect the printed file manifest, install/resource evidence, git commit/tag, package identity, registry, npm tag, and access. Only after this gate, push the authorized branch/tag and create the matching GitHub Release. Then pass the retained artifact directory and SHA-256 into the publication shell with the same authorized git commit/tag and the authorized `npm whoami` account.
 
-For npm authentication, use the `NPM_TOKEN` already loaded from `~/.secrets`. If it is unexpectedly absent, source that file only inside the publish subshell. Do not use `set -a`. Publish without lifecycle hooks so package scripts cannot read the temporary auth config; the subshell removes that config immediately on success, failure, or shell exit.
+For npm authentication in this manual flow, use the `NPM_TOKEN` already loaded from `~/.secrets`. If it is unexpectedly absent, source that file only inside the publish subshell. Do not use `set -a`. Publish without lifecycle hooks so package scripts cannot read the temporary auth config; the subshell removes that config immediately on success, failure, or shell exit.
 
 ```bash
 (

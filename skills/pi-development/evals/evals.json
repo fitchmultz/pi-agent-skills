@@ -229,7 +229,7 @@
     {
       "id": "publish-exact-verified-artifact",
       "prompt": "Publish the authorized npm release of this pi package after the release-ready checks pass.",
-      "expected_output": "Commits and creates the authorized annotated tag locally, then before any push/release/credential read verifies the clean HEAD/tag commit and retains one marked credential-free tarball with git commit/tag, package identity, manifest, and SHA-256 evidence; installs and exercises that exact artifact through each supported Pi target with its own launcher/environment and recorded behavior result, never treating version/install/list alone as sufficient; pushes and creates the matching release only after inspection; publishes the same retained tarball after evidence/hash and npm whoami checks; queries the immutable <package>@<version> metadata and dist-tags.latest separately; preserves the artifact and non-secret verification logs until immutable-version checks succeed; and on failure does not unpublish, deprecate, or republish without separate authorization."
+      "expected_output": "First finds the release channel: a package on an automatic npm channel releases on merge and takes no manual tag or publish. For a package with no release automation, commits and creates the authorized annotated tag locally, then before any push/release/credential read verifies the clean HEAD/tag commit and retains one marked credential-free tarball with git commit/tag, package identity, manifest, and SHA-256 evidence; installs and exercises that exact artifact through each supported Pi target with its own launcher/environment and recorded behavior result, never treating version/install/list alone as sufficient; pushes and creates the matching release only after inspection; publishes the same retained tarball after evidence/hash and npm whoami checks; queries the immutable <package>@<version> metadata and dist-tags.latest separately; preserves the artifact and non-secret verification logs until immutable-version checks succeed; and on failure does not unpublish, deprecate, or republish without separate authorization."
     },
     {
       "id": "provider-response-hook",
@@ -365,6 +365,46 @@
       "id": "edge-repository-delivery-failure-is-truthful-stop",
       "prompt": "An approved extension change is committed, but push fails and no pull request can be opened. Validation passed. Produce the final report.",
       "expected_output": "Reports branch and commit complete, push failed with the observed reason and recovery action, pull request blocked by that failure, and deployment not reached. Stops truthfully instead of claiming complete delivery or retrying without a bound."
+    },
+    {
+      "id": "house-tool-card-running-state",
+      "prompt": "One of Mitch's Pi packages draws its tool card heading as `… <title> · running` from renderCall while the tool runs, and shortens long arguments when collapsed. Exported sessions show every call as running and lose the arguments. Fix the card.",
+      "expected_output": "Reads references/house-conventions-ux.md. Keeps row 1 of the call part the same in every state (tool title, then the target) and removes the live state from renderCall, which must not read context.isPartial, context.executionStarted or context.isError; shows the running state as one warning row in renderResult while options.isPartial. Explains that an HTML export renders each call once as partial and keeps only that. Returns the expanded call form when context.lastComponent is undefined so the official export keeps every argument, with a collapsed form of row 1, at most 10 wrapped rows and the hint row built with context.keyHint(\"app.tools.expand\", \"to expand\"). Adds a test through Pi's real exportToHtml and inspects collapsed, expanded and exported states; does not use renderShell \"self\"."
+    },
+    {
+      "id": "house-cut-result-next-call",
+      "prompt": "A tool in one of Mitch's Pi packages returns up to 200 KB of log text. Models page through it one call at a time, and a codemode script dies when it asks for an offset past the end. Fix the result contract.",
+      "expected_output": "Reads references/house-conventions-tool-contract.md. Puts the outcome on the first line and keeps the result inside 2,000 lines or 50 KB with truncateHead or truncateTail, handling one over-long line itself. Ends a cut result with one bracketed line that gives the range shown, the total and the exact next call with its offset, naming the calls for all remaining pages first, and names the saved full output. Returns the end or the total and valid range with a note for an offset past the end instead of an error. Names the unit of offset in the field description, uses offset and limit as parameter names, and tests the changed wording on real models before and after."
+    },
+    {
+      "id": "house-tool-failure-returned",
+      "prompt": "A tool in one of Mitch's Pi packages throws when it fails after writing two of five files, and its renderer crashes on failed calls. Make failures correct for the model and the card.",
+      "expected_output": "Returns the failure from execute as { isError: true, content, details } instead of throwing or patching isError in a tool_result handler, because only the returned form keeps details. Writes the text in three parts: what happened, what was and was not changed, and the next call to make; for a possibly applied change says unknown outcome or lists what was applied, tells the model to inspect before repeating, and never retries the change itself. Makes renderResult check context.isError first, draw result.content in the error color, and accept any details including {} and older saved shapes without throwing."
+    },
+    {
+      "id": "house-pre-push-gate",
+      "prompt": "I changed an extension in one of Mitch's Pi packages. Which script do I run before I push, what does shared CI run, and should the workflow name the Pi version it tests?",
+      "expected_output": "Reads references/house-conventions-delivery.md. Runs npm run check as the complete gate before a push (format check, lint, type check, tests, pack check; every step runs and any failure fails it), and where that script is missing or is one step runs the complete gate the repository's AGENTS.md names and says so. Explains that shared CI runs npm run check:compat once per host through the Pi compatibility workflow pinned to one fitchmultz/.github commit, that main requires the compatibility / compatibility check, and that CI selects the latest official release and current fork main, so no host version or fork commit is written into a package workflow or script."
+    },
+    {
+      "id": "house-npm-channel-merge-is-release",
+      "prompt": "I fixed a bug in one of Mitch's Pi packages that publishes to npm through the shared automation. Bump the version, tag it, and publish it with the npm token.",
+      "expected_output": "Finds the release channel first: the fleet entry has npmRelease automatic and the repository has npm-version.yml and npm-release.yml, so a merge to main is the release. Does not edit version, create a tag or GitHub Release, run npm publish, or read an npm token; publication uses trusted publishing. Adds the user-facing note under the unreleased heading of CHANGELOG.md, writes the pull request title for a user because the bot copies it into the release notes, and after the bot's chore(release) pull request merges verifies npm view <name> version against the manifest and the vX.Y.Z tag. Does not run the manual release flow of references/publishing/workflow.md, and takes no external action without authorization."
+    },
+    {
+      "id": "house-notice-without-ui",
+      "prompt": "Review this command handler from one of Mitch's Pi packages: `if (!ctx.hasUI) { ctx.ui.notify('Error: /report needs the TUI.', 'error'); return; }` followed by a ctx.ui.custom view that prints a JSON status report.",
+      "expected_output": "Finds that notify inside if (!ctx.hasUI) can never be shown, because notify does nothing without a UI; a problem goes to stderr once and a command's report to stdout. Notes ctx.hasUI is true in RPC where ctx.ui.custom returns undefined, so the view needs ctx.mode === \"tui\" and a select/confirm or stdout path. Fixes the notice: no Error: prefix because Pi adds it, one clause without a final period, the wording /report requires interactive mode as a warning. Replaces raw JSON with a readable report that also works without a UI."
+    },
+    {
+      "id": "house-new-tool-exposure",
+      "prompt": "In one of Mitch's Pi packages, add a new tool that few sessions will need, with a prompt section that explains it. While there, make the package's existing released tool deferred too, since child runs rarely call it.",
+      "expected_output": "Registers the new tool with exposure deferred because most runs will not call it, and gives it a way in through tool_search as the runtime guide describes. Puts its operating rules in promptGuidelines, which Pi shows only while the tool is declared, or sets a section in before_agent_start only while systemPromptOptions.selectedTools has the tool and hiddenTools does not. Does not change the default exposure of the released tool: that needs measured usage in top-level sessions and the owner's agreement, and on the fork the user's toolExposure setting in settings.json is the user's control. States the bytes the change adds to the system prompt and tool declarations, measured on a real request."
+    },
+    {
+      "id": "house-switch-command-and-status",
+      "prompt": "Add a quiet-mode switch to Mitch's package pi-foo: a slash command and a footer status. I was going to call it /quiet, report 'Quiet mode enabled ✅', and show '🔇 QUIET' in accent in the footer.",
+      "expected_output": "Names the command with the package topic (foo-quiet or similar kebab-case, not a built-in name), gives it a verb-first description without a final period that names the fixed words after a colon, registers getArgumentCompletions, accepts on, off and status, toggles without an argument, and answers wrong arguments with one warning Usage: /name [on|off|status]. Reports state as one info notice Quiet mode: on, without enabled/disabled wording or emoji. Sets one status segment under the package's key as lower-case name: value in dim with no emoji, and clears it with setStatus(key, undefined) when off."
     }
   ]
 }

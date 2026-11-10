@@ -68,15 +68,27 @@ Select the targets before you implement:
 3. **Launchers.** Resolve each runnable target with `python3 <skill-dir>/scripts/resolve_pi.py --pi /absolute/path/to/target/pi --json` and run that launcher's `--version`. A package-only `PI_PACKAGE_DIR` override proves source identity, not which host runs the tests.
 4. **Evidence.** Keep a small table: distribution, version and revision, launcher and package root, Node executable, affected checks and results. Use separate temporary projects and agent directories so that one host's resources, credentials, or cached state cannot stand in for the other.
 
-Mitch runs the fork, and every extension must also work on official Pi. Rules for the difference:
+Mitch runs only the fork, so judge what is best on the fork. Every extension must also work on official Pi. Rules for the difference:
 
 - Prefer APIs that both targets export, and reuse evidence that is still valid.
-- An optional fork enhancement must leave a complete official-host path. Inspect actual capabilities; do not branch on the shared version string.
+- An optional fork enhancement must leave a complete official-host path. Never compare host version numbers: test for the feature.
 - A portable extension does not import fork-only symbols at module load and does not add no-op shims that disguise missing behavior.
 - If a required capability has no supported official equivalent, report that specific blocker. Do not silently drop the capability or declare the whole extension fork-only.
 - `pi-posthorse` is not a fork-only exception: it uses public retain-none compaction on official Pi.
 
 When install or runtime identity matters, compare `type -a pi`, `pi --version`, `command -v node`, and `node --version` inside and outside the project in clean shells. Duplicate installations can share `~/.pi/agent` unless `PI_CODING_AGENT_DIR` differs. Report shadowing. Remove a stale installation only with explicit authorization and its exact runtime prefix, never with a plain global uninstall; then reshim or rehash and verify again.
+
+## House conventions
+
+The house conventions are binding for every Pi package of Mitch's and for the `fitchmultz/pi` fork. They make the packages look, read, and ship the same way. Read the matching file before you write, and do not rename anything that is already shipped.
+
+| Before you change | Read |
+| --- | --- |
+| Anything a person sees or types: a tool card, a message or entry renderer, a notice, a status segment, a widget, a command, a shortcut, a dialog, a setting, user-facing wording | `references/house-conventions-ux.md` |
+| Anything the model sees or the runtime holds: a tool, its text and parameters, exposure, result text, errors, `details`, a hook that changes messages or the prompt, a message to the model, a stored record | `references/house-conventions-tool-contract.md` |
+| The repository: layout, manifest, scripts, the gate, CI, the Pi floor, a changelog note, a pull request title, a release, documents | `references/house-conventions-delivery.md` |
+
+For a package of another owner, follow that repository's conventions; these files are then advice.
 
 ## Load only the relevant contract
 
@@ -93,7 +105,7 @@ Paths in the middle column are relative to the resolved Pi package. Read the mat
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, `docs/models-configuration.md`, `docs/codemode.md`, `@earendil-works/pi-ai` exports, types, and source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |
 | Deferred integration tools and instructions | `docs/extensions.md` (Tool Exposure, prompt sections), `docs/codemode.md`, the `tool-search` builtin, and the tool-definition and system-prompt implementation on each host | `references/runtime-authoring-guide.md` |
 | Skill and template discovery | `docs/skills.md`, `docs/prompt-templates.md`, resource loader, package manager | None; content-only work needs no runtime hook |
-| Release and publishing | `docs/packages.md`, CLI help, package manager | `references/publishing/workflow.md` before release work |
+| Release and publishing | `docs/packages.md`, CLI help, package manager | `references/house-conventions-delivery.md` first, to find the release channel; `references/publishing/workflow.md` before manual release work |
 | Requested Linux or Docker proof | Exact host and distribution identity, project tests | `references/linux-docker-validation.md` |
 | New extension idea | The existing project and native mechanisms | `references/idea-evaluation-checklist.md` |
 
@@ -115,7 +127,7 @@ Paths in the middle column are relative to the resolved Pi package. Read the mat
    - Repeat host-sensitive checks only; do not repeat artifact creation or publication. Reuse checks whose inputs are still valid. Report an unavailable target as a validation gap.
    - Add behavior coverage for credible regressions, not assertions that mirror the implementation. Complete the required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
 7. **Measure the tax.** For factory work and for dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`. Also inspect steady-state timers, processes, memory, network, and prompt and tool cost. Model settings belong to the host, not to a skill-side client or router.
-8. **Update what changed.** Update docs, tests, metadata, and the changelog when their contract changes. Report mismatches between docs and runtime; do not copy them.
+8. **Update what changed.** Update docs, tests, metadata, and the changelog when their contract changes. Report mismatches between docs and runtime; do not copy them. In Mitch's packages, run the complete gate before a push: `npm run check`, or the gate that the repository's `AGENTS.md` names where that script is missing or is one step.
 
 ## Authority and delivery
 

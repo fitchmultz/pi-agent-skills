@@ -1,6 +1,6 @@
 # Tool Design Checklist
 
-Use when adding/changing custom tools or overriding built-in tools.
+Use when adding/changing custom tools or overriding built-in tools. For Mitch's packages and the fork, [house-conventions-tool-contract.md](house-conventions-tool-contract.md) owns what goes in each text slot, parameter names, exposure, result text, and errors; this checklist keeps the API mechanics.
 
 ## Decision
 
@@ -14,13 +14,13 @@ Use when adding/changing custom tools or overriding built-in tools.
 Design tools as a routed set, not isolated schemas. For each natural user intent, decide which active tool should win, which sibling tools overlap, and which fallback should not be used.
 
 - Tool name: stable, natural, specific, and prompt-friendly.
-- `description`: concise capability label — what the tool can do.
-- `promptSnippet`: selection trigger — when the model should choose this tool, using natural user phrases rather than only the tool name.
-- `promptGuidelines`: cross-tool routing and critical common/safety paths only; every bullet names the tool because Pi flattens guidelines.
+- `description`: the contract. It is sent with the tool declaration: what the tool does, what a call changes and leaves alone, and the limits the model needs to read the result.
+- `promptSnippet`: the one-line label of the tool in the `<tools>` section of the default system prompt. A tool without one is not listed there.
+- `promptGuidelines`: cross-tool routing and critical common/safety paths only; every bullet names the tool because Pi appends guidelines flat to the `<rules>` section. Pi includes them only while the tool is declared and drops exact duplicates. Under a custom system prompt Pi builds neither section.
 - `parameters`: valid call shape only. Use fields, enums, required/optional, bounds, defaults, and mutual exclusions; keep field descriptions local.
 - Docs/README: long workflows, examples, edge cases, command references, and troubleshooting.
 - Skills/templates: repeatable user workflows that orchestrate tools.
-- Tool result `content` and thrown errors: immediate model-facing recovery guidance when the model must act.
+- Tool result `content`, of a returned result or a thrown error: immediate model-facing recovery guidance when the model must act.
 - Tool result `details`: structured evidence, renderer state, artifact verification, and exact next-action payloads.
 - Tool result top-level `usage`: real pi-ai `Usage` for nested model work so persistence and full-session token/cost totals remain correct; never bury it in `details`.
 
@@ -28,11 +28,10 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 
 - Parameters use strict TypeBox schemas imported from `typebox`. Pi validates them as JSON Schema with pi-schema, so `execute()` checks constraints that JSON Schema cannot express, such as `Type.Refine()` refinements, codecs or `Format.Set()` formats.
 - String enum fields use `StringEnum([...])` for Google-compatible schemas.
-- Path fields document cwd/relative behavior and normalize leading `@` when applicable.
+- Path fields say how a path is read: cwd-relative or absolute, and whether `~` or a leading `@` is expanded or taken literally.
 - Avoid aliases and optional-field soup unless compatibility requires them; use `prepareArguments()` for old stored-session compatibility instead of widening the public schema.
 - Do not put routing rules, full workflows, examples, troubleshooting, or philosophy in parameter descriptions unless needed to prevent invalid calls.
-- `description` is specific and short.
-- `promptSnippet` is present when the tool should appear in Available tools.
+- `promptSnippet` is present when the tool should appear in the `<tools>` section.
 - `promptGuidelines` explicitly name the tool in every bullet and stay small enough for always-on context.
 - `defineTool()` is used for standalone definitions and SDK `customTools` arrays so TypeBox params stay inferred; inline `pi.registerTool({ ... })` already infers params. Type-check `StringEnum` fields against the host's extension view (see `current-version-hazards.md`); against published pi-ai types they infer `unknown`.
 - Tests and model-facing recovery text expect pi-schema validation messages (`- path: missing`), and plain JSON Schema tools receive the same argument coercion as TypeBox tools.
@@ -49,7 +48,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 
 - `execute(toolCallId, params, signal, onUpdate, ctx)` signature matches current types.
 - Long work observes `signal` and uses `onUpdate` when progress matters.
-- Errors that should be model-visible failures are thrown, not returned as ad hoc flags.
+- A model-visible failure is a returned result with `isError: true` or a thrown error. Both reach the model as an error result. Only the returned form keeps `details` and `structuredContent`; a thrown error, a failed validation, and a blocked call reach the renderer with `details: {}`. `ctx.executeTool()` never rejects for a tool failure: read `isError`. The house rule is to return the failure; see [Errors](house-conventions-tool-contract.md#errors).
 - Result-level `terminate: true` is used only for final structured-output behavior when every finalized sibling in the batch may skip the follow-up LLM turn. Blocked `tool_call` handlers can also return `{ block: true, terminate: true }`; termination applies only to blocked calls, and the follow-up turn is skipped only when every finalized batch result terminates.
 - Tools stay parallel by default. `tool_call` preflight is sequential, but sibling results are unavailable there; result events may interleave by completion while final tool-result messages use assistant source order.
 - Shared non-file state has an explicit concurrency plan. `executionMode: "sequential"` is batch-wide: one sequential sibling makes Pi execute every call in that assistant response in source order. A fork background run (`ctx.runInBackground`) continues after the response that started it; its `ctx.executeTool()` calls still wait in the nested-call queue when the called tool or the agent's `toolExecution` is sequential.
@@ -71,13 +70,12 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 ## Output and rendering
 
 - Model-facing `content` is concise and useful.
-- Large output is truncated with `truncateHead`/`truncateTail` and `DEFAULT_MAX_BYTES`/`DEFAULT_MAX_LINES` unless tighter limits fit; the full output path/artifact is named.
+- Large output is truncated with `truncateHead`/`truncateTail` and `DEFAULT_MAX_BYTES`/`DEFAULT_MAX_LINES` unless tighter limits fit; the full output path/artifact is named. One line over the byte limit needs its own handling: `truncateHead` returns empty content with `firstLineExceedsLimit`, and `truncateTail` returns the end of the line with `lastLinePartial`. What a cut result ends with, and paging past the end, are in [Results](house-conventions-tool-contract.md#results).
 - Immediate next-step guidance stays in visible `content`; stable state, UI/audit data, artifact verification, and exact action payloads live in `details`; nested provider accounting stays in top-level `usage` and is preserved by `tool_result` hooks.
-- Custom renderers handle `isPartial`, `expanded`, and `context.isError`.
+- Custom renderers follow [Tool cards](house-conventions-ux.md#tool-cards): the result part handles `isPartial`, `expanded`, `context.isError`, and any `details`, including `{}`; the call part shows no live state.
 - Renderer state uses `context.state`; expensive components use `context.lastComponent` when useful.
 - `context.invalidate()` is used for renderer-local async updates.
-- Collapsed rendering is compact; expanded rendering gives recovery/detail.
-- Custom shells (`renderShell: "self"`) handle their own framing, padding, backgrounds, and width limits.
+- Custom shells (`renderShell: "self"`) handle their own framing, padding, backgrounds, and width limits. The house conventions do not use them.
 - Rendered lines fit width via `truncateToWidth`/`visibleWidth`/`wrapTextWithAnsi` when needed.
 
 ## Mode and policy
