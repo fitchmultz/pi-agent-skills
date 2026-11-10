@@ -44,7 +44,7 @@ Prefer commands for explicit user control paths and tools for model-autonomous c
 
 Prompt templates remain the right abstraction for slash prompt expansion. Current templates support positional defaults like `${1:-7}`, all-argument defaults `${@:-default}` / `${ARGUMENTS:-default}`, and `${@:N}` / `${@:N:L}` slicing; do not create extension code just to support optional prompt arguments.
 
-Current fork templates keep apostrophes inside words and unmatched quotes literal. Quotes open only at an argument's start; inside quotes, a backslash escapes the matching quote. Official `1.5.0` predates that parser fix, so exercise quoted arguments on each supported host instead of adding a second parser.
+Templates keep apostrophes inside words and unmatched quotes literal. Quotes open only at an argument's start; inside quotes, a backslash escapes the matching quote. Do not add a second parser.
 
 ## Project trust model
 
@@ -114,15 +114,15 @@ Supported dynamic behavior:
 - Extension contexts expose the current session's resolved model scope through read-only `ctx.scopedModels`. Use it when an extension model UI or action must match `--models`/`enabledModels`; an empty array means there is no scope, not that no models are available.
 - Commands/events can send steering/follow-up messages or inject custom messages when that is the workflow.
 
-Use `/reload` or `ctx.reload()` for resource refresh and extension reinitialization, not ordinary dynamic state. Both official `1.5.0+` and the `fitchmultz/pi` fork (`1.5.0+`) clear factory caches on reload; still use a fresh process when validating package/runtime identity.
+Use `/reload` or `ctx.reload()` for resource refresh and extension reinitialization, not ordinary dynamic state. Both hosts clear factory caches on reload; still use a fresh process when validating package/runtime identity.
 
-## Native tools and optional fork instruction discovery
+## Native tools and deferred tool discovery
 
 Use native `namespace`, `defaultActive`, `exposure`, `prepareLoadout`, output schemas and tool-context `executeTool` when they preserve the required policy. Direct inactive tools are not callable; codemode/deferred tools are callable whenever registered. Changing exposure to deferred can widen permissions. Nested tool failures resolve `isError: true`; inspect it and preserve usage exactly once. Content redaction must also preserve or replace structured content safely.
 
-Post-1.5.0 fork native tools differ from official `1.5.0`: `ReadOperations.createReadStream` can stream text chunks, and `GrepOperations` no longer has `readFile`. Grep always runs local ripgrep and returns its context lines; override `execute()` for remote search. Globs are relative to the supplied search path. Reuse each target's factory contract, not an operations interface copied from the other distribution.
+`ReadOperations.createReadStream` is optional and streams a file in chunks. Grep always runs local ripgrep and takes context lines from it; it never calls `GrepOperations.readFile`, which remains only as an optional, deprecated field. Override `execute()` for remote search. Globs are relative to the supplied search path.
 
-Optional tools use native `exposure: "deferred"` on official Pi `1.5.0+` and the fork: they stay out of the prompt until `tool_search` loads them, and codemode calls them whenever they are registered. Both hosts register `tool_search` inactive. An extension that registers deferred tools activates a registered `tool_search` that declares `reachesTools` and warns once through `ctx.ui.notify` when neither `tool_search` nor codemode is active, as Pi's own MCP extension does (`ensureDiscoveryActive` in `src/extensions/mcp/index.ts`). Also repeat that check at `session_tree`, because tree navigation restores the branch's recorded tools first, and skip activation when the branch recorded removing `tool_search`; the MCP extension does neither. Fork main retired instruction groups (`discover_tools`, `pi:instruction-groups`, `builtin:instruction-groups`) and `pi.refreshTools()`; do not register groups, call either, or build a custom resolver, settings inventory or activation journal.
+Optional tools use native `exposure: "deferred"` on both hosts: they stay out of the prompt until `tool_search` loads them, and codemode calls them whenever they are registered. Both hosts register `tool_search` inactive. An extension that registers deferred tools activates a registered `tool_search` that declares `reachesTools` and warns once through `ctx.ui.notify` when neither `tool_search` nor codemode is active, as Pi's own MCP extension does (`ensureDiscoveryActive` in `src/extensions/mcp/index.ts`). Also repeat that check at `session_tree`, because tree navigation restores the branch's recorded tools first, and skip activation when the branch recorded removing `tool_search`; the MCP extension does neither. Instruction groups (`discover_tools`, `pi:instruction-groups`, `builtin:instruction-groups`) and `pi.refreshTools()` no longer exist on either host; do not register groups, call either, or build a custom resolver, settings inventory or activation journal.
 
 Put always-needed operating guidance in a short official prompt section and keep detailed instructions in docs the agent reads on demand. Native tool search, provider search and an MCP gateway do not guarantee instructions were read before effects, including same-batch calls. Keep integration guards, approval, cancellation and job recovery in the tools themselves; validate discovery/execution, explicit restrictions, late registration, resume/tree/compaction/reload/model changes against the real selected host. Compare task outcomes and cumulative cost, not only initial tokens.
 
@@ -176,12 +176,12 @@ When embedding pi with `AgentSessionRuntime`:
 
 ## Events and mutation
 
-- Pi `1.5.0+` exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
+- Pi exports `AgentSessionEvent`, `AgentSessionEventListener`, and concrete agent/message/tool-execution lifecycle event types from the package root. Import them instead of copying event unions from prose docs.
 - `input` runs after extension commands are checked and before skill/template expansion. Transforms chain; `handled` short-circuits.
 - `before_agent_start` can inspect `systemPromptOptions` and chain system-prompt changes.
 - `context` receives conversation messages without system messages; Pi restores prompt/tool declarations afterward. `context_with_system` owns its full output: preserve the leading system declaration at index zero and later tool updates in their positions. `SessionManager` owns future provider context: append through it and refresh, rather than assigning low-level agent message arrays.
 - `before_provider_headers` mutates assembled outbound `ProviderHeaders` in place: a string adds/overrides and `null` removes. `ModelRegistry.getApiKeyAndHeaders()` preserves those `string | null` values; forwarding code passes null markers through unchanged. Return values are ignored, and provider-internal retries reuse the resulting headers without rerunning the hook. Do not log auth headers or remove required auth/transport headers accidentally.
-- `before_provider_request` mutates provider payloads after serialization; these changes are not reflected by `ctx.getSystemPrompt()`. It sees the full request, not necessarily the bytes sent by transports with continuation, such as Codex WebSocket or the current fork's Anthropic message threads.
+- `before_provider_request` mutates provider payloads after serialization; these changes are not reflected by `ctx.getSystemPrompt()`. It sees the full request, not necessarily the bytes sent by transports with continuation, such as Codex WebSocket or Anthropic message threads.
 - `after_provider_response` observes response status and headers before stream consumption; use it for response diagnostics rather than stream parsing.
 - `tool_call` can block and may mutate `event.input`; no revalidation runs after mutation. Blocked handlers may also return `{ block: true, terminate: true }`: termination applies to the blocked call, and the automatic follow-up model turn is skipped only when every finalized batch result terminates.
 - `tool_result` can patch `content`, `details`, `isError`, or top-level `usage`; handlers chain in load order. Preserve existing usage when patching.
@@ -199,7 +199,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Runtime third-party dependencies belong in `dependencies`, even if they are heavy sandbox/client SDKs required by the feature.
 - Do not rely on devDependencies at runtime.
 - Imported pi core packages belong in optional `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`. Exact Pi baseline pins belong only in `devDependencies` when the repo uses them for validation.
-- Official `1.5.0` bundles TypeBox `1.3.27`; the fork bundles `1.3.37`. Import `Type`/`Static`/`TSchema` from `typebox`, use APIs present in both hosts' copies, and rely on the host's TypeBox through the optional `*` peer. Extensions that import `@earendil-works/pi-schema` declare it in `dependencies`; Pi supplies only the packages listed in `docs/packages.md`.
+- The two hosts bundle different TypeBox versions (see `current-version-hazards.md`). Import `Type`/`Static`/`TSchema` from `typebox`, use APIs present in both hosts' copies, and rely on the host's TypeBox through the optional `*` peer. Extensions that import `@earendil-works/pi-schema` declare it in `dependencies`; Pi supplies only the packages listed in `docs/packages.md`.
 - A package that loads at least one extension can show its changelog on the next fresh launch after an update. Pi reads root `CHANGELOG.md`, or `pi.changelogPath` (`""` disables it), and compares headings such as `## [1.2.0]` or `## 1.2.0 - 2026-01-01` with the `package.json` version. A git package shows entries only when that version increases, so bump it with each user-visible release.
 - `pi.exec()` accepts `maxBuffer` and reports `truncated`; size it for the command instead of collecting unbounded output.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
@@ -212,7 +212,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 
 ## Removed experimental harness and remote sessions
 
-`@earendil-works/pi-agent-core` `1.5.0+` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` (`1.5.0+`) exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
+`@earendil-works/pi-agent-core` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
 
 ## RPC mode gotchas
 
