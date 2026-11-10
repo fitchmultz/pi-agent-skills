@@ -4,14 +4,15 @@ Read this before you copy an affected API. It records which contracts official P
 
 ## Targets and floors
 
-This section and the `SKILL.md` frontmatter own the floor versions and commits; the rest of the skill refers to them and does not repeat them. Last verified: 2026-11-10.
+The stamp is `metadata.last-verified-pi` and `metadata.fork-source` in the `SKILL.md` frontmatter: the official release and the fork commit that this skill was last checked against. They are also the floors. This table shows the same pair; the repository's tests fail when an official version or a fork commit in the skill differs from the stamp.
 
 | Distribution | Floor | Target |
 | --- | --- | --- |
-| Official Pi (`earendil-works/pi`) | `1.5.1`, commit [`dd30101cfc5b0609411dd80b6f93adbc14db14cf`](https://github.com/earendil-works/pi/tree/dd30101cfc5b0609411dd80b6f93adbc14db14cf) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
-| `fitchmultz/pi` fork | Commit [`283718159fc199d9b49eb4ddf1d5bff55e305dd9`](https://github.com/fitchmultz/pi/tree/283718159fc199d9b49eb4ddf1d5bff55e305dd9): packages `1.5.1`, upstream `main` merged through `4ea8837927564c592b1d184c956ab7d28c88119b` | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
+| Official Pi (`earendil-works/pi`) | Release [`1.5.1`](https://github.com/earendil-works/pi/releases/tag/v1.5.1) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
+| `fitchmultz/pi` fork | Commit [`283718159fc199d9b49eb4ddf1d5bff55e305dd9`](https://github.com/fitchmultz/pi/tree/283718159fc199d9b49eb4ddf1d5bff55e305dd9). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
 
-- A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, read the changelog entries and commits in between.
+- A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, the host wins over this skill: read the `[Unreleased]` and newer version sections of its `CHANGELOG.md`, and its own docs, before you copy an API from here.
+- When the installed host is older than its floor, do not build for it. Have the user update it first: `pi update` on official Pi, `pi update --fork` on the fork, then `pi update --extensions` for this skill.
 - Every extension supports both distributions. A matching version string does not make them the same artifact.
 - Do not write code, shims, or fallbacks for anything older than a floor.
 - Upstream `main` is not a release. A change the fork has merged can still be absent from the latest official package; see [After 1.5.1](#after-151-fork-main-only).
@@ -20,7 +21,7 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 
 | Component | Version |
 | --- | --- |
-| `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.1` on both distributions. The fork's coding-agent also depends on `@earendil-works/chord`. |
+| `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.1` on official Pi. The fork's packages carry the version of the official release that it last merged, which is older until the fork merges the newest release; read `packages/coding-agent/package.json` at the fork commit. The fork's coding-agent also depends on `@earendil-works/chord`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
 | Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; verified with Node `24.22.2` and npm `12.2.2`. |
 | `@fitchmultz/pi-subagents` | `0.52.29` |

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Record the supported official Pi release and `fitchmultz/pi` commit once, as the `pi-development` stamp: `metadata.last-verified-pi` and `metadata.fork-source` in its frontmatter. The stamp values are unchanged.
+  - Remove the other records of the pair: `metadata.official-source`, the official commit, the merged upstream commit, and the verification date. The hazards reference links the official release by its tag, and states the fork's package version by pointing at the fork commit. The `compatibility` field, the maintenance guide, and `AGENTS.md` point at the stamp.
+  - `test/pi-development.test.mjs` fails when a repeated value differs from the stamp: an official version or a fork commit in `SKILL.md` or the references, the development SDK pin, or a `Pi X.Y.Z` floor in the README, `clef`, or `code-smells`.
+  - Add `docs/refreshing-pi-development.md`, the procedure that moves the stamp. A run reads what changed between the stamp and the latest hosts, updates the skill, and opens and merges one pull request. A refresh pull request records its changes in its own body and adds no changelog entry.
+  - State what an agent does when the installed host is newer or older than the stamp.
+
 - Raise the minimum supported floor across `pi-development`, `clef`, `code-smells`, and the development SDK to official Pi `1.5.1` (`dd30101cfc5b0609411dd80b6f93adbc14db14cf`) and `fitchmultz/pi` commit `283718159fc199d9b49eb4ddf1d5bff55e305dd9` (`1.5.1`). Rewrite `pi-development` (`5.0.0`) for that floor:
   - Move the contracts that official Pi 1.5.1 released out of the fork-only lists and into one shared section: `Type.BigInt()` and `Type.Undefined()` conversion, optional `ReadOperations.createReadStream`, the deprecated and ignored `GrepOperations.readFile`, overlay `blocked` status, Markdown transformer `messageTypes`, the `promptCacheKeyMode`, `requiresToolsWithToolHistory` and `requiresNonNullAssistantContent` compat flags, Anthropic message threads with `disableContinuation` and `cleanupSessionResources`, `pi auth login` and `logout`, immediate idle RPC shutdown, prompt-template quoting, and `qwen-token-plan-individual-cn`.
   - Add an "After 1.5.1" table for upstream changes that only fork `main` has. Its first row is the Continue, Fork, or Cancel prompt for a saved session whose working directory is gone, with what `ctx.switchSession()` callers observe.
