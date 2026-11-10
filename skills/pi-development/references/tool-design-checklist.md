@@ -70,7 +70,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 ## Output and rendering
 
 - Model-facing `content` is concise and useful.
-- Large output is truncated with `truncateHead`/`truncateTail` and `DEFAULT_MAX_BYTES`/`DEFAULT_MAX_LINES` unless tighter limits fit; the full output path/artifact is named. The helpers do not cut inside a line, so one line over the limit needs its own handling. What a cut result ends with, and paging past the end, are in [Results](house-conventions-tool-contract.md#results).
+- Large output is truncated with `truncateHead`/`truncateTail` and `DEFAULT_MAX_BYTES`/`DEFAULT_MAX_LINES` unless tighter limits fit; the full output path/artifact is named. One line over the byte limit needs its own handling: `truncateHead` returns empty content with `firstLineExceedsLimit`, and `truncateTail` returns the end of the line with `lastLinePartial`. What a cut result ends with, and paging past the end, are in [Results](house-conventions-tool-contract.md#results).
 - Immediate next-step guidance stays in visible `content`; stable state, UI/audit data, artifact verification, and exact action payloads live in `details`; nested provider accounting stays in top-level `usage` and is preserved by `tool_result` hooks.
 - Custom renderers follow [Tool cards](house-conventions-ux.md#tool-cards): the result part handles `isPartial`, `expanded`, `context.isError`, and any `details`, including `{}`; the call part shows no live state.
 - Renderer state uses `context.state`; expensive components use `context.lastComponent` when useful.

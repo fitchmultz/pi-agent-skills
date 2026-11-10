@@ -48,7 +48,7 @@ Pi puts `promptGuidelines` in the `<rules>` section only while the tool is decla
 
 - Register a new tool with `exposure: "deferred"` unless most runs call it.
 - Change the default exposure of a released tool only with measured usage in top-level sessions and the owner's agreement.
-- On the fork, a user's `toolExposure` setting, in builds that have it, replaces the exposure that the tool registered with. That setting is the user's control. Do not override it.
+- On the fork, the user's `toolExposure` setting in `settings.json`, in builds that have it, replaces the exposure that a tool registered with. That setting is the user's control. Do not override it. It is not the `toolExposure` field of an MCP server entry, which both hosts have and which covers only the tools of that server.
 - A tool that cannot work in this session (no dialog UI, a child, another platform) is registered again with `exposure: "hidden"` at `session_start`.
 - A package with a deferred tool gives the model a way to load it. The procedure is in [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery).
 - Put the operating rules of a tool in `promptGuidelines`.
@@ -59,7 +59,7 @@ Pi puts `promptGuidelines` in the `<rules>` section only while the tool is decla
 - The first line says what happened. Then give only what the next step needs. A list is one line for each item.
 - Keep everything else reachable through a saved file, a reference, or a page, and out of the text.
 - Stay inside 2,000 lines or 50 KB. Cut with `truncateHead` or `truncateTail` and `DEFAULT_MAX_LINES` and `DEFAULT_MAX_BYTES`, or a tighter limit.
-- Handle one very long line yourself. The helpers do not cut inside a line: `truncateHead` returns empty content with `firstLineExceedsLimit` when the first line is over the limit.
+- Handle one very long line yourself. `truncateHead` does not cut inside a line: it returns empty content with `firstLineExceedsLimit` when the first line is over the byte limit. `truncateTail` returns the end of a last line that is over the byte limit and sets `lastLinePartial`. Check the field of the helper that you call.
 - A cut result ends with one line in brackets that the model can act on: the range shown, the total, and the exact next call with its `offset`. Example: `[chars 0-8000 of 31200; continue with offset 8000]`
 - If more than one page remains, that line first names the calls for all remaining pages.
 - Save the full output, and name its path or reference in that line.
