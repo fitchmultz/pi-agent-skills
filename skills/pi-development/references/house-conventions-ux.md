@@ -25,7 +25,7 @@ An HTML export renders each call part one time and keeps only that rendering. Th
 - When the arguments are what the person reads (a script, JSON, a message body), give the call part two forms. Collapsed: row 1, at most 10 wrapped rows of arguments, then the hint row. Expanded: every argument.
 - A call part with two forms returns the expanded form when `context.lastComponent` is `undefined`. That is the one rendering an export keeps. The terminal renders a card a second time before it shows it.
 - Hold the previous rule with a test that calls Pi's real `exportToHtml` and finds every argument in the page.
-- On the fork, current `main` exports the call part expanded. Keep the first-rendering rule: official Pi and older fork builds export the collapsed form.
+- On the fork, exports render the call part expanded and use the saved result's error state and duration when present. Keep the first-rendering rule because official Pi exports the collapsed form. Injected expand hints say `click` in a fork export and use the configured terminal key in the terminal.
 
 ### Result part
 

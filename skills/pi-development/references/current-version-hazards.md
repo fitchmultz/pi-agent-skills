@@ -8,23 +8,23 @@ The stamp is `metadata.last-verified-pi` and `metadata.fork-source` in the `SKIL
 
 | Distribution | Floor | Target |
 | --- | --- | --- |
-| Official Pi (`earendil-works/pi`) | Release [`1.5.1`](https://github.com/earendil-works/pi/releases/tag/v1.5.1) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
-| `fitchmultz/pi` fork | Commit [`283718159fc199d9b49eb4ddf1d5bff55e305dd9`](https://github.com/fitchmultz/pi/tree/283718159fc199d9b49eb4ddf1d5bff55e305dd9). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
+| Official Pi (`earendil-works/pi`) | Release [`1.5.2`](https://github.com/earendil-works/pi/releases/tag/v1.5.2) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
+| `fitchmultz/pi` fork | Commit [`fa02be411fd783edf9f4600ff97e7778a7387a62`](https://github.com/fitchmultz/pi/tree/fa02be411fd783edf9f4600ff97e7778a7387a62). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
 
 - A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, the host wins over this skill: read the `[Unreleased]` and newer version sections of its `CHANGELOG.md`, and its own docs, before you copy an API from here.
 - When the installed host is older than its floor, do not build for it. Have the user update it first: `pi update` on official Pi, `pi update --fork` on the fork, then `pi update --extensions` for this skill.
 - Every extension supports both distributions. A matching version string does not make them the same artifact.
 - Do not write code, shims, or fallbacks for anything older than a floor.
-- Upstream `main` is not a release. A change the fork has merged can still be absent from the latest official package; see [After 1.5.1](#after-151-fork-main-only).
+- Upstream `main` is not a release. A change the fork has merged can still be absent from the latest official package. At this stamp, no extension-facing upstream contract remains ahead of the official release.
 
 Versions at the last verification. Treat them as floors too, and resolve the current release of each before you use it:
 
 | Component | Version |
 | --- | --- |
-| `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.1` on official Pi. The fork's packages carry the version of the official release that it last merged, which is older until the fork merges the newest release; read `packages/coding-agent/package.json` at the fork commit. The fork's coding-agent also depends on `@earendil-works/chord`. |
+| `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
-| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; verified with Node `24.22.2` and npm `12.2.2`. |
-| `@fitchmultz/pi-subagents` | `0.52.29` |
+| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; the current Node 24 release is `24.22.2`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
+| `@fitchmultz/pi-subagents` | `0.52.31` |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
 | `oxlint`, `oxfmt` | `1.93.0`, `0.78.0` |
 | TypeScript (`tsc`) | `7.0.2` |
@@ -38,6 +38,10 @@ The fork's revision-matched `FORK.md` owns this inventory; read it at the target
 - **Process restart:** `pi restart`, `/restart`, `ctx.managedHost`, `ManagedHost`, `docs/restart.md`.
 - **Shutdown disposition** for work that outlives a worker: `ShutdownDisposition` is `release`, `handoff`, or `provisional`. `session_shutdown` sets `disposition` only for `quit`, and only when `ctx.managedHost` exists.
 - **Detached background shell commands:** `background_command`, `builtin:background-command`, `docs/background-command.md`.
+- **Background-work reporting:** `AgentSession.getBackgroundWork()`, the `background_work` event and `createBackgroundCommandExtension({ hostWaits: true })`. See [SDK background work](runtime-authoring-guide.md#sdk-background-work) for the host loop and the complete official path.
+- **Tool exposure setting:** `toolExposure` in `settings.json` replaces a tool's registered exposure by name or `*` pattern. Both hosts separately support per-server MCP `toolExposure`; see [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery).
+- **Codemode look-ups and reads:** `show(...calls)`, `models.docs()`, whole-text nested reads up to 1 MiB, multi-page continuation offsets, past-end reads and missing-path hints. See [Fork codemode and native-tool additions](runtime-authoring-guide.md#fork-codemode-and-native-tool-additions) for limits and official equivalents.
+- **Runtime records:** `pi.runtime`, `RUNTIME_RECORD_ENTRY` and `RuntimeRecordData`; see [Runtime identity records](lifecycle-checklist.md#runtime-identity-records).
 - **Background tool runs:** `ctx.runInBackground(customType, work)` in tool contexts, `BackgroundToolResult` with optional `commit()`, and `BackgroundToolMessageDetails`. A run ends with the process. See `docs/extensions.md#background-tool-runs`.
 - **JSON selection for `read`:** `json.path` and `json.fields` on `createReadToolDefinition` and `createReadTool`.
 - **Compact activity view:** the `compactView: boolean | "hybrid"` setting; message renderers receive `MessageRenderOptions.compactView?: boolean`.
@@ -50,8 +54,8 @@ The fork's revision-matched `FORK.md` owns this inventory; read it at the target
 - **Hidden model overrides:** `modelOverrides.<id>.hidden: true` in `models.json` removes a model from its provider.
 - **Null inside a schema union:** the fork drops a `null` sent for an optional property of an object inside `anyOf` or `oneOf`. Official Pi converts it instead, for example to `"null"` for a string property. Both drop it for an optional property of a plain object. When the result matters, keep optional properties out of union branches, for example with one object and a `StringEnum` discriminator.
 - **Source-aware fullscreen selection:** a highlighted copy of native Markdown keeps its source syntax and real line breaks; `/copy` still copies the whole message. Prefer native Markdown and Text components, and read `packages/tui/src/{selection-source,selection-markers}.ts` before you map sources yourself.
-- **Opt-in diagnostics:** `PI_EXTENSION_PERFORMANCE=1` (`docs/environment-variables.md`) and passive cache tracing with `PI_CACHE_TRACE_DIR` (`docs/cache-tracing.md`).
-- **Catalog and correctness fixes** listed in `FORK.md`, such as canonical Cloudflare AI Gateway Claude model IDs and Astra Ultrafast cost estimates that wait for terminal tier confirmation. Source and offline checks do not establish live billing.
+- **Opt-in diagnostics:** `PI_EXTENSION_PERFORMANCE=1` (`docs/environment-variables.md`) warns about slow handlers and footer renders. The wrapper preserves component members such as `capturesViewportInput`.
+- **Catalog and correctness fixes** listed in `FORK.md`, including Kimi K3-family cache-write pricing, required-first Claude strict-tool budgets, qualified Gemini unsigned-tool replay, and Astra Ultrafast cost estimates that wait for terminal tier confirmation. See [Provider differences](provider-model-guide.md#fork-provider-differences). Source and offline checks do not establish live billing.
 
 Detect a fork seam structurally at the call site, as `pi-subagents` does:
 
@@ -116,15 +120,11 @@ Both distributions implement these at their floors. Source paths without a packa
 
 These are source-contract checks, not claims of live provider qualification.
 
-## After 1.5.1: fork `main` only
+### Missing session working directory
 
-The fork has merged upstream `main` past the latest official release. These upstream changes run on the fork and not on official Pi `1.5.1`. Check the selected host's implementation, not its version string. When an official release includes a row, move it to [Shared contracts](#shared-contracts).
+On both hosts, interactive mode offers **Continue**, **Fork**, or **Cancel** when a saved session's directory no longer exists. This applies at startup (`--session`, `--resume`), to `/resume`, to `/import`, and to `ctx.switchSession()`. Source: `src/core/session-cwd.ts`, `src/core/agent-session-runtime.ts`, `src/modes/interactive/interactive-mode.ts`.
 
-| Contract | Fork `main` | Official `1.5.1` | Source |
-| --- | --- | --- | --- |
-| A saved session's working directory no longer exists | Interactive mode offers **Continue**, **Fork**, or **Cancel**. It applies at startup (`--session`, `--resume`), to `/resume`, to `/import`, and to `ctx.switchSession()`. | Interactive mode offers only to continue in the current directory or to cancel. | Upstream `4ea883792`; `src/core/session-cwd.ts`, `src/core/agent-session-runtime.ts`, `src/modes/interactive/interactive-mode.ts`, `docs/sessions.md` |
-
-What an extension that calls `ctx.switchSession(path, { withSession })` observes on fork `main`:
+What an extension that calls `ctx.switchSession(path, { withSession })` observes on both hosts:
 
 1. `session_before_switch` fires for the requested file before Pi checks the directory. The check fails before teardown, so the current session stays live while the prompt is open.
 2. **Continue** retries the switch with the current working directory as a one-time override. `session_before_switch` fires again for the same file, and `withSession` receives the requested session. Pi does not store the choice.
@@ -168,7 +168,7 @@ Rules for an extension that must run on both hosts and can use a [fork-only capa
 - `compactView` is a global setting, default off. `MessageRenderOptions.compactView` is absent on official Pi, so treat it as `false`. Preserve the user's selection and do not invent other renderer properties from its name.
 - Process restart is launcher and runtime machinery. Detached background commands are a builtin extension that uses public lifecycle APIs.
 - `pi update --fork` is runtime delivery, not an extension update, and needs explicit cutover authority.
-- Quit differs. Official `runtime.dispose()` awaits `session.abort()` before `session_shutdown`, so active tools finish aborting and their results are recorded first. A fork quit waits that way only for a certified working-session exit; an ordinary fork quit can leave an interrupted tool call without its final result.
+- Quit differs. Official `runtime.dispose()` awaits `session.abort()` before `session_shutdown`. A certified working-session exit on the fork also waits without a limit before running handlers. An ordinary fork quit aborts the turn and waits at most 500 ms while `session_shutdown` handlers run; last tool and agent events can arrive during or after those handlers. A tool that has not settled by that bound can leave a call without its saved result. Clean up owned work in the handler and tolerate those late events. Source: `src/core/agent-session-runtime.ts`.
 
 ## Published configuration schemas
 
@@ -181,7 +181,7 @@ Both distributions publish configuration schemas under the `pi-coding-agent` pac
 | Models | `schemas/models.schema.json` |
 | Settings | `schemas/settings.schema.json` |
 
-Editor URLs are the schemas' `$id` values, `https://pi.dev/schemas/<name>.schema.json`; theme metadata does not point into `src/modes/interactive/theme/`. Pi does not fetch `$schema` URLs to load configuration. Use the host's shipped schema and native loader for acceptance. The fork's shipped schemas differ from the hosted files in two places: `compactView` in settings and `modelOverrides.hidden` in models.
+Editor URLs are the schemas' `$id` values, `https://pi.dev/schemas/<name>.schema.json`; theme metadata does not point into `src/modes/interactive/theme/`. Pi does not fetch `$schema` URLs to load configuration. Use the host's shipped schema and native loader for acceptance. Compared with the official release's shipped schemas, the fork adds `compactView`, `toolExposure` and `lastChangelogForkCommit` in settings and `modelOverrides.hidden` in models. `lastChangelogForkCommit` is Pi's own record of the fork changelog it showed, not extension-owned state.
 
 - Themes reject extra top-level fields and unknown `colors` or `export` keys. Put reusable custom colors in `vars`, use documented export backgrounds, and resolve missing or circular variable references through the native loader. Names cannot contain `/`; `system` is reserved. Optional scrollbar, search, and `thinkingMax` tokens keep native fallbacks; do not duplicate a token inventory or add needless colors.
 - Key values use the native `KeyId` spelling and case, including `pageUp` and `pageDown`, with lowercase `ctrl`, `shift`, `alt`, `super` modifiers, no duplicates, and valid base keys. Examples: `ctrl+shift+x`, `alt++`; not `Ctrl+X`, `option+x`, or `ctrl+ctrl+x`. Extension-owned action names remain allowed; schema validation is not a global action-name allowlist.
@@ -227,5 +227,5 @@ Repository paths behind this reference. Read them at the selected revision.
 - `packages/agent/{CHANGELOG.md,package.json,src/index.ts}`
 - `packages/ai/{CHANGELOG.md,package.json,src/{index,compat,models,types}.ts,src/api/{lazy,anthropic-messages}.ts,src/providers/{model-schema,compat-schema}.ts,src/utils/{streaming-json,string-enum}.ts}`
 - `packages/tui/{CHANGELOG.md,src/{index,tui,terminal,terminal-colors,components/editor,components/input,utils}.ts}`
-- `packages/schema/src/{coerce,compiler,explain}.ts` and `packages/codemode/src/declarations.ts`
-- Fork only: `FORK.md`, `packages/coding-agent/docs/{restart,working-session,cache-tracing,background-command}.md`, `packages/coding-agent/src/extensions/{background-command,restart}/`, `packages/coding-agent/src/core/{working-session,tools/read-json}.ts`, `packages/ai/src/utils/cache-trace.ts`, and `packages/tui/src/{selection-source,selection-markers}.ts`. Fork-only exports in shared files include `resolveModelReference` from `packages/coding-agent/src/index.ts`.
+- `packages/schema/src/{coerce,compiler,explain}.ts` and `packages/codemode/src/{declarations.ts,runtime/{execution,prelude-source}.ts}`
+- Fork only: `FORK.md`, `packages/coding-agent/docs/{restart,working-session,background-command}.md`, `packages/coding-agent/src/extensions/{background-command,restart}/`, `packages/coding-agent/src/core/{working-session,background-work,runtime-record,tools/read-json}.ts`, and `packages/tui/src/{selection-source,selection-markers}.ts`. Also read `packages/coding-agent/src/extensions/{tool-search/tool,codemode/execute,codemode/tool}.ts` for fork look-ups and `core/tools/{read,missing-path,bash}.ts` for native-tool changes. Fork-only exports in shared files include `resolveModelReference` from `packages/coding-agent/src/index.ts`.

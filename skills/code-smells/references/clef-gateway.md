@@ -98,7 +98,7 @@ count never becomes a classifier-call budget.
 - [Gateway response log ID](https://developers.cloudflare.com/ai-gateway/evaluations/add-human-feedback-api/#2-retrieve-the-cf-aig-log-id)
 - Active Pi's `docs/codemode.md` and `docs/models.md` for native API details.
 
-The header route targets Pi `1.5.1` or later, on official Pi and `fitchmultz/pi`: native full-Clef calls return typed answers and
+The header route targets Pi `1.5.2` or later, on official Pi and `fitchmultz/pi`: native full-Clef calls return typed answers and
 Gateway response receipts.
 Always check the active latest Pi host's `docs/codemode.md` and `docs/models.md`; this describes that setup, not every
 host version, source-evidence size, or credential.

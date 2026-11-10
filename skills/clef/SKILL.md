@@ -1,7 +1,7 @@
 ---
 name: clef
 description: "Cloudflare Clef decision models: label, yes/no-score, or rank supplied text/JSON. Not for text generation or fact retrieval."
-compatibility: "Pi 1.5.1+ with native codemode and authenticated cloudflare-workers-ai classifiers."
+compatibility: "Pi 1.5.2+ with native codemode and authenticated cloudflare-workers-ai classifiers."
 ---
 
 # Clef

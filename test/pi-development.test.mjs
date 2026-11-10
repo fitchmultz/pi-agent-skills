@@ -78,6 +78,9 @@ test("Pi contract scenarios remain available to behavioral evaluation", () => {
     "house-notice-without-ui",
     "house-new-tool-exposure",
     "house-switch-command-and-status",
+    "fork-codemode-lookups-and-read-values",
+    "fork-background-work-host-lifetime",
+    "fork-runtime-record-identity-limits",
   ]) assert.ok(ids.has(id), `missing eval: ${id}`);
 });
 
