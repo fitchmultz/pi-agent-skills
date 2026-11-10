@@ -4,6 +4,7 @@
 - Do not publish this package to npm.
 - Deliver each update as one complete pull request with the guidance, evaluations, tests, documentation, and dependency changes it requires, such as a Pi floor raise across every skill.
 - Preserve bundled scripts and references when changing a skill.
+- The `pi-development` stamp is the one record of the supported official Pi release and `fitchmultz/pi` commit: `metadata.last-verified-pi` and `metadata.fork-source` in `skills/pi-development/SKILL.md`. Move it only by following [`docs/refreshing-pi-development.md`](docs/refreshing-pi-development.md). `npm test` fails when a repeated value differs from the stamp.
 - `test/package.test.mjs` owns shared behavioral corpus shape checks; skill-specific tests retain critical scenario IDs and independent policy contracts.
 - Run `npm test`, `npm run smoke`, and `npm run pack:check` before shipping.
 

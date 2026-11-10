@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -133,4 +133,79 @@ test("pack recipes accept observed npm 11/12 output and fail closed on ambiguous
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// The stamp is the one record of the official release and fork commit the skill was checked
+// against. docs/refreshing-pi-development.md describes it and the places that repeat it.
+const root = fileURLToPath(new URL("../", import.meta.url));
+const markdownUnder = dir => readdirSync(path.join(root, dir), { recursive: true })
+  .filter(file => file.endsWith(".md")).map(file => path.join(dir, file));
+const linesOf = file => readFileSync(path.join(root, file), "utf8").split("\n")
+  .map((text, index) => ({ at: `${file}:${index + 1}`, text }));
+
+function readStamp() {
+  const frontmatter = skill.slice(0, skill.indexOf("\n---\n", 3));
+  const value = (key, shape) => {
+    const found = [...frontmatter.matchAll(new RegExp(`^  ${key}: "(${shape})"$`, "gm"))];
+    assert.equal(found.length, 1, `SKILL.md frontmatter needs exactly one \`  ${key}: "<value>"\` line`);
+    return found[0][1];
+  };
+  return { official: value("last-verified-pi", "\\d+\\.\\d+\\.\\d+"), fork: value("fork-source", "[0-9a-f]{40}") };
+}
+
+test("the refresh procedure's own commands read the stamp", { skip: process.platform === "win32" }, () => {
+  const stamp = readStamp();
+  const commands = readFileSync(path.join(root, "docs/refreshing-pi-development.md"), "utf8")
+    .split("\n").filter(line => /^stamp_(official|fork)=/.test(line));
+  assert.equal(commands.length, 2, "the procedure reads both stamp values");
+  const result = spawnSync("sh", ["-c",
+    `${commands.join("\n")}\nprintf '%s %s' "$stamp_official" "$stamp_fork"`], { cwd: root, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, `${stamp.official} ${stamp.fork}`);
+});
+
+test("official versions and fork commits written in the skill equal the stamp", () => {
+  const stamp = readStamp();
+  const version = /(?<![\w.])v?(\d+\.\d+\.\d+)(?!\w|\.\d)/g;
+  const commit = /(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])|(?<=`)[0-9a-f]{7,39}(?=`)|(?<=fitchmultz\/pi\/(?:tree|commit|blob)\/)[0-9a-f]{7,39}(?![0-9a-f])/g;
+  // A package's own changelog heading in a format example; it names no Pi release.
+  const exampleVersions = new Set(["1.2.0"]);
+  const wrong = [];
+  for (const file of ["skills/pi-development/SKILL.md", ...markdownUnder("skills/pi-development/references")]) {
+    let companionRows = false;
+    for (const { at, text } of linesOf(file)) {
+      // Other components' versions live only in the hazards table that starts with this header.
+      if (text.startsWith("| Component | Version |")) companionRows = true;
+      else if (!text.startsWith("|")) companionRows = false;
+      const versionExempt = (companionRows && !text.includes("pi-coding-agent")) || /^  version: "/.test(text);
+      for (const [, found] of versionExempt ? [] : text.matchAll(version)) {
+        if (found !== stamp.official && !exampleVersions.has(found)) wrong.push(`${at}: version ${found}`);
+      }
+      for (const { 0: found, index } of text.matchAll(commit)) {
+        // An official-repository commit is cited as: Upstream `<id>`.
+        if (!/\d/.test(found) || !/[a-f]/.test(found) || /Upstream `$/.test(text.slice(0, index))) continue;
+        if (!stamp.fork.startsWith(found)) wrong.push(`${at}: commit ${found}`);
+      }
+    }
+  }
+  assert.deepEqual(wrong, [], `The stamp is official ${stamp.official} and fork ${stamp.fork}. `
+    + "Make each of these equal it, remove it, or move a companion version into the Component table of "
+    + "references/current-version-hazards.md. docs/refreshing-pi-development.md describes the stamp.");
+});
+
+test("the development SDK pin and the Pi floors outside the skill equal the stamp", () => {
+  const stamp = readStamp();
+  const sdk = "@earendil-works/pi-coding-agent";
+  const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
+  const lock = JSON.parse(readFileSync(path.join(root, "package-lock.json"), "utf8"));
+  assert.equal(manifest.devDependencies[sdk], stamp.official, "package.json development SDK pin");
+  assert.equal(lock.packages[`node_modules/${sdk}`].version, stamp.official, "package-lock.json development SDK");
+  // Release history, evaluation reports and evaluation prompts keep the versions they describe.
+  const files = ["README.md", "AGENTS.md", ...markdownUnder("docs"), ...markdownUnder("skills")]
+    .filter(file => file !== path.join("docs", "evaluation-results.md")
+      && !file.startsWith(path.join("skills", "pi-development") + path.sep));
+  const wrong = files.flatMap(linesOf).flatMap(({ at, text }) =>
+    [...text.matchAll(/\bPi\s+`?v?(\d+\.\d+\.\d+)/g)]
+      .filter(([, found]) => found !== stamp.official).map(([, found]) => `${at}: Pi ${found}`));
+  assert.deepEqual(wrong, [], `These name a Pi version other than the stamp's official ${stamp.official}.`);
 });

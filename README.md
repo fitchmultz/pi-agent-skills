@@ -60,6 +60,8 @@ Some skills require extra tools. The skill pages below list their requirements.
 
 The skills support official Pi and [`fitchmultz/pi`](https://github.com/fitchmultz/pi). Their extension APIs can differ even when their version numbers match. Read the [version hazards reference](skills/pi-development/references/current-version-hazards.md) before you build an extension.
 
+`pi-development` records the oldest supported official release and fork commit in its frontmatter. The [refresh procedure](docs/refreshing-pi-development.md) keeps that record and the skill current with both.
+
 ## Development and evaluations
 
 Read the [maintenance guide](docs/maintaining-skills.md) to change a skill or run local checks. Normal tests need no model credentials.
