@@ -3,7 +3,7 @@
   "extends": ["github>fitchmultz/.github:pi-extensions"],
   "packageRules": [
     {
-      "description": "The minimum supported Pi baseline changes only with a qualified support-policy change; automate the current-host CI pin instead.",
+      "description": "The development SDK pin equals the pi-development stamp; docs/refreshing-pi-development.md raises both together.",
       "matchManagers": ["npm"],
       "matchDepTypes": ["devDependencies"],
       "matchPackageNames": ["@earendil-works/pi-coding-agent"],

@@ -38,7 +38,7 @@ test("package exposes the source-managed skills", () => {
   assert.equal(manifest.private, true);
   assert.equal(lock.version, manifest.version);
   assert.equal(lock.packages[""].version, manifest.version);
-  assert.match(manifest.devDependencies["@earendil-works/pi-coding-agent"], /^\d+\.\d+\.\d+$/, "Pin an exact discovery-test baseline, independently of skill guidance verification");
+  assert.match(manifest.devDependencies["@earendil-works/pi-coding-agent"], /^\d+\.\d+\.\d+$/, "Pin the exact development SDK; test/pi-development.test.mjs keeps it equal to the pi-development stamp");
   assert.deepEqual(readdirSync(skillsDir).sort(), expectedSkills);
 });
 

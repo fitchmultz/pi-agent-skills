@@ -1,11 +1,10 @@
 ---
 name: pi-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
-compatibility: "Official Pi 1.5.1+ and the fitchmultz/pi fork at commit 283718159fc199d9b49eb4ddf1d5bff55e305dd9 or newer. Always build against the latest official release, the latest fork main, and current dependencies. Python 3.9+ for the bundled resolver."
+compatibility: "Official Pi and the fitchmultz/pi fork, no older than the release in metadata.last-verified-pi and the commit in metadata.fork-source. Always build against the latest official release, the latest fork main, and current dependencies. Python 3.9+ for the bundled resolver."
 metadata:
   version: "5.0.0"
   last-verified-pi: "1.5.1"
-  official-source: "dd30101cfc5b0609411dd80b6f93adbc14db14cf"
   fork-source: "283718159fc199d9b49eb4ddf1d5bff55e305dd9"
 ---
 
@@ -15,7 +14,7 @@ Develop extensions that run on **both** the latest official Pi release (`earendi
 
 - **Target the latest.** Use the latest official release, the latest fork `main`, and the latest version of every dependency and companion tool at the time you run. The two hosts can report the same version and still differ.
 - **Floors are minimums, not pins.** Do not build for anything older than a floor, and do not keep shims or fallbacks for it.
-- **One place holds the numbers.** [Targets and floors](references/current-version-hazards.md#targets-and-floors) lists the floor versions, commits, and companion versions. The frontmatter records the sources this skill was last verified against; a newer release or commit still needs its own check.
+- **One stamp holds the numbers.** `metadata.last-verified-pi` and `metadata.fork-source` in this file's frontmatter record the official release and the fork commit this skill was last checked against. They are also the floors. `/skill:` omits the frontmatter, so [Targets and floors](references/current-version-hazards.md#targets-and-floors) shows the same pair and lists the companion versions. A newer release or commit still needs its own check.
 
 ## Scope and prerequisites
 
