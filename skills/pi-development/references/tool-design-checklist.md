@@ -42,7 +42,7 @@ Design tools as a routed set, not isolated schemas. For each natural user intent
 - During factory load, session-bound actions are avoided; registration APIs and registered default-only `getFlag()` reads are safe, while `pi.exec()` is reserved for essential startup work.
 - Session-bound action methods run from `session_start`, commands, tools, or events.
 - Dynamic `pi.registerTool()` after startup is intentional and does not require `/reload`.
-- The `defaultTools` setting changes the startup built-in tool selection globally or per project while preserving extension/SDK custom tools; validate conditional registration against a configured default set.
+- The `defaultTools` setting changes the startup built-in selection globally or per project; a plain list does not exclude default-active extension/SDK tools. On the fork, `-name` entries also suppress their registration-time activation, including late registrations. Validate configured selections, and follow [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery) for lifecycle details and the official-host path.
 
 ## Execution behavior
 

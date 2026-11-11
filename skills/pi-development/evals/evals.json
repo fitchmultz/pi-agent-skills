@@ -4,7 +4,7 @@
     {
       "id": "fork-native-head-context-preservation",
       "prompt": "My context_with_system hook prepends a policy message and replaces the first tools declaration. An old fork repaired that automatically; make it portable on the latest official Pi and the current fitchmultz/pi fork without losing my policy.",
-      "expected_output": "Inspects exact context hook types/source. Preserves the leading system declaration and later tool updates in their positions, edits supported sections/content deliberately, and does not rely on the retired fork native-head guard or mutate private agent state. Validates the actual provider transcript on each available target."
+      "expected_output": "Inspects exact context hook types/source. Preserves the leading system declaration and later tool updates in their positions, including the fork's tool-only system message immediately after the leading message after compaction; does not fold it into the initial tool list. Official Pi uses its native complete systemMessage checkpoint. Edits supported sections/content deliberately and does not rely on the retired fork native-head guard or mutate private agent state. Validates the actual provider transcript on each available target."
     },
     {
       "id": "fork-integration-discovery-boundary",
@@ -144,7 +144,7 @@
     {
       "id": "session-json-format-parser",
       "prompt": "Update my Pi JSON event and session JSONL parser for current compaction, usage, and session metadata.",
-      "expected_output": "Reads current AgentSessionEvent, session-manager, print-mode, compaction, and usage-totals implementation before docs. Discriminates the leading SessionHeader record with type session from later AgentSessionEvent records; handles agent_settled, entry_appended, session_info_changed, thinking_level_changed, agent_end.willRetry, and summarization_retry_scheduled/attempt_start/finished; parses persisted v3 header/entry timestamps as ISO strings while preserving message-internal millisecond timestamps; accepts top-level usage on tool results, compaction, and branch summaries; uses id/parentId; and rejects copying harness retainedTail into coding-agent CompactionEntry."
+      "expected_output": "Reads current AgentSessionEvent, session-manager, print-mode, compaction, and usage-totals implementation before docs. Discriminates the leading SessionHeader record with type session from later AgentSessionEvent records; handles agent_settled, entry_appended, session_info_changed, thinking_level_changed, agent_end.willRetry, and summarization_retry_scheduled/attempt_start/finished; parses persisted v3 header/entry timestamps as ISO strings while preserving message-internal millisecond timestamps; accepts top-level usage on tool results, compaction, and branch summaries; uses id/parentId; and rejects copying harness retainedTail into coding-agent CompactionEntry. On the fork, replays a compaction's systemMessage (current prompt, initial tool list), optional toolUpdate (net tool changes), then summary in order, preserving tool definitions and order. Official Pi has no toolUpdate and keeps the complete current state in systemMessage; uses each host's native projection and recovery rather than requiring fork fields."
     },
     {
       "id": "nested-model-usage-accounting",
