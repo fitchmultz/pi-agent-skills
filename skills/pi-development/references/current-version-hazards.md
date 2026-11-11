@@ -9,7 +9,7 @@ The stamp is `metadata.last-verified-pi` and `metadata.fork-source` in the `SKIL
 | Distribution | Floor | Target |
 | --- | --- | --- |
 | Official Pi (`earendil-works/pi`) | Release [`1.5.2`](https://github.com/earendil-works/pi/releases/tag/v1.5.2) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
-| `fitchmultz/pi` fork | Commit [`fa02be411fd783edf9f4600ff97e7778a7387a62`](https://github.com/fitchmultz/pi/tree/fa02be411fd783edf9f4600ff97e7778a7387a62). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
+| `fitchmultz/pi` fork | Commit [`ac45c540de9a93ad8fe412a39dd906b3eb8bc952`](https://github.com/fitchmultz/pi/tree/ac45c540de9a93ad8fe412a39dd906b3eb8bc952). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
 
 - A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, the host wins over this skill: read the `[Unreleased]` and newer version sections of its `CHANGELOG.md`, and its own docs, before you copy an API from here.
 - When the installed host is older than its floor, do not build for it. Have the user update it first: `pi update` on official Pi, `pi update --fork` on the fork, then `pi update --extensions` for this skill.
@@ -24,7 +24,7 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
 | Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; the current Node 24 release is `24.22.2`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
-| `@fitchmultz/pi-subagents` | `0.52.31` |
+| `@fitchmultz/pi-subagents` | `0.52.33` |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
 | `oxlint`, `oxfmt` | `1.93.0`, `0.78.0` |
 | TypeScript (`tsc`) | `7.0.2` |
@@ -35,11 +35,12 @@ Pi's own dependencies can be nested under `pi-coding-agent/node_modules`. Resolv
 
 The fork's revision-matched `FORK.md` owns this inventory; read it at the target revision. The list below covers the extension-facing parts at the fork floor. Official Pi has none of them.
 
-- **Process restart:** `pi restart`, `/restart`, `ctx.managedHost`<!-- fork-only -->, `ManagedHost`<!-- fork-only -->, `docs/restart.md`<!-- fork-only -->.
+- **Process restart:** `pi restart`, `/restart`, `ctx.managedHost`<!-- fork-only -->, `ManagedHost`<!-- fork-only -->, `docs/restart.md`<!-- fork-only -->. See [Managed restart prompt state](lifecycle-checklist.md#managed-restart-prompt-state) for recorded guidance/removal and official Pi's reload or external-relaunch path.
 - **Shutdown disposition** for work that outlives a worker: `ShutdownDisposition`<!-- fork-only --> is `release`, `handoff`, or `provisional`. `session_shutdown` sets `disposition` only for `quit`, and only when `ctx.managedHost` exists.
 - **Detached background shell commands:** `background_command`<!-- fork-only -->, `builtin:background-command`, `docs/background-command.md`<!-- fork-only -->.
 - **Background-work reporting:** `AgentSession.getBackgroundWork()`<!-- fork-only -->, the `background_work`<!-- fork-only --> event and `createBackgroundCommandExtension({ hostWaits: true })`<!-- fork-only -->. See [SDK background work](runtime-authoring-guide.md#sdk-background-work) for the host loop and the complete official path.
 - **Tool exposure setting:** `toolExposure` in `settings.json` replaces a tool's registered exposure by name or `*` pattern. Both hosts separately support per-server MCP `toolExposure`; see [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery).
+- **Default-active registration exclusions:** negative tool-selection entries suppress automatic activation of extension/SDK tools, including late registration. This behavior is fork-only; see [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery) for lifecycle limits and complete official controls.
 - **Codemode look-ups and reads:** `show(...calls)`, `models.docs()`, whole-text nested reads up to 1 MiB, multi-page continuation offsets, past-end reads and missing-path hints. See [Fork codemode and native-tool additions](runtime-authoring-guide.md#fork-codemode-and-native-tool-additions) for limits and official equivalents.
 - **Runtime records:** `pi.runtime`, `RUNTIME_RECORD_ENTRY`<!-- fork-only --> and `RuntimeRecordData`<!-- fork-only -->; see [Runtime identity records](lifecycle-checklist.md#runtime-identity-records).
 - **Background tool runs:** `ctx.runInBackground(customType, work)`<!-- fork-only --> in tool contexts, `BackgroundToolResult`<!-- fork-only --> with optional `commit()`, and `BackgroundToolMessageDetails`<!-- fork-only -->. A run ends with the process. See `docs/extensions.md#background-tool-runs`<!-- fork-only -->.
@@ -55,6 +56,7 @@ The fork's revision-matched `FORK.md` owns this inventory; read it at the target
 - **Null inside a schema union:** the fork drops a `null` sent for an optional property of an object inside `anyOf` or `oneOf`. Official Pi converts it instead, for example to `"null"` for a string property. Both drop it for an optional property of a plain object. When the result matters, keep optional properties out of union branches, for example with one object and a `StringEnum` discriminator.
 - **Source-aware fullscreen selection:** a highlighted copy of native Markdown keeps its source syntax and real line breaks; `/copy` still copies the whole message. Prefer native Markdown and Text components, and read `packages/tui/src/{selection-source,selection-markers}.ts` before you map sources yourself.
 - **Opt-in diagnostics:** `PI_EXTENSION_PERFORMANCE=1`<!-- fork-only --> (`docs/environment-variables.md`) warns about slow handlers and footer renders. The wrapper preserves component members such as `capturesViewportInput`.
+- **Compaction cache prefix:** the initial tool list plus a separate checkpoint update preserve Claude's native tool-cache prefix. See [Compaction prompt and tool state](lifecycle-checklist.md#compaction-prompt-and-tool-state) for the split and official Pi's complete single-checkpoint path, and [Fork provider differences](provider-model-guide.md#fork-provider-differences) for serialization and fork-only transcript helpers.
 - **Catalog and correctness fixes** listed in `FORK.md`, including Kimi K3-family cache-write pricing, required-first Claude strict-tool budgets, qualified Gemini unsigned-tool replay, and Astra Ultrafast cost estimates that wait for terminal tier confirmation. See [Provider differences](provider-model-guide.md#fork-provider-differences). Source and offline checks do not establish live billing.
 
 Detect a fork seam structurally at the call site, as `pi-subagents` does:
