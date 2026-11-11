@@ -34,6 +34,7 @@ You may change these files and no others:
 
 - Files under `skills/pi-development/`, except `scripts/`.
 - `test/pi-development.test.mjs`.
+- `test/pi-development-facts.test.mjs`: only the `notHostNames` list.
 - The places in the table above, only to make a value equal to the stamp. `package-lock.json` also takes every change that the `npm install` command in step 4 writes.
 
 Never do any of these:
@@ -51,6 +52,73 @@ The refreshed text keeps two rules from the owner:
 
 - **Latest only.** The skill targets the latest official release and the latest fork `main`. It never describes or supports a host older than the stamp. Do not add shims, fallbacks, or notes for older hosts.
 - **Best on the fork, complete on official Pi.** The owner runs only the fork. Decide which API, default, or pattern is best by its behavior on fork `main`. Every extension must still work on official Pi. When the best path is fork-only, the text also gives the complete path for official Pi.
+
+## Facts that `npm test` checks
+
+`test/pi-development-facts.test.mjs` reads every code span in the Markdown files under `skills/pi-development/`, outside fenced code. It looks up each fact in the Pi package of one host:
+
+| Fact in a code span | Examples | The host has the fact when |
+| --- | --- | --- |
+| A name in camelCase or PascalCase, or with an underscore. In a dotted path, each such part is one name. | `ctx.managedHost`, `session_shutdown`, `PI_OFFLINE=1` | A declaration file (`*.d.ts`) contains the name as an identifier, or a JavaScript file contains it as a whole quoted string or as an upper-case identifier, or a file in `schemas/` has it as a property name. The files are those of the coding agent and of the `@earendil-works` packages that it depends on. The TypeBox that Pi bundles adds its declaration files. |
+| A documentation file, with or without a heading | `docs/extensions.md`, `docs/extensions.md#background-tool-runs` | `docs/` in the coding-agent package has the file, and the file has the heading. |
+| A schema file | `schemas/settings.schema.json` | `schemas/` in the coding-agent package has the file. |
+| The bundled TypeBox version and `engines.node` in the Component table | `1.3.27` | The `package.json` files of the host state the same value. |
+
+The check does not read a plain lowercase word such as `read`, an acronym, fenced code, or a statement about behavior. Step 4 covers those.
+
+Each run has one host:
+
+| Run | Host | What must be true |
+| --- | --- | --- |
+| `npm test` in your clone | The development SDK: the official release in `package.json` | The same as the `official` check. The output shows the fork rule as skipped. |
+| `official` check | The latest official release | The host has every fact that has no fork-only mark, and has no fact that has the mark. |
+| `fork` check | The `main` commit of `fitchmultz/pi` at the time of the check | The host has every fact. |
+
+### The fork-only mark
+
+The mark is this exact text:
+
+```markdown
+<!-- fork-only -->
+```
+
+Write the mark directly after the closing backtick of a code span, with no space between them:
+
+```markdown
+- **Process restart:** `ctx.managedHost`<!-- fork-only -->, `ManagedHost`<!-- fork-only -->, `docs/restart.md`<!-- fork-only -->.
+```
+
+- The mark states that official Pi does not have the fact. It applies to the last part of the span: the last name of a dotted path, or the heading of a documentation link. In `` `AgentSession.getBackgroundWork()`<!-- fork-only --> ``, the mark covers `getBackgroundWork`, not `AgentSession`.
+- Mark a fact one time, in the sentence that states that only the fork has it. All other mentions of the fact in the skill then count as fork-only.
+- Mark only a fact from the first table. A mark fails the check after a span such as `` `pi restart` ``, and after a path whose last part is a plain word, such as `` `pi.runtime` ``.
+
+### Answer a failure of the check
+
+The message gives each skill line, the fact, and the place in the host package where the check looked. Find the fact in the fork clone from step 3 before you change a line:
+
+```bash
+git -C "$fork_dir" grep -n 'someName' "$fork" -- packages          # the fork
+git -C "$fork_dir" grep -n 'someName' "v$official" -- packages     # official Pi
+```
+
+| Message | Cause | Action |
+| --- | --- | --- |
+| `The skill cites facts that the fork X.Y.Z does not have` | The fork removed or renamed the fact, or the skill line was wrong. | Correct the line, or remove the statement. Do not add the mark. |
+| `The skill cites facts that official Pi X.Y.Z does not have` | The fork has the fact and official Pi does not. | Add the mark to one mention, and make sure that the statement says that only the fork has the fact. |
+| The same message | No host has the fact. | Correct the line, or remove the statement. |
+| The same message | The name does not belong to Pi: a tool of another package, a field of `package.json`, a shell variable of a recipe, or a name that the skill says no host has. | Add the name to `notHostNames` in the test file. Use the group whose reason fits, or add a group with its reason. |
+| `The skill marks facts as fork-only that official Pi X.Y.Z has` | Official Pi released the fact. | Remove every mark from the fact, and move its statement to the shared contracts. |
+| `The skill states bundled versions that differ from` the host | The Component table has an old value. | Write the value of the host into the row. |
+| `a mark does not directly follow a code span`, or `the mark covers no fact that this check reads` | The mark is in the wrong place. | Move the mark to a code span that holds a fact from the first table, or remove the mark. |
+
+Never add to `notHostNames` a name that a Pi package holds. Never add the mark to a fact that the fork does not have.
+
+The `official` and `fork` checks resolve their hosts when they run. A check can thus test a release or a commit that is newer than `official` or `fork`. If a check reports a line that is correct at `v$official` and at `$fork`, the host changed after step 1. Read the newer source, and correct the line or remove the statement. The stamp stays at `official` and `fork`.
+
+```bash
+git -C "$fork_dir" fetch --quiet --filter=blob:none origin main    # for a newer official release, fetch its tag as in step 3
+git -C "$fork_dir" grep -n 'someName' FETCH_HEAD -- packages
+```
 
 ## Procedure
 
@@ -148,7 +216,7 @@ Then apply the first case that fits:
 | --- | --- |
 | Makes a statement in the skill wrong | Correct the statement. |
 | Removes something that the skill names | Remove the statement. Do not describe what the older host did. |
-| Ships in official Pi something that the skill marks as fork-only, or lists in the "After" section of `references/current-version-hazards.md` | Move the statement to the shared contracts. |
+| Ships in official Pi something that the skill marks as fork-only, or lists in the "After" section of `references/current-version-hazards.md` | Move the statement to the shared contracts. Remove every `<!-- fork-only -->` mark from the fact. |
 | Adds or changes an API, event, setting, tool, or behavior that an extension author must know | Add it to the reference that owns the topic. `SKILL.md` lists the references and their topics. |
 | Affects no extension author | Change nothing. Record `no change needed` with a reason of a few words. |
 
@@ -156,6 +224,7 @@ Follow these rules for every statement that you write or keep:
 
 - Check the statement against the declaration or the implementation at `$fork`, and at `v$official` when the statement covers official Pi. A changelog entry tells you where to look. It is not the evidence.
 - Say which host the statement covers: both, or the fork only. For a fork-only capability, keep or add the complete path for official Pi.
+- Mark each name, documentation file, and heading that only the fork has. [The fork-only mark](#the-fork-only-mark) gives the exact form.
 - Place a capability that `v$official` lacks by its origin. If `FORK.md` at `$fork` lists the capability, it belongs in "Fork-only capabilities". If not, the fork merged it from upstream before a release: it belongs in the "After" section, with its source cited as ``Upstream `<commit ID>` ``.
 - Keep `SKILL.md` below 500 lines. Put detail in the reference that owns the topic.
 - When a fact that `skills/pi-development/evals/evals.json` expects has changed, correct that `expected_output`. Keep every evaluation ID. Keep the versions in prompts that describe a migration.
@@ -183,7 +252,12 @@ npm run smoke
 npm run pack:check
 ```
 
-Every command must exit with status 0. Correct the skill, not the test. The one exception is the list of reference files and evaluation IDs in `test/pi-development.test.mjs`, which follows a file or an ID that you added or renamed.
+Every command must exit with status 0. Correct the skill, not the test. Two lists in the tests follow the skill:
+
+- The list of reference files and evaluation IDs in `test/pi-development.test.mjs` follows a file or an ID that you added or renamed.
+- `notHostNames` in `test/pi-development-facts.test.mjs` follows a name that does not belong to Pi.
+
+`npm test` looks up the facts that the skill cites in the development SDK, which is official Pi. When it fails in `test/pi-development-facts.test.mjs`, follow [Answer a failure of the check](#answer-a-failure-of-the-check). Only the `fork` check in step 7 looks up the facts in the fork.
 
 `npm test` also runs the helper tests of other skills. Those tests need Python 3, `uv`, and PMD with Java. [Maintaining the skills](maintaining-skills.md#validation) lists the tools. Install a missing tool when you can. If you cannot, you may accept a failure only in `test/code-smells-collect.test.mjs` or `test/code-smells-structure.test.mjs`, and only when the error names the missing tool. Name those files in the pull request body. The `official` and `fork` checks run them.
 
@@ -268,7 +342,7 @@ For a check that completed without `success`:
 
 | Check result on `$head` | Action |
 | --- | --- |
-| `official` or `fork` failed because of your change | Read the log with `gh run view --job <job id> --log-failed`. Fix the cause. |
+| `official` or `fork` failed because of your change | Read the log with `gh run view --job <job id> --log-failed`. Fix the cause. For a failure in `test/pi-development-facts.test.mjs`, follow [Answer a failure of the check](#answer-a-failure-of-the-check). |
 | `official` or `fork` failed for a reason outside your scope, such as a test of another skill or the runner | Run `gh run rerun <run id> --failed` once. If the check fails again, comment the cause on the pull request once, leave the pull request open, and report `blocked`. |
 | A review check ended without `success`. `Pi Durable Review` reports `failure` when it filed findings. `neutral` or `cancelled` is an error in the reviewer. | Answer every open finding first. If you then have no fix to push, push an empty commit to get a new review: `git commit --allow-empty -m "Request a new review"`. |
 
