@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- `pi-development`: the bundled resolver's `--json` output also compares the resolved host with the skill's stamp. The existing keys and the plain output are unchanged.
+  - `forkCommit` is the commit in the `fork-release.json` receipt that the fork installer writes beside the release's `node_modules`, or `null` when the package has none. `stampPiVersion` and `stampForkCommit` are the stamp from the `SKILL.md` frontmatter.
+  - `stampMatch` is true when the installed fork commit equals the stamp, or, for a package with no receipt, when the installed version equals the stamp.
+  - When they differ, `changelog` is the path of the installed `CHANGELOG.md` and `stampNote` says to read it before copying an API from the skill. For a version older than the stamp, `stampNote` says to update the host first.
+
 - Add the house conventions to `pi-development`. They are binding for Mitch's Pi packages and the `fitchmultz/pi` fork, so that every package looks, reads, and ships the same way. `SKILL.md` names three new references and when to read each:
   - `references/house-conventions-ux.md`: tool cards (no live state in the call part, a bounded result preview, one hint row, what an HTML export keeps), messages and entries, notices, work without a UI, the status line, commands, key hints, settings, one word list, and one symbol set.
   - `references/house-conventions-tool-contract.md`: what each text slot of a tool holds, parameter names, exposure, what a cut result ends with, returned failures, `details`, stored records, hooks and the prompt cache, and messages to the model.
