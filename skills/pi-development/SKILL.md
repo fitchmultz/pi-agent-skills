@@ -3,9 +3,9 @@ name: pi-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Official Pi and the fitchmultz/pi fork, no older than the release in metadata.last-verified-pi and the commit in metadata.fork-source. Always build against the latest official release, the latest fork main, and current dependencies. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "5.0.2"
+  version: "5.0.3"
   last-verified-pi: "1.5.2"
-  fork-source: "ac45c540de9a93ad8fe412a39dd906b3eb8bc952"
+  fork-source: "0106ee92c42eca0c96a3c6ad45f501a3878723e2"
 ---
 
 # Pi development
