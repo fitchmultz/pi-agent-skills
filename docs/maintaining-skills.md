@@ -48,6 +48,8 @@ Validate host-sensitive behavior against the minimum official Pi baseline, curre
 
 The minimum supported floor is the stamp: `metadata.last-verified-pi` (the official release) and `metadata.fork-source` (the `fitchmultz/pi` commit) in the frontmatter of [`skills/pi-development/SKILL.md`](../skills/pi-development/SKILL.md). No other file records the pair. `test/pi-development.test.mjs` fails when a place that repeats a stamp value differs from it: the skill's own references, the development SDK pin, the README, and the `clef` and `code-smells` floors. The stamp moves only through [Refresh the `pi-development` skill](refreshing-pi-development.md). That procedure reads what changed between the stamp and the latest hosts, updates the skill, raises every repeat, and delivers one pull request. [Targets and floors](../skills/pi-development/references/current-version-hazards.md#targets-and-floors) owns the Pi companion versions. The code-smells analyzer floors are PMD `7.29+`, `lizard>=1.24.3`, and `pathspec>=1.1.1`. Agents never build for anything older than a floor. They always resolve and build against the latest official Pi release, the latest `fitchmultz/pi` `main`, and the latest dependency versions.
 
+`test/pi-development-facts.test.mjs` holds the facts that `pi-development` cites. It reads every code span of the skill and looks up each name, documentation file, heading, schema file, and bundled version in the Pi package of the selected host. The `official` job fails when official Pi lacks a fact that has no `<!-- fork-only -->` mark, and when it has a fact that has the mark. The `fork` job fails when the fork lacks a fact. A plain `npm test` applies the `official` rules to the development SDK and shows the fork rule as skipped. Names that do not belong to Pi are in the `notHostNames` list of the test, each with its reason. [Facts that `npm test` checks](refreshing-pi-development.md#facts-that-npm-test-checks) gives the kinds of fact, the exact mark, and the answer to each failure. When the check fails on a pull request that did not change the skill, a host changed after the last refresh, and the next refresh corrects the skill.
+
 Guidance uses the public SDK, session, runtime, model, tool, schema (pi-schema tool validation, `typebox` imports), and TUI contracts that both hosts share, plus the fork's `ManagedHost`, working-session (`acquireWorkingSession`, `bindWorkingSessionHost`, `openWorkingSession`/`writeWorkingSession`, `working_session_save`), auth-fallback (`registerProviderAuthFallback`), background-execution (`builtin:background-command`, `ctx.runInBackground`), and root `resolveModelReference` contracts. Optional tools use native deferred exposure with `tool_search` on both hosts; instruction groups and `pi.refreshTools()` no longer exist. Inspecting a revision does not qualify a later merged artifact. Git/GitHub is the only release channel; no npm publication.
 
 Run the current-official host-sensitive checks locally without changing the repository's dependency tree. For an exact CI reproduction, select the tag from that run's frozen host receipt instead of querying the latest release:
@@ -59,9 +61,9 @@ PI_CURRENT_VERSION="${PI_CURRENT_TAG#v}"
 npm install --prefix "$host_dir" --ignore-scripts --no-audit --no-fund \
   "@earendil-works/pi-coding-agent@$PI_CURRENT_VERSION"
 PI_HOST_INDEX="$host_dir/node_modules/@earendil-works/pi-coding-agent/dist/index.js" \
-  PI_COMPAT_HOST=official-current PI_COMPAT_EXPECTED_VERSION="$PI_CURRENT_VERSION" \
+  PI_COMPAT_HOST=official PI_COMPAT_EXPECTED_VERSION="$PI_CURRENT_VERSION" \
   PI_OFFLINE=1 PI_TELEMETRY=0 \
-  node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs
+  node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs test/pi-development-facts.test.mjs
 rm -rf "$host_dir"
 ```
 

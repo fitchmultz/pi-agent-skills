@@ -7,6 +7,12 @@
   - `stampMatch` is true when the installed fork commit equals the stamp, or, for a package with no receipt, when the installed version equals the stamp.
   - When they differ, `changelog` is the path of the installed `CHANGELOG.md` and `stampNote` says to read it before copying an API from the skill. For a version older than the stamp, `stampNote` says to update the host first.
 
+- Check the facts that `pi-development` cites against the selected Pi host. `test/pi-development-facts.test.mjs` reads every code span of the skill and looks up each name, documentation file, heading, schema file, and bundled version in the host package. It runs inside `npm test`, so the `official` and `fork` jobs and the daily canary run it.
+  - The `fork` job fails when the fork lacks a cited fact. The `official` job fails when official Pi lacks a fact that the skill does not mark as fork-only, and when official Pi has a fact that the skill marks as fork-only. A plain `npm test` applies the `official` rules to the development SDK and shows the fork rule as skipped.
+  - A fact that only the fork has carries the mark `<!-- fork-only -->` directly after its code span. The references mark the 34 facts that are fork-only today. No statement changes.
+  - Names that do not belong to Pi are in the `notHostNames` list of the test, each with its reason. A new name that no host has fails until someone corrects the line, marks it, or lists it.
+  - `docs/refreshing-pi-development.md` gains "Facts that `npm test` checks": the kinds of fact, the exact mark, and the action for each failure message.
+
 - Add the house conventions to `pi-development`. They are binding for Mitch's Pi packages and the `fitchmultz/pi` fork, so that every package looks, reads, and ships the same way. `SKILL.md` names three new references and when to read each:
   - `references/house-conventions-ux.md`: tool cards (no live state in the call part, a bounded result preview, one hint row, what an HTML export keeps), messages and entries, notices, work without a UI, the status line, commands, key hints, settings, one word list, and one symbol set.
   - `references/house-conventions-tool-contract.md`: what each text slot of a tool holds, parameter names, exposure, what a cut result ends with, returned failures, `details`, stored records, hooks and the prompt cache, and messages to the model.
