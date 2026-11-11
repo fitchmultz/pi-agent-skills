@@ -44,6 +44,22 @@ Use when state, persistence, reload, session metadata, tree navigation, fork/res
 - `session_shutdown` cleans timers, watchers, processes, subscriptions, raw input listeners, overlays/widgets, and handles.
 - Idle RPC `ctx.shutdown()` runs immediately when no command is active; an active command writes its response first. Print mode still exits through its own completion path. Let the host finish started OAuth refresh persistence during shutdown rather than killing it on the first signal.
 
+## Runtime identity records
+
+On the fork, saved sessions get a `pi.runtime` custom entry before each `session_start` (startup, new, resume, fork and reload). Root exports `RUNTIME_RECORD_ENTRY` and `RuntimeRecordData` describe its format: build/runtime identity, loaded package versions and Git commits, loose extension entry-file hashes, and loaded context-file sizes/hashes. It never enters model context. Keep `pi.` reserved; use your package prefix for custom types on both hosts. Source: `src/core/runtime-record.ts` and `src/core/agent-session.ts`.
+
+- In-memory sessions get no record. New saved sessions buffer it until a first message creates the journal. Resumed/reloaded sessions write it immediately.
+- Working-session restore holds its record until the first agent run, so a startup that rolls back does not make the journal newer than its saved state. An unused restored session gets no record.
+- The session selector ignores the record for activity/count/preview/name, but its write changes mtime, which `pi -c` uses. A custom leaf is hidden in the fork's HTML export.
+- Versions, commits and entry hashes read disk, not the complete imported module graph. Same-directory `/new`, `/resume` or `/fork` can retain already imported code after a package changes on disk; `/reload` or restart loads the update. Do not claim the record proves the bytes of every running module.
+- Official Pi has no runtime record. An SDK host can keep an explicit identity receipt outside the journal, or an extension can append its own small non-model custom entry with the same disk-versus-loaded-code limitation. Do not require a `pi.runtime` record to resume an official session.
+
+## Shutdown ordering
+
+On both hosts, clean up owned resources in `session_shutdown`. Official runtime shutdown aborts and awaits the active turn before the handler. A certified working-session exit on the fork also waits without a limit. An ordinary fork quit aborts and waits up to 500 ms while handlers run: tool results and `agent_end` can arrive during or after the handler. Tolerate those events, stop owned work promptly, and do not assume every interrupted call got a saved result if it ignored cancellation. The bound is on turn settlement, not on the shutdown handlers or credential writes. Source: `src/core/agent-session-runtime.ts`.
+
+On the fork, a malformed native working-session restore names the first invalid field, such as `entries[12].message.content[0].type`. Handle the refusal without rewriting the journal or substituting partial state. Official Pi uses its ordinary session persistence; keep the host's own validation and recovery when a native working-session capability is absent.
+
 ## Runtime mutation
 
 - Dynamic `pi.registerTool()` is intentional and does not require `/reload`.

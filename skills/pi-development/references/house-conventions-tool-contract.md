@@ -48,7 +48,7 @@ Pi puts `promptGuidelines` in the `<rules>` section only while the tool is decla
 
 - Register a new tool with `exposure: "deferred"` unless most runs call it.
 - Change the default exposure of a released tool only with measured usage in top-level sessions and the owner's agreement.
-- On the fork, the user's `toolExposure` setting in `settings.json`, in builds that have it, replaces the exposure that a tool registered with. That setting is the user's control. Do not override it. It is not the `toolExposure` field of an MCP server entry, which both hosts have and which covers only the tools of that server.
+- On the fork, the user's `toolExposure` setting in `settings.json` replaces the exposure that a tool registered with. That setting is the user's control. Do not override it. It is not the `toolExposure` field of an MCP server entry, which both hosts have and which covers only the tools of that server.
 - A tool that cannot work in this session (no dialog UI, a child, another platform) is registered again with `exposure: "hidden"` at `session_start`.
 - A package with a deferred tool gives the model a way to load it. The procedure is in [Native tools and deferred tool discovery](runtime-authoring-guide.md#native-tools-and-deferred-tool-discovery).
 - Put the operating rules of a tool in `promptGuidelines`.
