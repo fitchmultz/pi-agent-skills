@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- `pi-development`: the bundled resolver's `--json` output also compares the resolved host with the skill's stamp. The existing keys and the plain output are unchanged.
+  - `forkCommit` is the commit in the `fork-release.json` receipt that the fork installer writes beside the release's `node_modules`, or `null` when the package has none. `stampPiVersion` and `stampForkCommit` are the stamp from the `SKILL.md` frontmatter.
+  - `stampMatch` is true when the installed fork commit equals the stamp, or, for a package with no receipt, when the installed version equals the stamp.
+  - When they differ, `changelog` is the path of the installed `CHANGELOG.md` and `stampNote` says to read it before copying an API from the skill. For a version older than the stamp, `stampNote` says to update the host first.
+
 - Check the facts that `pi-development` cites against the selected Pi host. `test/pi-development-facts.test.mjs` reads every code span of the skill and looks up each name, documentation file, heading, schema file, and bundled version in the host package. It runs inside `npm test`, so the `official` and `fork` jobs and the daily canary run it.
   - The `fork` job fails when the fork lacks a cited fact. The `official` job fails when official Pi lacks a fact that the skill does not mark as fork-only, and when official Pi has a fact that the skill marks as fork-only. A plain `npm test` applies the `official` rules to the development SDK and shows the fork rule as skipped.
   - A fact that only the fork has carries the mark `<!-- fork-only -->` directly after its code span. The references mark the 34 facts that are fork-only today. No statement changes.

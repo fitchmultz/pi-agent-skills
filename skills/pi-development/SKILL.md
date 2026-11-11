@@ -54,6 +54,8 @@ pi --version
 
 The resolver verifies `PI_PACKAGE_DIR` first; otherwise it resolves the launcher, including mise and asdf shims. An override needs no `pi` on PATH and returns null launcher fields, so verify a runnable Pi separately. `--pi PATH` deliberately ignores the override.
 
+The JSON also compares the resolved host with this skill's stamp. It shows the stamp, the installed version, and the installed fork commit (null when the package has no fork release receipt), and says whether they match. When they differ, follow its note: it names the installed `CHANGELOG.md` to read before you copy an API from this skill, or tells you to update a host that is older than the stamp.
+
 Record the package root, version, distribution and revision, relevant exports, executable `dist/*.js`, emitted `.d.ts`, and observed behavior. Those win over stale docs and examples. Then:
 
 - Read the relevant sections of the version-matched docs and examples, and follow the links that establish the affected contracts.
