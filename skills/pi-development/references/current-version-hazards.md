@@ -9,7 +9,7 @@ The stamp is `metadata.last-verified-pi` and `metadata.fork-source` in the `SKIL
 | Distribution | Floor | Target |
 | --- | --- | --- |
 | Official Pi (`earendil-works/pi`) | Release [`1.5.2`](https://github.com/earendil-works/pi/releases/tag/v1.5.2) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
-| `fitchmultz/pi` fork | Commit [`6687f908f4f8a5c1c822eb0bdae32ec6075b33c8`](https://github.com/fitchmultz/pi/tree/6687f908f4f8a5c1c822eb0bdae32ec6075b33c8). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
+| `fitchmultz/pi` fork | Commit [`3209c8eb81b6cce5ffc55381d358b544ec23c887`](https://github.com/fitchmultz/pi/tree/3209c8eb81b6cce5ffc55381d358b544ec23c887). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
 
 - A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, the host wins over this skill: read the `[Unreleased]` and newer version sections of its `CHANGELOG.md`, and its own docs, before you copy an API from here.
 - When the installed host is older than its floor, do not build for it. Have the user update it first: `pi update` on official Pi, `pi update --fork` on the fork, then `pi update --extensions` for this skill.
@@ -23,8 +23,8 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | --- | --- |
 | `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
-| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; the current Node 24 release is `24.22.2`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
-| `@fitchmultz/pi-subagents` | `0.52.36` |
+| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
+| `@fitchmultz/pi-subagents` | `0.52.38` |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
 | `oxlint`, `oxfmt` | `1.93.0`, `0.78.0` |
 | TypeScript (`tsc`) | `7.0.2` |
