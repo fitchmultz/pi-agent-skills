@@ -25,7 +25,7 @@ The house conventions of `pi-development` (`references/house-conventions-ux.md`,
 
 ## Validation
 
-Use Node 24 (at least 24.21.0) and install the development dependencies before running the checks:
+Use Node 24 (at least 24.22.3) and install the development dependencies before running the checks:
 
 ```bash
 npm ci --ignore-scripts

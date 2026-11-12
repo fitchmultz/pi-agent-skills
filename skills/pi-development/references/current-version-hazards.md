@@ -23,7 +23,7 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | --- | --- |
 | `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
-| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `>=24.21.0`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
+| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `^24.22.3 || >=26.13.1`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
 | `@fitchmultz/pi-subagents` | `0.52.38` |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
 | `oxlint`, `oxfmt` | `1.93.0`, `0.78.0` |

@@ -2,7 +2,7 @@
 
 This procedure brings `skills/pi-development/` up to the latest official Pi release and the latest `fitchmultz/pi` `main` commit. One run produces at most one pull request and merges it. A scheduled agent follows the procedure every day. Anyone can also follow it by hand.
 
-Work only in `fitchmultz/pi-agent-skills`. The commands use `git`, `npm`, Node 24.21.0 or later, and the GitHub CLI `gh`. If your environment has a GitHub tool in place of `gh`, use its matching action. The conditions stay the same. Your environment supplies the Git identity for commits and the credentials for `git push`. If a commit or a push fails because one is missing, report `blocked`.
+Work only in `fitchmultz/pi-agent-skills`. The commands use `git`, `npm`, Node 24.22.3 or later in the 24.x line, and the GitHub CLI `gh`. If your environment has a GitHub tool in place of `gh`, use its matching action. The conditions stay the same. Your environment supplies the Git identity for commits and the credentials for `git push`. If a commit or a push fails because one is missing, report `blocked`.
 
 ## The stamp
 
