@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Require Node `^24.22.3 || >=26.13.1` for the November 2026 security fixes; align setup guidance and root lockfile metadata.
+
 - `pi-development`: the bundled resolver's `--json` output also compares the resolved host with the skill's stamp. The existing keys and the plain output are unchanged.
   - `forkCommit` is the commit in the `fork-release.json` receipt that the fork installer writes beside the release's `node_modules`, or `null` when the package has none. `stampPiVersion` and `stampForkCommit` are the stamp from the `SKILL.md` frontmatter.
   - `stampMatch` is true when the installed fork commit equals the stamp, or, for a package with no receipt, when the installed version equals the stamp.
