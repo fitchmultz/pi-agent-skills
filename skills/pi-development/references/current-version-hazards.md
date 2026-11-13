@@ -9,7 +9,7 @@ The stamp is `metadata.last-verified-pi` and `metadata.fork-source` in the `SKIL
 | Distribution | Floor | Target |
 | --- | --- | --- |
 | Official Pi (`earendil-works/pi`) | Release [`1.5.2`](https://github.com/earendil-works/pi/releases/tag/v1.5.2) | The latest published release: `gh release view --repo earendil-works/pi --json tagName,url`, or npm `@earendil-works/pi-coding-agent@latest`. Use its public SDK (`dist/index.js`), declarations, and schemas. |
-| `fitchmultz/pi` fork | Commit [`3209c8eb81b6cce5ffc55381d358b544ec23c887`](https://github.com/fitchmultz/pi/tree/3209c8eb81b6cce5ffc55381d358b544ec23c887). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
+| `fitchmultz/pi` fork | Commit [`c56a061c20020df68c26802668bddc1c43c7c232`](https://github.com/fitchmultz/pi/tree/c56a061c20020df68c26802668bddc1c43c7c232). Its `FORK.md` names the upstream commit that it has merged. | The latest `main` commit: `gh api repos/fitchmultz/pi/commits/main --jq .sha`. Check it against that revision's `FORK.md`, SDK exports, and bundled CLI. Record the installed fork release separately. |
 
 - A floor is a minimum, not a pin. Build and validate against the latest official release, the latest fork `main`, and the latest release of every dependency and companion tool. When a target is newer than its floor, the host wins over this skill: read the `[Unreleased]` and newer version sections of its `CHANGELOG.md`, and its own docs, before you copy an API from here.
 - When the installed host is older than its floor, do not build for it. Have the user update it first: `pi update` on official Pi, `pi update --fork` on the fork, then `pi update --extensions` for this skill.
@@ -23,8 +23,8 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | --- | --- |
 | `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
 | TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
-| Node and npm | Both distributions declare `engines.node >=22.19.0`. Extension work uses Node `^24.22.3 || >=26.13.1`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.1` and npm `11.19.1`. |
-| `@fitchmultz/pi-subagents` | `0.52.38` |
+| Node and npm | Official Pi declares `engines.node >=22.19.0`; the fork declares `engines.node ^22.23.5 || ^24.22.3 || >=26.13.1` (update Node before `pi update --fork`). Extension work uses Node `^24.22.3 || >=26.13.1`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.3` and npm `12.2.2`. |
+| `@fitchmultz/pi-subagents` | `0.52.39` |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
 | `oxlint`, `oxfmt` | `1.93.0`, `0.78.0` |
 | TypeScript (`tsc`) | `7.0.2` |
@@ -47,6 +47,7 @@ The fork's revision-matched `FORK.md` owns this inventory; read it at the target
 - **JSON selection for `read`:** `json.path` and `json.fields` on `createReadToolDefinition` and `createReadTool`.
 - **Compact activity view:** the `compactView: boolean | "hybrid"`<!-- fork-only --> setting; message renderers receive `MessageRenderOptions.compactView?: boolean`.
 - **Fork self-update:** `pi update --fork`.
+- **Supported platforms:** the fork supports and tests Apple Silicon macOS, Linux (x64/arm64), and Android/Termux; Windows and Intel macOS are not supported or tested on the fork (official Pi still supports them).
 - **Termux additions:** official Pi supports Termux (`docs/termux.md`). The fork adds installer compiler and environment handling, short control-socket paths, and an OSC 52 clipboard fallback that needs no Termux:API.
 - **Complete working-session state:** `openWorkingSession`<!-- fork-only -->, `parseWorkingSession`<!-- fork-only -->, `readWorkingSession`<!-- fork-only -->, `writeWorkingSession`<!-- fork-only -->, the `WorkingSession*`<!-- fork-only --> types, `session.acquireWorkingSession(...)`<!-- fork-only -->, `session.bindWorkingSessionHost(...)`<!-- fork-only -->, `createAgentSession({ workingSession })`, the `working_session_save`<!-- fork-only --> event, and `docs/working-session.md`<!-- fork-only -->.
 - **Provider credential isolation:** `ignoreStoredCredentials: true`<!-- fork-only --> on a provider registration, so a routing provider does not read unrelated stored credentials. See `docs/custom-provider.md`.

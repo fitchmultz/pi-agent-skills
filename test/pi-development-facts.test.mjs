@@ -252,11 +252,14 @@ function bundledVersions(host, flavor) {
     return { at: `${file}:${index + 1}`, cited: cited[1] };
   };
   const coding = host.packages.get(sdk);
+  const nodePattern = flavor === "fork"
+    ? /(?:the fork declares|Both distributions declare) `engines\.node ([^`]+)`/
+    : /(?:Official Pi declares|Both distributions declare) `engines\.node ([^`]+)`/;
   return [
     { ...row("TypeBox bundled with Pi", flavor === "fork" ? /`([\d.]+)` on the fork/ : /`([\d.]+)` on official Pi/),
       what: "the TypeBox version", actual: host.packages.get("typebox")?.manifest.version,
       where: `the version of the typebox package that ${coding.dir} resolves` },
-    { ...row("Node and npm", /`engines\.node ([^`]+)`/),
+    { ...row("Node and npm", nodePattern),
       what: "engines.node", actual: coding.manifest.engines?.node,
       where: `engines.node in ${path.join(coding.dir, "package.json")}` },
   ];
