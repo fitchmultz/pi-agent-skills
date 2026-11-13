@@ -65,7 +65,7 @@
     "reason": "Generic cross-OS/browser platform matrix with no pi extension/package runtime; route to platform-validation."
   },
   {
-    "query": "Set up Crabbox/cbx to smoke-test this pi extension on macOS, Ubuntu, and Parallels Windows.",
+    "query": "Set up Crabbox/cbx to smoke-test this pi extension on Apple Silicon macOS and Ubuntu.",
     "should_trigger": false,
     "reason": "Crabbox-specific setup and matrix ownership belongs to crabbox-platform-testing."
   },
