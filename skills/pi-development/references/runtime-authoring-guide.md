@@ -101,6 +101,12 @@ Session-bound action methods are not initialized during factory load and should 
 
 Use `sourceInfo` on tools/commands/resources for provenance rather than guessing from names or paths.
 
+## Native extension module loading
+
+Pi's Jiti/embedded mappings provide the host extension view; they do not unconditionally replace physically resolved native modules. On the fork's Node native-hook path, compiled ESM, dynamic imports and CommonJS helpers can fall back to the exact host-module map when normal resolution reports a missing module. Installed peers win, unrelated errors still fail, and arbitrary package subpaths are not supplied. The hook is not used on Bun or when unavailable. On official Pi, use a validated Jiti-loaded TypeScript/static-import path, or physically resolvable peers for compiled native modules. Qualify the actual shipped form on both hosts.
+
+The fork persists Jiti's transpile cache in the user cache directory. That is not evidence that reload replaced every native imported module; both hosts can retain module state. Use a fresh process when loaded-code or runtime identity matters. Sources: `src/core/extensions/{loader,virtual-modules}.ts`.
+
 ## Runtime mutation is allowed
 
 Do not overuse `/reload` as a generic hammer.
@@ -126,7 +132,11 @@ This is selection, not a permission boundary: the tool remains registered, `pi.s
 
 **Official Pi:** do not rely on negative selection entries to suppress default-active extension/SDK registration. For exclusion, launch with `--exclude-tools tool_name` or pass SDK `excludeTools: ["tool_name"]`; exclusions cover MCP tools and prevent registration, including late registrations and reload. For a tool that should stay registered but initially inactive, register it with `defaultActive: false` and activate it explicitly when wanted. Sources on both hosts: `src/core/{agent-session,settings-manager,sdk}.ts`.
 
-`ReadOperations.createReadStream` is optional and streams a file in chunks. Grep always runs local ripgrep and takes context lines from it; it never calls `GrepOperations.readFile`, which remains only as an optional, deprecated field. Override `execute()` for remote search. Globs are relative to the supplied search path.
+On the fork, deactivating only a newly registered tool outside the restored loadout preserves pending restored tools, including MCP tools still connecting. Removing a restored-loadout member or requesting an empty loadout clears them. This also holds for native working-session restore. On official Pi, avoid registering an optional loader active and immediately deactivating it at `session_start`: register it with `defaultActive: false` and use additive activation without replacing other restored tools.
+
+`ReadOperations.createReadStream` is optional and streams a file in chunks. Grep always runs local ripgrep and takes context lines from it; it never calls `GrepOperations.readFile`, which remains only as an optional, deprecated field. Override `execute()` for remote search. Grep globs are relative to the supplied search path.
+
+On the fork, find path patterns are relative to its search directory: `src/*.ts` matches `src/a.ts`, not `pkg/src/a.ts`; use `**/src/*.ts` for any depth. Basename patterns such as `*.ts` match at any depth, and leading `./` is accepted. Official Pi expands relative path patterns at any depth instead: remove leading `./` yourself and use an absolute pattern anchored to the search root when exact path matching matters. Sources: `src/core/tools/{find,grep}.ts`.
 
 Optional tools use native `exposure: "deferred"` on both hosts: they stay out of the prompt until `tool_search` loads them, and codemode calls them whenever they are registered. Both hosts register `tool_search` inactive. An extension that registers deferred tools activates a registered `tool_search` that declares `reachesTools` and warns once through `ctx.ui.notify` when neither `tool_search` nor codemode is active, as Pi's own MCP extension does (`ensureDiscoveryActive` in `src/extensions/mcp/index.ts`). Also repeat that check at `session_tree`, because tree navigation restores the branch's recorded tools first, and skip activation when the branch recorded removing `tool_search`; the MCP extension does neither. Instruction groups (`discover_tools`, `pi:instruction-groups`, `builtin:instruction-groups`) and `pi.refreshTools()` no longer exist on either host; do not register groups, call either, or build a custom resolver, settings inventory or activation journal. Read the exposure in effect from `pi.getAllTools()` or from the `selectedTools` and `hiddenTools` of `before_agent_start`, not from what the package registered. On the fork, `toolExposure` in `settings.json` replaces the registered exposure by exact name or `*` pattern; see the rules below. Which exposure a tool registers with is in [Exposure](house-conventions-tool-contract.md#exposure).
 
@@ -167,6 +177,8 @@ for (;;) {
 }
 const finalText = session.getLastAssistantText();
 ```
+
+The final-text helper is not proof that the latest turn succeeded. On the fork, `getLastAssistantText()` and RPC `get_last_assistant_text` can return an earlier reply after a textless failed, aborted or tool-only message; a normal stopped reply without text still returns `undefined`. Inspect the latest authoritative assistant message and stop reason on both hosts. If an official-host application needs the same last-answer filtering, select it explicitly from public messages or RPC entries.
 
 Read `isIdle` and `isSettling`<!-- fork-only --> immediately after the query, without another `await`: settlement handlers can queue more work while `isIdle` is already true. Await every host-owned prompt before deciding to exit; unreported extension messages and new host input are outside this list. `waitForIdle()` alone never waits for detached work on either host. A host that implements the loop can pass `createBackgroundCommandExtension({ hostWaits: true })` to remove one-shot print guidance; the flag does no waiting itself.
 
@@ -247,7 +259,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 - Imported pi core packages belong in optional `peerDependencies` with `"*"`: `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-tui`, `typebox`. Exact Pi baseline pins belong only in `devDependencies` when the repo uses them for validation.
 - The two hosts bundle different TypeBox versions (see `current-version-hazards.md`). Import `Type`/`Static`/`TSchema` from `typebox`, use APIs present in both hosts' copies, and rely on the host's TypeBox through the optional `*` peer. Extensions that import `@earendil-works/pi-schema` declare it in `dependencies`; Pi supplies only the packages listed in `docs/packages.md`.
 - A package that loads at least one extension can show its changelog on the next fresh launch after an update. Pi reads root `CHANGELOG.md`, or `pi.changelogPath` (`""` disables it), and compares headings such as `## [1.2.0]` or `## 1.2.0 - 2026-01-01` with the `package.json` version. A git package shows entries only when that version increases, so bump it with each user-visible release.
-- `pi.exec()` accepts `maxBuffer` and reports `truncated`; size it for the command instead of collecting unbounded output.
+- `pi.exec()` accepts `maxBuffer` and reports `truncated`; size it for the command instead of collecting unbounded output. Check cancellation, `killed`, `truncated` and `code`, not just returned output. On the fork, a signal exit reports 128 plus the signal number (143 for SIGTERM, 137 for SIGKILL); `killed` means Pi initiated termination, so an external signal can leave it false. Official Pi can report zero after a signal exit: reject killed, truncated or cancelled work regardless of that value. If accurate signal status is required there, use public `createLocalBashOperations()` (a shell-command-string API, not an argv drop-in), stream its output, inspect `exitCode`, and handle timeout/abort rejection rather than inferring success from `pi.exec().code`.
 - Other pi packages used as bundled resources must be in both `dependencies` and `bundledDependencies`, with manifest paths into `node_modules/...`.
 - `npmCommand` may route installs through wrappers/package managers such as `mise`, `asdf`, `bun`, or `pnpm`; do not assume bare `npm`.
 - Project package settings and missing project package installs participate only after project trust. Package commands accept `--approve` / `--no-approve` for one-command trust behavior, and global `defaultProjectTrust` controls unresolved fallback behavior.
@@ -258,7 +270,7 @@ Read `docs/packages.md` before changing package layout or release guidance.
 
 ## Removed experimental harness and remote sessions
 
-`@earendil-works/pi-agent-core` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
+`@earendil-works/pi-agent-core` exports `Agent`, `agentLoop`/`agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types, not `AgentHarness`, `Session`/`Storage`/repos, `node`/`harness`/`pico3`, or `uuidv7`. Ordinary extension/SDK work stays on coding-agent's `SessionManager`/`AgentSession`/runtime. For explicitly durable work, inspect the latest `@earendil-works/pi-durable` exports/storage/recovery before selecting it; do not relabel coding-agent JSONL as another schema. The fork's upstream-ahead Harness writes `pi.tool` version 4 and `pi.generation` version 3; official Pi's companion has versions 3 and 2. Do not open the newer task data with the official Harness or relabel records to bypass its version checks. These Harness contracts do not change coding-agent tool return types or namespace APIs. Use supported local SDK/stdio RPC for ordinary remote-process integration, not retired experimental `RemoteSession`/`PiClient` exports.
 
 ## RPC mode gotchas
 
