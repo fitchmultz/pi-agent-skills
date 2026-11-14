@@ -234,7 +234,7 @@ pi --model "$MODEL_ID" --thinking "$THINKING_LEVEL" \
   -p "$SMOKE_PROMPT"
 ```
 
-Direct Kimi K3-family routes (K3 and K3.1 Pro) expose `low`, `high`, and `max`. Derive the smoke level from current model metadata rather than a model name. For Qwen Token Plan, map only `QWEN_TOKEN_PLAN_API_KEY` or `QWEN_TOKEN_PLAN_CN_API_KEY` for the selected route into the model-only phase.
+Direct Kimi K3-family routes (K3 and K3.1 Pro) expose `low`, `high`, and `max`. Derive the smoke level from current model metadata rather than a model name. For Qwen Token Plan, forward only the credential mapped to the selected provider, plan and region by that exact host into the model-only phase. The fork prefers its matching per-plan variable before the shared regional fallback; official Pi uses the shared variables unless native configuration explicitly maps another name. Use the [Qwen mapping](provider-model-guide.md#qwen-credentials-and-catalogs); do not forward all Qwen keys.
 
 Do not use `--no-session` for adoption smokes when session JSONL is useful evidence.
 
