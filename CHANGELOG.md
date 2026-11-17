@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Warn in `pi-development` and `ssh-unix-ops` to redirect stdin-reading commands such as `pi -p` and nested `ssh` from `/dev/null` (`< /dev/null`) inside stdin-fed scripts so they do not consume the remaining script lines.
+
 - Require Node `^24.22.3 || >=26.13.1` for the November 2026 security fixes; align setup guidance and root lockfile metadata.
 
 - `pi-development`: the bundled resolver's `--json` output also compares the resolved host with the skill's stamp. The existing keys and the plain output are unchanged.

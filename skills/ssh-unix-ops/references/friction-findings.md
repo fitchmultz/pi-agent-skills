@@ -102,11 +102,19 @@ Countermeasure:
 - single-file mutation commands refuse symlink and special-file targets, but do not guard parent symlinks or concurrent path changes
 - tree transfers use tar merge/extraction, not these single-file checks; use trusted source trees and destinations
 
+## 11) Commands that read stdin consume the rest of a stdin-fed script
+
+Observed failure pattern:
+- inside a script piped to a remote shell (`exec` or `ssh host 'bash -s' < script.sh`), a `pi -p` call read the remaining script lines as prompt text, so later commands silently never ran
+
+Countermeasure:
+- redirect stdin-reading commands (such as `pi -p` or nested `ssh`) from `/dev/null` (`< /dev/null`) inside stdin-supplied remote scripts
+
 ## Practical conclusion
 
 For repeatable agent work on remote Unix-like hosts, the safest defaults are:
 - force a known shell
-- ship scripts over stdin
+- ship scripts over stdin, and redirect stdin-reading commands inside them from `/dev/null` (`< /dev/null`)
 - use Python for path-safe file operations
 - preview with diffs before mutation when practical
 - back up important files before editing
