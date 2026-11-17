@@ -40,6 +40,20 @@ Pi defaults to fullscreen. Use the supplied host TUI, not a second terminal or p
 - Use `PI_TUI_WRITE_LOG=/tmp/tui-ansi.log` for raw ANSI stream debugging.
 - `PI_TUI_ESC_TIMEOUT` tunes lone-Escape detection on high-latency SSH links where split `Alt+Enter` misparses. `--use-theme <name[/name]>` overrides the per-run theme without saved settings for renderer validation. Built-in fullscreen transcript search (`Ctrl+Shift+F`), unbound half-page scroll actions, and unbound single-line scroll actions exist; keep custom shortcuts clear of them.
 
+### Terminal focus and animation
+
+On the fork, fullscreen terminal focus reports slow non-input render requests while unfocused, and native `Loader` pauses its spinner. For an owned background animation, structurally detect `tui.isTerminalFocused()`<!-- fork-only --> and `tui.onTerminalFocusChange(listener)`<!-- fork-only --> on the supplied TUI, pause/resume the timer and unsubscribe during cleanup. This is terminal focus, not editor/overlay focus; a terminal without focus reports is not an equivalent feed. Do not force every timer render to bypass the host's cadence.
+
+A `Loader` starts at construction and when its indicator changes. Call `stop()` from its owner's `dispose()`; on the fork this releases both timer and focus subscription. Use `start()` to resume it. Official Pi has no focus members or automatic focus pause: keep its native loader or a bounded owned timer with normal render requests and disposal, not a raw focus parser, second render loop or no-op focus shim.
+
+## Transcript history and hydration
+
+Large fork fullscreen transcripts initially instantiate a recent turn-aligned entry window, then prepend older chunks on upward scroll or backward prompt navigation; search, jump-to-start and switching to regular mode ensure full content. Full editor prompt history is available from the initial load. Rehydrate branch state independently of entry-renderer invocation. The initial window is not a fixed row/component cap; hydration grows the mounted transcript rather than maintaining a fixed-size rolling window. [Transcript and model context](lifecycle-checklist.md#transcript-and-model-context) separates this presentation from provider input and gives the complete official history path.
+
+For an owned custom history surface on the fork, shared `ScrollView` offers synchronous `onBeforeScrollUp`<!-- fork-only --> and `onBeforeScrollToStart`<!-- fork-only --> hooks. A fullscreen host can provide `onHydrateOlderContent`<!-- fork-only --> (synchronous, true only after an actual prepend) and `onEnsureFullContent`<!-- fork-only --> (synchronous full materialization) to shared `TuiAltScreen`. Wrap a synchronous prepend with `prependScrollViewContent`<!-- fork-only --> to preserve native selection and row anchoring, then request rendering; the helper does not request it. Ordinary extensions should use the injected host's existing transcript, not replace it.
+
+Official Pi lacks these members. Materialize an owned history component before ordinary shared `ScrollView` composition, search and navigation; retain native copy and keyboard behavior. Do not pass fork-only options on official Pi, patch private transcript state or construct a second TUI. Sources: `packages/tui/src/{tui,tui-alt-screen}.ts`, `packages/tui/src/components/{scroll-view,loader}.ts` and `src/modes/interactive/interactive-mode.ts`.
+
 ## Overlay rules
 
 Overlay options support anchors, percentages, min/max sizes, margins, offsets, responsive `visible(termWidth, termHeight)`, and `nonCapturing: true`.

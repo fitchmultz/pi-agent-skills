@@ -84,7 +84,7 @@ An npm channel has a fleet entry with `npmRelease: "automatic"` and the workflow
 - Pi shows the update notes of a Git package only when its `version` increases.
 - The manual flow in [publishing/workflow.md](publishing/workflow.md) is only for a package that has no release automation.
 - To update an installed copy, run `pi update <source>` for one package or `pi update --extensions` for all, then start a new Pi process. `pi update` with no target updates Pi.
-- On the fork, `pi update --fork` builds and selects the latest `fitchmultz/pi` `main`.
+- On the fork, `pi update --fork` builds and selects the latest `fitchmultz/pi` `main`. It builds nothing when the active release already is that commit for the running Node version, platform and architecture; add `--force` to rebuild.
 - In the fork repository, follow `AGENTS.md` and `FORK.md` at the target revision for commits, changelog entries, release, and activation.
 
 ## Changelog and titles
