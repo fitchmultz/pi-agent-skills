@@ -198,4 +198,4 @@ Use no other marker for these meanings.
 
 - Look at each new or changed card collapsed, expanded, and in an HTML export (`/export`).
 - On the fork, also look at the card in compact view.
-- Run each new or changed command one time in the terminal and one time with `pi -p`.
+- Run each new or changed command one time in the terminal and one time with `pi -p`. Because `pi -p` reads piped stdin into the prompt, redirect its input from `/dev/null` (`< /dev/null`) inside a stdin-fed script (such as over SSH) so it does not consume the rest of the script.

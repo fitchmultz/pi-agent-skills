@@ -61,6 +61,7 @@ Use `rsync` or a deployment-specific workflow instead of `upload-tree` for large
 - Preserve SSH host-key checking by default. If first-contact trust or auth fails, stop and surface the exact blocker.
 - Do not embed passwords, tokens, or secrets in SSH command strings.
 - The helper runs noninteractively with `BatchMode=yes` unless the user explicitly changes SSH policy.
+- Inside a stdin-supplied remote script (`exec` or `ssh host 'bash -s' < script.sh`), commands that read stdin (such as `pi -p` or nested `ssh`) consume the remaining script lines unless redirected from `/dev/null` (`< /dev/null`).
 - The helper has no built-in sudo escalation. For privileged paths, agree on access separately before file primitives.
 - `read` and `diff` are text-oriented; use `download` and `sha256` for binary-sensitive work.
 - Single-file operations are memory-buffered; avoid them for very large artifacts.
@@ -91,7 +92,7 @@ Use `rsync` or a deployment-specific workflow instead of `upload-tree` for large
 - Read `references/ssh-trust-and-auth.md` when auth, host keys, SSH config, ProxyJump, or trust prompts matter.
 - Read `references/wsl2-notes.md` before editing a WSL2 host or paths under `/mnt/c`.
 - Read `references/recipes.md` for a concrete repeated flow such as config edit, tree transfer, or rollback.
-- Read `references/friction-findings.md` when debugging quoting, shell, tar, or transfer failure modes.
+- Read `references/friction-findings.md` when debugging quoting, shell, stdin, tar, or transfer failure modes.
 - Read `references/excellence-rubric.md` for a final quality review of high-risk remote work.
 
 ## Validation
