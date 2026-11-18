@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   resolve:
-    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
+    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@3e744f52412c3669bd781ed5ea3e21567798352e # main
     with:
-      automation-ref: c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
+      automation-ref: 3e744f52412c3669bd781ed5ea3e21567798352e # main
 
   qualify:
     needs: resolve
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: fitchmultz/.github
-          ref: c832dd07c016914db40bb98e5bdbb9c623cd6303 # main
+          ref: 3e744f52412c3669bd781ed5ea3e21567798352e # main
           path: automation
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -83,8 +83,14 @@ jobs:
           bin="$(find "$dir" -type f -path '*/bin/pmd' -print -quit)"
           "$bin" --version
           dirname "$bin" >> "$GITHUB_PATH"
-      - name: Build and pack the frozen fork
+      - id: fork-package-cache
         if: matrix.host == 'fork'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/fork-package
+          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json') }}
+      - name: Build and pack the frozen fork
+        if: matrix.host == 'fork' && steps.fork-package-cache.outputs.cache-hit != 'true'
         working-directory: fork
         env:
           FORK_REF: ${{ needs.resolve.outputs.fork-ref }}
