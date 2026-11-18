@@ -525,12 +525,14 @@ The result should be obviously phonetic at a glance while still sounding approxi
 
 ## Content and copyright checks
 
-Vocal-synthesis platforms run content checks on lyrics before generation, and copyright matching against the original song is the most common rejection. When the user reports a failed check, respell to break the text match. Do not censor, summarize, or replace lines.
+Vocal-synthesis platforms run content checks on lyrics before generation, and copyright matching against the original song is the most common rejection. This section covers text-match rejections: when a check rejects a rewrite because its text matches the original song, respell to break the match. Do not censor, summarize, or replace lines.
+
+A policy-based rejection is different: the platform refuses the song on its own content rules. Do not respell to evade a platform's content rules; report the rejection and let the user decide.
 
 The matchers normalize text before comparing:
 
 - Case, punctuation, and apostrophes are stripped, so `dont` still matches `don't` and `Hey` matches `hey`. Removing punctuation or changing case never breaks a match.
-- Comparison is exact or near-exact line text, and repeated lines multiply exposure: the hook, usually the title line, repeats many times and is the strongest signal.
+- Comparison is line-based: a line matches when its normalized text matches the original, and respelling one word, even by one letter, breaks the line's match. Repeated lines multiply exposure: the hook, usually the title line, repeats many times and is the strongest signal.
 
 Respell strategy, in order of preference:
 

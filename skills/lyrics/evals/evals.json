@@ -43,7 +43,7 @@
     },
     {
       "id": "content-check-retry",
-      "prompt": "suno rejected the lyrics on content checks, try again",
+      "prompt": "suno rejected this rewrite on content checks, try again: <pasted rejected rewrite>",
       "expected_output": "Respells the rejected rewrite to break exact line matches without censoring or dropping lines: every line keeps at least one respelled word or shorthand substitution, the repeated hook gains a respelled word in every instance, awkward spellings that do no match-breaking work revert to natural ones, and the returned block still sings like the original."
     }
   ]

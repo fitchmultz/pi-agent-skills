@@ -51,7 +51,7 @@ Non-negotiables the reference enforces:
 
 When fetched lyrics have no section markers (lrclib plain lyrics), infer them per the reference's section-inference rules; do not over-segment.
 
-When a vocal-synthesis platform's content or copyright check rejects the rewrite, respell to break exact line matches instead of censoring or dropping lines. The reference's content-check section owns the matcher behavior and the minimal-change strategy.
+When a platform's check rejects a rewrite because its text matches the original song, respell to break exact line matches instead of censoring or dropping lines; a policy-based rejection is reported to the user, not evaded. The reference's content-check section owns the matcher behavior and the minimal-change strategy.
 
 ## Variants
 
