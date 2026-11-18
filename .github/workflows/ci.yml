@@ -96,7 +96,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/fork-package
-          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ steps.node.outputs.node-version }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json', 'fork/packages/ai/src/providers/data/*.json') }}
+          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ steps.node.outputs.node-version }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json', 'fork/packages/ai/src/providers/data/[!.]*.json') }}
       - name: Build and pack the frozen fork
         if: matrix.host == 'fork' && steps.fork-package-cache.outputs.cache-hit != 'true'
         working-directory: fork
