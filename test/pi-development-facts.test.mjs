@@ -252,13 +252,18 @@ function bundledVersions(host, flavor) {
     return { at: `${file}:${index + 1}`, cited: cited[1] };
   };
   const coding = host.packages.get(sdk);
+  const typebox = row("TypeBox bundled with Pi", /`dependencies\.(typebox)`/);
+  const codingManifest = path.join(coding.dir, "package.json");
+  const pin = coding.manifest.dependencies[typebox.cited];
+  assert.ok(pin, `${typebox.at}: ${codingManifest} does not declare dependencies.${typebox.cited}`);
+  const installed = findPackageJSON(typebox.cited, pathToFileURL(codingManifest));
+  assert.ok(installed, `${typebox.at}: ${coding.dir} cannot resolve ${typebox.cited}`);
   const nodePattern = flavor === "fork"
     ? /(?:the fork declares|Both distributions declare) `engines\.node ([^`]+)`/
     : /(?:Official Pi declares|Both distributions declare) `engines\.node ([^`]+)`/;
   return [
-    { ...row("TypeBox bundled with Pi", flavor === "fork" ? /`([\d.]+)` on the fork/ : /`([\d.]+)` on official Pi/),
-      what: "the TypeBox version", actual: host.packages.get("typebox")?.manifest.version,
-      where: `the version of the typebox package that ${coding.dir} resolves` },
+    { at: typebox.at, cited: pin, what: `${codingManifest} dependencies.${typebox.cited}`,
+      actual: JSON.parse(readFileSync(installed, "utf8")).version, where: installed },
     { ...row("Node and npm", nodePattern),
       what: "engines.node", actual: coding.manifest.engines?.node,
       where: `engines.node in ${path.join(coding.dir, "package.json")}` },
@@ -295,7 +300,7 @@ function assertHostHas(facts) {
   const wrong = bundledVersions(hostFacts, host.flavor).filter(({ cited, actual }) => cited !== actual);
   assert.equal(wrong.length, 0, `The skill states bundled versions that differ from ${host.title} (${wrong.length}):\n`
     + wrong.map(({ at, what, cited, actual, where }) => `  ${at}: ${what} \`${cited}\`; the host has ${actual} (${where})`).join("\n")
-    + `\nWrite the host's value into that row. See ${procedure}.`);
+    + `\nSee ${procedure}.`);
 }
 
 const skipUnless = flavor => host.flavor === flavor ? false

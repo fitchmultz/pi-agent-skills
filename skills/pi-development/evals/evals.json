@@ -289,7 +289,7 @@
     {
       "id": "typebox-1-3-7-migration",
       "prompt": "My extension stopped compiling on installed Pi 1.5.0+ because Type.Base, Type.Promise, and Value.Mutate disappeared. Restore it without pinning an old TypeBox.",
-      "expected_output": "Resolves the exact latest target Pi and installed typebox exports (official Pi and the fork bundle different TypeBox versions), reads emitted types, imports Type and Static from typebox, migrates removed APIs to typebox APIs present in both hosts' copies without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing through pi-schema validation."
+      "expected_output": "Resolves typebox from the coding-agent package on each latest target, reads its exports and emitted types, imports Type and Static from typebox, migrates removed APIs to typebox APIs present in both hosts' copies without compatibility shims or an old-version pin, and validates type-checking plus real tool argument parsing through pi-schema validation."
     },
     {
       "id": "pi-schema-tool-validation-1-5",
