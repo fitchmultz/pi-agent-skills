@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Standardize `pi-development` on `oxlint` with `tsrs` (`0.25.0-ts7.1.0-beta`, replacing `oxlint-tsgolint`) and `oxfmt` for Pi packages and new TypeScript/JavaScript projects while keeping separate `tsc` compiler checks.
+- Standardize `pi-development` on `oxlint` with `tsrs` (`7.1.0-beta.tsrs2`, replacing `oxlint-tsgolint`) and `oxfmt` for Pi packages and new TypeScript/JavaScript projects while keeping separate `tsc` compiler checks.
 
 - Warn in `pi-development` and `ssh-unix-ops` to redirect stdin-reading commands such as `pi -p` and nested `ssh` from `/dev/null` (`< /dev/null`) inside stdin-fed scripts so they do not consume the remaining script lines.
 
