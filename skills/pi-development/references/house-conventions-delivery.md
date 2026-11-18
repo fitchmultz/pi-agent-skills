@@ -24,13 +24,13 @@ Words: the *fleet* is the list of repositories in `fleet.json`. An *npm channel*
 
 - Ship TypeScript source that Pi loads without a compile step: erasable syntax only, relative imports with the `.ts` extension, `noEmit`.
 - Use `NodeNext` modules, target `ES2024`, `strict`, and the compiler options in section 4.2 of the engineering standard (`docs/strict-quality-standard.md` in `fitchmultz/.github`).
-- Pin the Pi packages that the package imports, and `typescript`, `oxlint`, and `oxfmt`, to exact versions in `devDependencies`.
+- Pin the Pi packages that the package imports, and `typescript`, `oxlint`, `tsrs`, and `oxfmt`, to exact versions in `devDependencies`.
 - A package that builds `dist/` has a `prepare` script that produces it after `npm install --omit=dev`. That is the command Pi runs for a Git install.
 - The `compilerOptions.paths` entry for `@earendil-works/pi-ai` is in [Tool schemas and arguments](current-version-hazards.md#tool-schemas-and-arguments).
 
 ## Lint, format, and tests
 
-- Lint with `oxlint` and format with `oxfmt`. The configuration is `.oxlintrc.json` and `.oxfmtrc.json` at the root.
+- Lint with `oxlint` using `tsrs` (`tsrs-lint` for type-aware linting, replacing `oxlint-tsgolint`) and format with `oxfmt`, keeping `tsc` (including secondary configs such as declarations or JXA) as a separate required compiler gate. The configuration is `.oxlintrc.json` and `.oxfmtrc.json` at the root.
 - Follow the engineering standard at the version that the repository's `AGENTS.md` names. Record an exception in the repository. Do not add a suppression comment.
 - Tests use `node --test` on files named `test/<subject>.test.ts`. `npm test` runs all of them offline, with no credentials and no paid calls.
 - Keep at least one test that loads the extension through the real host and exercises the changed tool, command, or event.
