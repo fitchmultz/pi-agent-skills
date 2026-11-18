@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `pi-development`: use the TypeBox version that each Pi host installs, rather than assuming official Pi and the fork share the same APIs (PIF-212).
+
 - Standardize `pi-development` on `oxlint` with `tsrs` (`7.1.0-beta.tsrs2`, replacing `oxlint-tsgolint`) and `oxfmt` for Pi packages and new TypeScript/JavaScript projects while keeping separate `tsc` compiler checks.
 
 - `lyrics`: teach the content-check retry for vocal-synthesis platform rejections. Matched lyrics normalize away case, punctuation, and apostrophes, so the rewrite must break exact line matches: every line keeps at least one respelled word or shorthand substitution, the repeated hook gains a respelled word in every instance, and awkward spellings that do no match-breaking work revert to natural ones. Adds the `content-check-retry` and `content-check-policy-rejection` evaluation scenarios.
