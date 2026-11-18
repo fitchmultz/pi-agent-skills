@@ -523,6 +523,26 @@ Munnee on my mynd I gawt munnee on my brayn
 
 The result should be obviously phonetic at a glance while still sounding approximately like the original when sung.
 
+## Content and copyright checks
+
+Vocal-synthesis platforms run content checks on lyrics before generation, and copyright matching against the original song is the most common rejection. This section covers text-match rejections: when a check rejects a rewrite because its text matches the original song, respell to break the match. Do not censor, summarize, or replace lines.
+
+A policy-based rejection is different: the platform refuses the song on its own content rules. Do not respell to evade a platform's content rules; report the rejection and let the user decide.
+
+The matchers normalize text before comparing:
+
+- Case, punctuation, and apostrophes are stripped, so `dont` still matches `don't` and `Hey` matches `hey`. Removing punctuation or changing case never breaks a match.
+- Comparison is line-based: a line matches when its normalized text matches the original, and respelling one word, even by one letter, breaks the line's match. Repeated lines multiply exposure: the hook, usually the title line, repeats many times and is the strongest signal.
+
+Respell strategy, in order of preference:
+
+- Give every line at least one respelled word or shorthand substitution so no full line matches the original.
+- Respell the hook word in every chorus and post-chorus instance; a one-letter change is usually enough.
+- Lean on the core shorthand (`u`, `ur`, `tha`, `cuz`, `2`, `4`) before adding unusual respellings; it breaks phrase matches cheaply and sings naturally.
+- Prefer natural respellings that sing correctly, such as `burnn`, `fyre`, `matchez`, or `horizonz`, over invented spellings that distort pronunciation, such as `bern`, `crox`, or `puul`. Awkward spellings make the model sing oddly, which is the main cost of a rewrite pass.
+- Homophone respellings are free: `hey` and `hay` sound identical, so either breaks a match.
+- When iterating on a rejected rewrite, keep spellings that already passed, revert spellings that distort pronunciation but do no match-breaking work, and keep one breaker in each line.
+
 ## Do not
 
 - Do not summarize the lyrics
