@@ -62,7 +62,7 @@ The refreshed text keeps two rules from the owner:
 | A name in camelCase or PascalCase, or with an underscore. In a dotted path, each such part is one name. | `ctx.managedHost`, `session_shutdown`, `PI_OFFLINE=1` | A declaration file (`*.d.ts`) contains the name as an identifier, or a JavaScript file contains it as a whole quoted string or as an upper-case identifier, or a file in `schemas/` has it as a property name. The files are those of the coding agent and of the `@earendil-works` packages that it depends on. The TypeBox that Pi bundles adds its declaration files. |
 | A documentation file, with or without a heading | `docs/extensions.md`, `docs/extensions.md#background-tool-runs` | `docs/` in the coding-agent package has the file, and the file has the heading. |
 | A schema file | `schemas/settings.schema.json` | `schemas/` in the coding-agent package has the file. |
-| The bundled TypeBox version and `engines.node` in the Component table | `1.3.27` | The `package.json` files of the host state the same value. |
+| The bundled TypeBox pin and the Node requirement in the Component table | `dependencies.typebox`, `engines.node` | The selected coding-agent package pins the exact TypeBox version it resolves. Its Node requirement matches the value in the row for that host. |
 
 The check does not read a plain lowercase word such as `read`, an acronym, fenced code, or a statement about behavior. Step 4 covers those.
 
@@ -108,7 +108,7 @@ git -C "$fork_dir" grep -n 'someName' "v$official" -- packages     # official Pi
 | The same message | No host has the fact. | Correct the line, or remove the statement. |
 | The same message | The name does not belong to Pi: a tool of another package, a field of `package.json`, a shell variable of a recipe, or a name that the skill says no host has. | Add the name to `notHostNames` in the test file. Use the group whose reason fits, or add a group with its reason. |
 | `The skill marks facts as fork-only that official Pi X.Y.Z has` | Official Pi released the fact. | Remove every mark from the fact, and move its statement to the shared contracts. |
-| `The skill states bundled versions that differ from` the host | The Component table has an old value. | Write the value of the host into the row. |
+| `The skill states bundled versions that differ from` the host | The Node row is stale, or the installed TypeBox differs from the coding agent's pin. | For Node, correct the host's value in the row. For TypeBox, check the selected SDK and its install against the host manifest and lockfile. Keep the row tied to the host's manifest, not a release number. |
 | `a mark does not directly follow a code span`, or `the mark covers no fact that this check reads` | The mark is in the wrong place. | Move the mark to a code span that holds a fact from the first table, or remove the mark. |
 
 Never add to `notHostNames` a name that a Pi package holds. Never add the mark to a fact that the fork does not have.
@@ -231,7 +231,7 @@ Follow these rules for every statement that you write or keep:
 
 Then raise the numbers:
 
-1. In the Component table of `references/current-version-hazards.md`, write the current release of each component. For an npm package, run `npm view <package> version`. For a Git package, read `package.json` on its default branch. For a version that Pi bundles, read `packages/coding-agent/package.json` at `$fork` and at `v$official`.
+1. In the Component table of `references/current-version-hazards.md`, write the current release of each independently released component. For an npm package, run `npm view <package> version`. For a Git package, read `package.json` on its default branch. For TypeBox, keep the `dependencies.typebox` reference and verify the installed copy against `packages/coding-agent/package.json` on each target.
 2. When `official` differs from `stamp_official`, write the new release into the "After" section of that file: its heading, its text, its table header, and the link to the section in "Targets and floors". Keep only the rows that the new official release still lacks. If no row remains, remove the section and the link.
 3. Move the stamp: write `official` and `fork` into the two frontmatter lines. Raise the patch number of `metadata.version`.
 4. When `official` differs from `stamp_official`, raise the development SDK and the other repeats:

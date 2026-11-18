@@ -22,7 +22,7 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | Component | Version |
 | --- | --- |
 | `@earendil-works/pi-coding-agent`, `pi-agent-core`, `pi-ai`, `pi-tui`, `pi-telemetry`, `pi-codemode`, `pi-mcp`, `pi-schema`, and the companion `pi-durable` | `1.5.2` on both targets. Read `packages/coding-agent/package.json` at the fork commit rather than inferring parity from that version. The fork's coding-agent also depends on `@earendil-works/chord` and `@earendil-works/pi-durable`. |
-| TypeBox bundled with Pi | `1.3.27` on official Pi, `1.3.37` on the fork. Code for both uses only `1.3.27` APIs. |
+| TypeBox bundled with Pi | `dependencies.typebox` in the selected `pi-coding-agent` package pins the exact version. Resolve `typebox` from that package on each host. Use APIs present in both copies for shared code. |
 | Node and npm | Official Pi declares `engines.node >=22.19.0`; the fork declares `engines.node ^22.23.5 || ^24.22.3 || >=26.13.1` (update Node before `pi update --fork`). Extension work uses Node `^24.22.3 || >=26.13.1`; the current Node 24 release is `24.22.3`, and npm is `12.2.3`. This refresh ran with Node `24.22.3` and npm `12.2.3`. |
 | `@fitchmultz/pi-subagents` | `0.52.50`; optional overseer contracts/review use shared host APIs, not a fork-only sandbox. See [Optional subagents overseer](runtime-authoring-guide.md#optional-subagents-overseer). |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
