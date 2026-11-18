@@ -45,7 +45,7 @@ Words: the *fleet* is the list of repositories in `fleet.json`. An *npm channel*
 - `npm run check:compat` is the command that shared CI runs one time for each host. It has every step whose result depends on the host: type check, tests, and the real-host test. It can leave out a host-independent step only when another required CI job runs that step.
 - The step scripts are `format:check`, `lint`, `typecheck`, `test`, and `pack:check`, with `format` and `lint:fix` to write fixes. Never name one step `check`.
 - In a repository where `check` does not exist or is one step, run the complete gate that its `AGENTS.md` names, and say so in the report. Change the script names only when the task is that change.
-- In the fork repository, run `npm run check` after a code change. It does not run tests. Then run the tests for the changed behavior as the fork's `AGENTS.md` describes.
+- In the fork repository, `npm run check` is read-only; `npm run check:fix` writes Biome fixes, and pre-commit runs fix then check. Review any hook-written diff. Run check after a code change, then the tests for the changed behavior as the fork's `AGENTS.md` describes; neither check command runs the tests. This does not replace a public package's complete gate above.
 
 ## CI
 
