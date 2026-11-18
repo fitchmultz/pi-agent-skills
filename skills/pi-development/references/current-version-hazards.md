@@ -26,7 +26,7 @@ Versions at the last verification. Treat them as floors too, and resolve the cur
 | Node and npm | Official Pi declares `engines.node >=22.19.0`; the fork declares `engines.node ^22.23.5 || ^24.22.3 || >=26.13.1` (update Node before `pi update --fork`). Extension work uses Node `^24.22.3 || >=26.13.1`; the current Node 24 release is `24.22.3`, and npm is `12.2.2`. This refresh ran with Node `24.22.3` and npm `12.2.2`. |
 | `@fitchmultz/pi-subagents` | `0.52.45`; optional overseer contracts/review use shared host APIs, not a fork-only sandbox. See [Optional subagents overseer](runtime-authoring-guide.md#optional-subagents-overseer). |
 | `pi-change-working-dir` (Git package) | `0.6.0` |
-| `oxlint`, `oxfmt` | `1.94.0`, `0.79.0` |
+| `oxlint`, `tsrs`, `oxfmt` | `1.94.0`, `0.25.0-ts7.1.0-beta`, `0.79.0` |
 | TypeScript (`tsc`) | `7.0.2` |
 
 Pi's own dependencies can be nested under `pi-coding-agent/node_modules`. Resolve them from the selected SDK, not from the consumer's root. Keep live resources, settings, and the running runtime untouched while you qualify a target in isolation.
