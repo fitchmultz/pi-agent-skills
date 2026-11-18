@@ -47,7 +47,8 @@ jobs:
           ref: ${{ needs.resolve.outputs.fork-ref }}
           path: fork
           persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - id: node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           check-latest: true
@@ -83,20 +84,25 @@ jobs:
           bin="$(find "$dir" -type f -path '*/bin/pmd' -print -quit)"
           "$bin" --version
           dirname "$bin" >> "$GITHUB_PATH"
+      - name: Install and hydrate the frozen fork
+        if: matrix.host == 'fork'
+        working-directory: fork
+        run: |
+          npm ci --ignore-scripts
+          npm run hydrate:model-data
+          git diff --exit-code
       - id: fork-package-cache
         if: matrix.host == 'fork'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/fork-package
-          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json') }}
+          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ steps.node.outputs.node-version }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json', 'fork/packages/ai/src/providers/data/*.json', 'fork/packages/ai/src/providers/data/.manifest.json') }}
       - name: Build and pack the frozen fork
         if: matrix.host == 'fork' && steps.fork-package-cache.outputs.cache-hit != 'true'
         working-directory: fork
         env:
           FORK_REF: ${{ needs.resolve.outputs.fork-ref }}
         run: |
-          npm ci --ignore-scripts
-          npm run hydrate:model-data
           npm run build:offline
           node ../automation/scripts/pack-fork.mjs . "$RUNNER_TEMP/fork-package" "$FORK_REF"
           git diff --exit-code
