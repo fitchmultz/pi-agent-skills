@@ -40,6 +40,11 @@
       "id": "plain-variant",
       "prompt": "give me the original unrewritten lyrics for Everlong by Foo Fighters",
       "expected_output": "Returns cleaned original lyrics in one text block with stanza structure preserved and no phonetic rewriting."
+    },
+    {
+      "id": "content-check-retry",
+      "prompt": "suno rejected the lyrics on content checks, try again",
+      "expected_output": "Respells the rejected rewrite to break exact line matches without censoring or dropping lines: every line keeps at least one respelled word or shorthand substitution, the repeated hook gains a respelled word in every instance, awkward spellings that do no match-breaking work revert to natural ones, and the returned block still sings like the original."
     }
   ]
 }

@@ -4,6 +4,8 @@
 
 - Standardize `pi-development` on `oxlint` with `tsrs` (`7.1.0-beta.tsrs2`, replacing `oxlint-tsgolint`) and `oxfmt` for Pi packages and new TypeScript/JavaScript projects while keeping separate `tsc` compiler checks.
 
+- `lyrics`: teach the content-check retry for vocal-synthesis platform rejections. Matched lyrics normalize away case, punctuation, and apostrophes, so the rewrite must break exact line matches: every line keeps at least one respelled word or shorthand substitution, the repeated hook gains a respelled word in every instance, and awkward spellings that do no match-breaking work revert to natural ones. Adds the `content-check-retry` evaluation scenario.
+
 - Warn in `pi-development` and `ssh-unix-ops` to redirect stdin-reading commands such as `pi -p` and nested `ssh` from `/dev/null` (`< /dev/null`) inside stdin-fed scripts so they do not consume the remaining script lines.
 
 - Require Node `^24.22.3 || >=26.13.1` for the November 2026 security fixes; align setup guidance and root lockfile metadata.
