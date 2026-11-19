@@ -29,9 +29,9 @@ Pi defaults to fullscreen. Use the supplied host TUI, not a second terminal or p
 - Every rendered line must fit the supplied width. Use `visibleWidth`, `truncateToWidth`, and `wrapTextWithAnsi`.
 - Reapply ANSI styles per line; pi-tui resets styles at line end.
 - Use the `theme` and `keybindings` supplied to callbacks.
-- Call `tui.requestRender()` after input-driven or async state changes.
-- Implement `invalidate()` and clear/rebuild theme-colored cached content on theme changes.
-- Cache by width and content/state version; bump version when state changes.
+- After input-driven or async state changes, invalidate affected cached content and call `tui.requestRender()`; scrolling can reuse a frame without calling `render()`, so keep rendering free of lifecycle effects.
+- Treat every child's or `super.render()` result as read-only; copy before modifying it. The fork types `Component.render()` as `readonly string[]` and caches `Container` output for unchanged children/lines, with an array-identity fast path. Return a new array when output changes, not an in-place edit to a previously returned array.
+- Shared components can return `string[]`, which satisfies both hosts; official Pi still requires that mutable return type. Cache by width and content/state version, and clear/rebuild theme-colored output in `invalidate()` on theme changes.
 - Components with timers, streams, subprocesses, or animations need `dispose()` and async disposed guards.
 - Components that need Kitty key-release events, such as games or smooth movement, opt in with `wantsKeyRelease = true`.
 - Components with text cursors should implement `Focusable` and emit `CURSOR_MARKER`; containers with child `Input`/`Editor` must propagate focus.
@@ -42,9 +42,9 @@ Pi defaults to fullscreen. Use the supplied host TUI, not a second terminal or p
 
 ### Terminal focus and animation
 
-On the fork, fullscreen terminal focus reports slow non-input render requests while unfocused, and native `Loader` pauses its spinner. For an owned background animation, structurally detect `tui.isTerminalFocused()`<!-- fork-only --> and `tui.onTerminalFocusChange(listener)`<!-- fork-only --> on the supplied TUI, pause/resume the timer and unsubscribe during cleanup. This is terminal focus, not editor/overlay focus; a terminal without focus reports is not an equivalent feed. Do not force every timer render to bypass the host's cadence.
+Fullscreen rendering and native `Loader` animations continue at their normal rate when terminal focus is lost; the fork neither throttles background frames nor pauses its loader. It cancels active mouse gestures and hover state but keeps completed text selections. For an owned focus-aware surface, structurally detect `tui.isTerminalFocused()`<!-- fork-only --> and `tui.onTerminalFocusChange(listener)`<!-- fork-only --> on the supplied TUI, then unsubscribe during cleanup. This is terminal focus, not editor/overlay focus; a terminal without focus reports is not an equivalent feed.
 
-A `Loader` starts at construction and when its indicator changes. Call `stop()` from its owner's `dispose()`; on the fork this releases both timer and focus subscription. Use `start()` to resume it. Official Pi has no focus members or automatic focus pause: keep its native loader or a bounded owned timer with normal render requests and disposal, not a raw focus parser, second render loop or no-op focus shim.
+A `Loader` starts at construction and when its indicator changes. Call `stop()` from its owner's `dispose()` to release its timer; use `start()` to resume it. Official Pi also animates normally but has no focus members. Keep its native loader or a bounded owned timer with normal render requests and disposal, not a raw focus parser, second render loop or no-op focus shim.
 
 ## Transcript history and hydration
 
@@ -153,8 +153,8 @@ Custom messages and entries:
 Markdown transformers:
 
 - By default a transformer runs on user, assistant and thinking Markdown. `registerMarkdownTransformer(transformer, { messageTypes })` can also select `custom`, `summary`, or `changelog`. The option selects the entire set, not additions to the default.
-- The hook is display-only and synchronous. Preserve the original session/model content, and keep work cheap during streaming and resize. Registering again replaces the extension's prior transformer.
-- On the fork, highlighted fullscreen copies use native source mapping to retain Markdown and real line breaks. `Text` and `Markdown` attach private selection annotations only while `TuiAltScreen` renders a frame; standalone `render()`, `TuiMainScreen`, and HTML callers get plain lines. If a component creates a temporary `Text`/`Markdown` inside a fullscreen render without retaining it, strip that child's private annotations with the fork's `stripSelectionMetadata()`<!-- fork-only --> before its source registration expires; it preserves styles and hyperlinks. Reach the helper through the loaded module and use it only for that fork-only case. Official Pi needs no selection stripping; use native components and its normal copy behavior. `/copy` remains the whole-message command on both. Native drag release and styled-space wrapping fixes need no extension workaround.
+- The hook is display-only and synchronous. Return Markdown outside the owned construct unchanged rather than lexer/serializer round-tripping it. Preserve original session/model content, and keep work cheap during streaming and resize. Registering again replaces the extension's prior transformer.
+- On the fork, native fullscreen uses source mapping to retain Markdown and real line breaks; do not assume owned clipping/composition preserves it. Verify actual copied source for nonzero-column ASCII slices and mixed styled ASCII/CJK: the new ASCII slicing path omits source bookkeeping. Prefer retained native components, not a private marker parser or host patch. For an owned TUI surface requiring exact source copy, retain authoritative source and expose a user-triggered `copyToClipboard` action; catch/report failures and keep terminal clipboard output out of JSON/RPC streams. A resolved OSC 52 call does not prove client clipboard delivery. This does not repair native drag selection. `Text` and `Markdown` attach private selection annotations only while `TuiAltScreen` renders a frame; standalone `render()`, `TuiMainScreen`, and HTML callers get plain lines. If a component creates a temporary `Text`/`Markdown` inside a fullscreen render without retaining it, strip that child's private annotations with the fork's `stripSelectionMetadata()`<!-- fork-only --> before its source registration expires; it preserves styles and hyperlinks. Reach the helper through the loaded module and use it only for that fork-only case. Official Pi needs no selection stripping; use native components and its normal copy behavior. `/copy` remains the whole-message command on both. Native drag release and styled-space wrapping fixes need no extension workaround.
 
 ## Mode behavior
 
