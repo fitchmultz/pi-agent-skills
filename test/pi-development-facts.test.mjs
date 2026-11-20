@@ -27,8 +27,6 @@ const forkOnlyMark = "<!-- fork-only -->";
 const notHostNames = new Map([
   { why: "tools that separate extensions register (pi-change-working-dir, pi-ask-question, @fitchmultz/pi-subagents)",
     names: ["change_dir", "ask_question", "agent_runs", "load_subagent"] },
-  { why: "exports of the separate @earendil-works/pi-durable companion package, which official pi-coding-agent does not depend on",
-    names: ["HookTask", "hookTask", "afterTools", "onYield", "ToolPark", "fitImage", "fitImages", "createFitImagesExtension", "imageLimits"] },
   { why: "the skill says that neither host has it, or that pi-agent-core no longer exports it",
     names: ["discover_tools", "sendSessionIdHeader", "continueSession", "AgentHarness", "RemoteSession", "PiClient",
       "Session", "Storage"] },
