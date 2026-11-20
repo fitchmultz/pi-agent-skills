@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   resolve:
-    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@3e744f52412c3669bd781ed5ea3e21567798352e # main
+    uses: fitchmultz/.github/.github/workflows/resolve-hosts.yml@cad44b229af2d6fae39b516548de9eaf8ae91e07 # main
     with:
-      automation-ref: 3e744f52412c3669bd781ed5ea3e21567798352e # main
+      automation-ref: cad44b229af2d6fae39b516548de9eaf8ae91e07 # main
 
   qualify:
     needs: resolve
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: fitchmultz/.github
-          ref: 3e744f52412c3669bd781ed5ea3e21567798352e # main
+          ref: cad44b229af2d6fae39b516548de9eaf8ae91e07 # main
           path: automation
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -96,7 +96,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/fork-package
-          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ steps.node.outputs.node-version }}-${{ needs.resolve.outputs.fork-ref }}-3e744f52412c3669bd781ed5ea3e21567798352e-${{ hashFiles('fork/package-lock.json', 'fork/packages/ai/src/providers/data/[!.]*.json') }}
+          key: pi-fork-package-${{ runner.os }}-${{ runner.arch }}-${{ steps.node.outputs.node-version }}-${{ needs.resolve.outputs.fork-ref }}-cad44b229af2d6fae39b516548de9eaf8ae91e07-${{ hashFiles('fork/package-lock.json', 'fork/packages/ai/src/providers/data/[!.]*.json') }}
       - name: Build and pack the frozen fork
         if: matrix.host == 'fork' && steps.fork-package-cache.outputs.cache-hit != 'true'
         working-directory: fork
