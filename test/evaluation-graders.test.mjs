@@ -45,6 +45,12 @@ test('house conventions require the result-part state, the next call, a returned
   assert.throws(() => check('pi-house-conventions', answer(follows)), 'plan.md must be read');
   const earlier = ['', 'Name the saved file.', 'Throw a clearer error and guard details.', 'Run the complete gate npm run check before the push, then tag and publish with the npm token.', ''];
   for (const index of [0, 1, 2, 3]) assert.throws(() => check('pi-house-conventions', answer(follows.with(index, earlier[index])), reads(['plan.md'])), `item ${index + 1}`);
+  for (const gate of ['Run npm run check before the push and let CI confirm it; after the merge the bot commits the version.',
+    'Run the focused tests, then npm run check before the push; after the merge the bot commits the version.']) {
+    assert.throws(() => check('pi-house-conventions', answer(follows.with(3, gate)), reads(['plan.md'])), gate);
+  }
+  const rejectsGate = 'Run the tests that cover the change instead of npm run check before the push; after the merge the bot commits the version.';
+  assert.doesNotThrow(() => check('pi-house-conventions', answer(follows.with(3, rejectsGate)), reads(['plan.md'])));
   assert.throws(() => check('pi-house-conventions', answer(follows.with(4, 'Add an emoji.')), reads(['plan.md'])), 'item 5 stays');
 });
 

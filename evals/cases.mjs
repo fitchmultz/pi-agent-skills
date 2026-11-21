@@ -181,7 +181,12 @@ export const cases = [
       assert.match(fix(1), /renderResult|result part/i, 'Running state belongs to the result part');
       assert.match(fix(2), /offset|next call|continue with/i, 'A cut result names the next call');
       assert.match(fix(3), /isError/, 'A failure is returned with isError'); assert.match(fix(3), /details/);
-      assert.match(fix(4), /\bCI\b|continuous integration|focused|tests? that cover|covering/i, 'Run focused checks before a push; CI runs the complete gate'); assert.match(fix(4), /version|tag|publish|merge/i);
+      const delivery = fix(4);
+      assert.match(delivery, /focused|relevant tests?|tests? (?:that|which) cover|tests? (?:covering|for) the change|covering tests|node --test/i, 'Run the focused checks that prove the change before a push');
+      // A clause that rejects the gate ("instead of npm run check before the push") does not recommend it.
+      const affirmed = delivery.replace(/\b(?:do not|don['’]t|never|not|no need to|no longer|instead of|rather than|without|skip(?:ping)?|avoid(?:ing)?)\b[^.;]*/gi, '');
+      assert.doesNotMatch(affirmed, /(?:npm run check(?!:)|(?:complete|full) gate)[^.;]*\bbefore\s+(?:\w+\s+){0,2}push|\bbefore\s+(?:\w+\s+){0,2}push\w*[^.;]*(?:npm run check(?!:)|(?:complete|full) gate)/i, 'CI runs the complete gate; a push does not wait for a local run');
+      assert.match(delivery, /version|tag|publish|merge/i);
       fix(5); noWrites(r);
     },
   },

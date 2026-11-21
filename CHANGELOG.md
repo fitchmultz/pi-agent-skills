@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- `pi-development`: in Mitch's packages, agents run the focused checks that prove a change (the tests that cover the changed code, plus a quick type check or lint) before a push, then push and open the pull request early, because CI runs every step of the gate on each push. A gate that a repository's `AGENTS.md` keeps local still runs before the push (PAS-212).
+
+- `pi-development`: describe the current automatic npm release. After a merge that changes the installed package, the release bot commits `chore(release): X.Y.Z` directly to `main`, with no version pull request, and `npm-release.yml` then creates the tag and the GitHub Release and publishes. Release notes can also come from `changelog.d/*.md` fragments (PAS-212).
+
 - `pi-development`: use the TypeBox version that each Pi host installs, rather than assuming official Pi and the fork share the same APIs (PIF-212).
 
 - Standardize `pi-development` on `oxlint` with `tsrs` (`7.1.0-beta.tsrs2`, replacing `oxlint-tsgolint`) and `oxfmt` for Pi packages and new TypeScript/JavaScript projects while keeping separate `tsc` compiler checks.
