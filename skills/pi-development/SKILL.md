@@ -129,7 +129,7 @@ Paths in the middle column are relative to the resolved Pi package. Read the mat
    - Repeat host-sensitive checks only; do not repeat artifact creation or publication. Reuse checks whose inputs are still valid. Report an unavailable target as a validation gap.
    - Add behavior coverage for credible regressions, not assertions that mirror the implementation. Complete the required checks; broaden or repeat them only for changed inputs, failures, or unresolved risk.
 7. **Measure the tax.** For factory work and for dependency, startup, or performance changes, run the startup A/B in `references/runtime-authoring-guide.md`. Also inspect steady-state timers, processes, memory, network, and prompt and tool cost. Model settings belong to the host, not to a skill-side client or router.
-8. **Update what changed.** Update docs, tests, metadata, and the changelog when their contract changes. Report mismatches between docs and runtime; do not copy them. In Mitch's packages, run the complete gate before a push: `npm run check`, or the gate that the repository's `AGENTS.md` names where that script is missing or is one step.
+8. **Update what changed.** Update docs, tests, metadata, and the changelog when their contract changes. Report mismatches between docs and runtime; do not copy them. In Mitch's packages, run the focused checks that prove the change before a push: the tests that cover the changed code, plus the type check or lint when they are quick. Do not run the complete gate locally first: CI runs it on every push, so push and open the pull request early once delivery is authorized. [The gate](references/house-conventions-delivery.md#the-gate) has the details.
 
 ## Authority and delivery
 
