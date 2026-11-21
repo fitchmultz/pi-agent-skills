@@ -97,8 +97,8 @@ An npm channel has a fleet entry with `npmRelease: "automatic"` and the workflow
 - Write one flat bullet for each change that a user can notice: what the user or the model now sees or can do, then why if it is not obvious, then the issue number. Use present tense and plain words. Do not describe the code.
 - A change with no effect that a user can notice (tests, CI, refactoring) gets no bullet.
 - Do not edit a released section.
-- The pull request title is a release note: the bot copies the title of the source commit into the changelog and the GitHub Release. Write the title for a user.
-- The commit on `main` carries the pull request title. A title such as `Merge pull request #63 from …` becomes the complete note of a version.
+- The pull request title is a release note. The version section that the bot writes into the changelog, which the GitHub Release copies, has three parts in this order: the notes from the unreleased heading and from `changelog.d`, one line with the title of the first commit merged since the last release, and GitHub's generated list of the pull requests merged since then. Write the title for a user.
+- The commit on `main` carries the pull request title. With a merge commit, that line reads `Merge pull request #63 from …`.
 - A pull request in an ordered series ends its title with `(n/total)`.
 
 ## Documents
