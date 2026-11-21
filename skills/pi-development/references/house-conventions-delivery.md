@@ -40,11 +40,12 @@ Words: the *fleet* is the list of repositories in `fleet.json`. An *npm channel*
 
 ## The gate
 
-- `npm run check` is the complete gate. Run it before a push.
-- `npm run check` runs the format check, lint, type check, tests, and a pack check. It runs each step even after a failure, and fails if any step fails.
+- `npm run check` is the complete gate. It runs the format check, lint, type check, tests, and a pack check. It runs each step even after a failure, and fails if any step fails.
 - `npm run check:compat` is the command that shared CI runs one time for each host. It has every step whose result depends on the host: type check, tests, and the real-host test. It can leave out a host-independent step only when another required CI job runs that step.
+- Before a push, run the focused checks that prove the change: the tests that cover the changed code (`node --test test/<subject>.test.ts`), plus `npm run typecheck` or `npm run lint` when they are quick. Do not run the complete gate first. Push and open the pull request early: CI runs every step of the gate on each push to the pull request.
+- When a repository's `AGENTS.md` says that a gate runs only locally, with no CI job that runs it, that rule wins: run that gate before the push.
 - The step scripts are `format:check`, `lint`, `typecheck`, `test`, and `pack:check`, with `format` and `lint:fix` to write fixes. Never name one step `check`.
-- In a repository where `check` does not exist or is one step, run the complete gate that its `AGENTS.md` names, and say so in the report. Change the script names only when the task is that change.
+- In a repository where `check` does not exist or is one step, the complete gate is the one that its `AGENTS.md` names. Change the script names only when the task is that change.
 - In the fork repository, `npm run check` is read-only; `npm run check:fix` writes Biome fixes, and pre-commit runs fix then check. Review any hook-written diff. Run check after a code change, then the tests for the changed behavior as the fork's `AGENTS.md` describes; neither check command runs the tests. This does not replace a public package's complete gate above.
 
 ## CI
@@ -72,14 +73,15 @@ Words: the *fleet* is the list of repositories in `fleet.json`. An *npm channel*
 
 An npm channel has a fleet entry with `npmRelease: "automatic"` and the workflows `npm-version.yml` and `npm-release.yml`. The flow is in `docs/npm-releases.md` of `fitchmultz/.github`.
 
-- On an npm channel, a merge to `main` is the release. A bot opens the version pull request `chore(release): X.Y.Z`, and after that merge it creates the tag and the GitHub Release and publishes to npm.
+- On an npm channel, a merge to `main` that changes the installed package is the release. After each merge, `npm-version.yml` compares the package built from `main` with the latest version on npm. A merge that changes only CI, tests, development scripts, `devDependencies`, or `CHANGELOG.md` releases nothing and waits for the next merge that changes the package.
+- When the package changed, the release bot commits `chore(release): X.Y.Z` directly to `main`, with the new version, the lockfile, and the changelog. There is no version pull request. That commit starts `npm-release.yml`, which tests the packed package on both hosts, then creates the tag and the GitHub Release and publishes to npm.
 - On an npm channel, do not edit `version`, create a tag, create a GitHub Release, or run `npm publish`.
 - Publication uses npm trusted publishing. There is no npm token to read.
 - The bot creates patch versions only. A minor or a major version is the owner's decision.
-- Before the merge, add the note under the unreleased heading of `CHANGELOG.md`. The bot moves it into the version section.
+- Before the merge, add the note under the unreleased heading of `CHANGELOG.md`, or in a new file `changelog.d/<name>.md` so that parallel pull requests do not conflict. The bot moves both into the version section and deletes the fragment file.
 - Keep the package's own release gate in its `npm-release.yml`. The shared checks do not replace it.
 - To stop releases, set the repository variable `NPM_RELEASE_ENABLED` to `false`. Never delete a published version, move a tag, or replace a release asset.
-- A release is done when `npm view <name> version` equals the manifest version and the tag `vX.Y.Z` exists. A green workflow is not that proof.
+- A release is done when `npm view <name> version` equals the manifest version on `main` and the tag `vX.Y.Z` exists. A green workflow is not that proof.
 - A Git-only package has no release automation. Keep the notes under the unreleased heading. Change `version` or create a tag only when the task asks for a release.
 - Pi shows the update notes of a Git package only when its `version` increases.
 - The manual flow in [publishing/workflow.md](publishing/workflow.md) is only for a package that has no release automation.

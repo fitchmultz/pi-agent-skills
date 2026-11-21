@@ -38,13 +38,23 @@ test('answers that skip explicitly required source reads do not pass', () => {
 });
 
 test('house conventions require the result-part state, the next call, a returned failure, and the gate', () => {
-  const answer = fixes => JSON.stringify({ items: fixes.map((fix, index) => ({ item: index + 1, verdict: fix ? 'change' : 'keep', fix })) });
+  const answer = (fixes, prePush = ['node --test test/stash.test.ts']) => JSON.stringify({ items: fixes.map((fix, index) => ({ item: index + 1, verdict: fix ? 'change' : 'keep', fix })), prePush });
   const follows = ['Show the running row in renderResult while options.isPartial.', 'End the cut result with a bracketed line that gives the next call and its offset.',
-    'Return { isError: true, content, details } and let the renderer accept any details.', 'Run npm run check, then merge: the bot sets the version and the tag.', ''];
+    'Return { isError: true, content, details } and let the renderer accept any details.', 'Push early and let CI run the complete gate; after the merge the bot commits the version and the release workflow tags and publishes.', ''];
   assert.doesNotThrow(() => check('pi-house-conventions', answer(follows), reads(['plan.md'])));
   assert.throws(() => check('pi-house-conventions', answer(follows)), 'plan.md must be read');
-  const earlier = ['', 'Name the saved file.', 'Throw a clearer error and guard details.', 'Run npm run check:compat, then tag and publish with the npm token.', ''];
+  const earlier = ['', 'Name the saved file.', 'Throw a clearer error and guard details.', 'Run npm run check before the push.', ''];
   for (const index of [0, 1, 2, 3]) assert.throws(() => check('pi-house-conventions', answer(follows.with(index, earlier[index])), reads(['plan.md'])), `item ${index + 1}`);
+  // The prePush commands decide the gate, whatever the fix sentence says about npm run check: they must run
+  // the covering test file, may add a type check, lint, or the per-host CI command, and must not run the complete gate.
+  const remembersGate = follows.with(3, "Run the tests that cover the change and don't forget to run npm run check before the push; the bot commits the version.");
+  for (const prePush of [['npm run check'], ['node --test test/stash.test.ts', 'npm run check'], [], ['npm run typecheck'], ['npm run lint'], ['node --test']]) {
+    assert.throws(() => check('pi-house-conventions', answer(remembersGate, prePush), reads(['plan.md'])), JSON.stringify(prePush));
+  }
+  const refusesGate = follows.with(3, "You shouldn't run npm run check before a push; the bot commits the version.");
+  for (const prePush of [['npm run typecheck', 'node --test test/stash.test.ts'], ['node --test test/stash.test.ts', 'npm run check:compat']]) {
+    assert.doesNotThrow(() => check('pi-house-conventions', answer(refusesGate, prePush), reads(['plan.md'])), JSON.stringify(prePush));
+  }
   assert.throws(() => check('pi-house-conventions', answer(follows.with(4, 'Add an emoji.')), reads(['plan.md'])), 'item 5 stays');
 });
 
