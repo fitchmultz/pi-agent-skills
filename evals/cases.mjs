@@ -183,8 +183,9 @@ export const cases = [
       assert.match(fix(3), /isError/, 'A failure is returned with isError'); assert.match(fix(3), /details/);
       // The command list, not the wording of a fix, says what runs before the push: free text can mention the gate only to reject it.
       assert(Array.isArray(prePush) && prePush.every(command => typeof command === 'string'), 'prePush is a list of commands');
-      assert(prePush.some(command => /node --test|\.test\.[cm]?[jt]s\b|typecheck|\blint\b|\btsc\b/.test(command)), 'Run the focused checks that prove the change before a push');
-      assert(!prePush.some(command => /\bnpm run check\b/.test(command)), 'CI runs the complete gate; a push does not wait for a local run');
+      // A focused run names the test file that covers the change; a type check or lint may come with it.
+      assert(prePush.some(command => /\.test\.[cm]?[jt]sx?\b/.test(command)), 'Run the tests that cover the change before a push');
+      assert(!prePush.some(command => /\bnpm run check(?![\w:-])/.test(command)), 'CI runs the complete gate npm run check; a push does not wait for a local run');
       assert.match(fix(4), /version|tag|publish|merge/i);
       fix(5); noWrites(r);
     },
