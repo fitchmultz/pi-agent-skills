@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `docs/refreshing-pi-development.md`: require only `official`, `fork`, and `Pi Durable Review` to match the `main` ruleset; treat `Cursor Automation: PR Bug Review - Maintained Repos` as optional while still answering any findings it posts.
+
 - `pi-development`: describe the three parts of an automatic release note: notes written under the unreleased heading or in `changelog.d`, the title of the first commit merged since the last release, and GitHub's generated list of merged pull requests (PAS-212).
 
 - `pi-development`: in Mitch's packages, agents run the focused checks that prove a change (the tests that cover the changed code, plus a quick type check or lint) before a push, then push and open the pull request early, because CI runs every step of the gate on each push. A gate that a repository's `AGENTS.md` keeps local still runs before the push (PAS-212).
