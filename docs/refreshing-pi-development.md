@@ -300,16 +300,15 @@ Refresh `pi-development` from official Pi `<official release of the stamp on mai
 
 List every entry, including each entry that needs no change. If both diffs in step 3 are empty, write that sentence in place of the table. The pull request adds no entry to `CHANGELOG.md`: its body is the record.
 
-### 7. Wait for the four checks and answer every finding
+### 7. Wait for the three required checks and answer every finding
 
-Four checks must complete on the head commit of the pull request:
+Three required checks must complete on the head commit of the pull request:
 
 | Check | App that reports it |
 | --- | --- |
 | `official` | GitHub Actions (`15368`) |
 | `fork` | GitHub Actions (`15368`) |
 | `Pi Durable Review` | Pi Durable (`5180273`) |
-| `Cursor Automation: PR Bug Review - Maintained Repos` | Cursor (`1210556`) |
 
 ```bash
 pr=<number of the pull request>
@@ -318,9 +317,11 @@ gh api "repos/fitchmultz/pi-agent-skills/commits/$head/check-runs?per_page=100" 
   --jq '.check_runs[] | [.name, .app.id, .status, (.conclusion // "-")] | @tsv'
 ```
 
-Read the checks every 60 seconds until all four have the status `completed` for `$head`. If a check is still missing or running 45 minutes after your last push, leave the pull request open and report `waiting`. The next run continues it.
+Read the checks every 60 seconds until all three have the status `completed` for `$head`. If a required check is still missing or running 45 minutes after your last push, leave the pull request open and report `waiting`. The next run continues it.
 
-Then read the findings. Both reviewers post findings as review conversations before their check completes. A reviewer can also post a finding as a review summary or a comment.
+`Cursor Automation: PR Bug Review - Maintained Repos` is optional and not required by the `main` ruleset. Do not wait for it or treat a missing, pending, or `neutral` Cursor check as a blocker. If it does post findings before merge, answer and resolve them under the same finding rules below.
+
+Then read the findings. Reviewers post findings as review conversations before their check completes. A reviewer can also post a finding as a review summary or a comment.
 
 ```bash
 gh api graphql -F n="$pr" -f query='query($n:Int!){repository(owner:"fitchmultz",name:"pi-agent-skills"){pullRequest(number:$n){reviewThreads(first:100){nodes{id isResolved path line comments(first:50){nodes{databaseId author{login} body}}}}}}}'
@@ -338,17 +339,17 @@ gh api "repos/fitchmultz/pi-agent-skills/pulls/$pr/comments/<databaseId of the f
 gh api graphql -f id='<id of the conversation>' -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}'
 ```
 
-For a check that completed without `success`:
+For a required check that completed without `success`:
 
 | Check result on `$head` | Action |
 | --- | --- |
 | `official` or `fork` failed because of your change | Read the log with `gh run view --job <job id> --log-failed`. Fix the cause. For a failure in `test/pi-development-facts.test.mjs`, follow [Answer a failure of the check](#answer-a-failure-of-the-check). |
 | `official` or `fork` failed for a reason outside your scope, such as a test of another skill or the runner | Run `gh run rerun <run id> --failed` once. If the check fails again, comment the cause on the pull request once, leave the pull request open, and report `blocked`. |
-| A review check ended without `success`. `Pi Durable Review` reports `failure` when it filed findings. `neutral` or `cancelled` is an error in the reviewer. | Answer every open finding first. If you then have no fix to push, push an empty commit to get a new review: `git commit --allow-empty -m "Request a new review"`. |
+| `Pi Durable Review` ended without `success`. `Pi Durable Review` reports `failure` when it filed findings; `neutral` or `cancelled` is an error in the reviewer. | Answer every open finding first. If you then have no fix to push, push an empty commit to get a new review: `git commit --allow-empty -m "Request a new review"`. |
 
 After a fix, run the gate again, commit, and push without force. Then repeat this step for the new head commit.
 
-Leave the pull request open and report `blocked` in two cases. In the first case, a reviewer repeats a finding that you rebutted. In the second case, a review check ends without `success` on two head commits in a row while no finding is open. Do not repeat a comment that the pull request already has.
+Leave the pull request open and report `blocked` in two cases. In the first case, a reviewer repeats a finding that you rebutted. In the second case, `Pi Durable Review` ends without `success` on two head commits in a row while no finding is open. Do not repeat a comment that the pull request already has.
 
 ### 8. Merge
 
@@ -361,8 +362,7 @@ gh pr view "$pr" --repo fitchmultz/pi-agent-skills --json headRefOid,mergeable,i
 - `headRefOid` equals `$head`, the commit whose checks you read.
 - `official` and `fork` concluded `success`.
 - `Pi Durable Review` concluded `success`.
-- `Cursor Automation: PR Bug Review - Maintained Repos` concluded `success`. A `neutral` result is an error in Cursor. GitHub accepts `neutral` for a required check, and this procedure does not.
-- The query in step 7 shows no unresolved review conversation, and every finding has a reply.
+- The query in step 7 shows no unresolved review conversation, and every finding has a reply (including any posted by an optional reviewer).
 - The pull request has no conflict with `main` and is not a draft.
 - Every changed file is in your scope.
 
@@ -397,6 +397,6 @@ After the result, state these facts:
 
 - The stamp before and after, and the values of `official` and `fork`.
 - The URL and the head commit of the pull request.
-- The conclusion of each of the four checks.
+- The conclusion of each of the three required checks (and any optional reviewer check that reported).
 - The number of findings, and how many you fixed and how many you rebutted.
 - Each gate command with its exit status, and anything that you could not check.
