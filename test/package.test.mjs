@@ -22,6 +22,7 @@ const expectedSkills = [
   "thermo-nuclear-code-quality-review",
   "ux-review",
   "verification-before-completion",
+  "visual-design",
 ];
 
 function filesUnder(dir) {

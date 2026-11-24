@@ -1,6 +1,6 @@
 # pi-agent-skills
 
-pi-agent-skills adds 15 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
+pi-agent-skills adds 16 task workflows to [Pi](https://pi.dev), the coding agent for your terminal. Each skill provides instructions and helper files for a task, such as code review or a diagram.
 
 ![A task leads Pi to a skill, its SKILL.md instructions, and the helper files that the task needs.](.github/readme/skill-workflow.png)
 
@@ -55,6 +55,7 @@ Some skills require extra tools. The skill pages below list their requirements.
 | [`thermo-nuclear-code-quality-review`](skills/thermo-nuclear-code-quality-review/SKILL.md) | Review a branch or PR for maintainability problems. |
 | [`ux-review`](skills/ux-review/SKILL.md) | Review user-facing changes for usability and complete workflows. |
 | [`verification-before-completion`](skills/verification-before-completion/SKILL.md) | Check the evidence before you claim that work is complete. |
+| [`visual-design`](skills/visual-design/SKILL.md) | Design and build high-craft web pages, web apps, interactive briefs, and visual documents with art direction, data viz, motion, and browser QA. |
 
 ## Compatibility
 

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add `visual-design`: design and build high-craft web pages, web apps, interactive briefs, and HTML documents with subject-appropriate color systems (light, dark, or adaptive), deliberate typography, mandatory bespoke favicons, interactive visual explanation patterns (state-reactive heroes, playable simulators, countable unit plots, timeline races, narrative-tooltip charts, what-if explorers, scrollytelling stages, and evidence drawers), delivery/CSP/print packaging, and mandatory headless browser screenshot QA (PAS-217).
+
 - `lyrics`: return rewritten lyrics as plain text with no code fence or backticks around them, so a copy carries no backticks. The `SKILL.md` output contract, the `phonetic-rewriting.md` output format and rules, and the `fetch-rewrite-block-only`, `paste-mode-skips-fetch`, and `plain-variant` evaluation expectations now say plain text.
 
 - `docs/refreshing-pi-development.md`: require only `official`, `fork`, and `Pi Durable Review` to match the `main` ruleset; treat `Cursor Automation: PR Bug Review - Maintained Repos` as optional while still answering any findings it posts.

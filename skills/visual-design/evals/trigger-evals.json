@@ -1,0 +1,62 @@
+[
+  {
+    "query": "Build an interactive stability brief page for our last 30 days of production metrics with a before/after simulator and hoverable charts.",
+    "should_trigger": true,
+    "reason": "Direct request to design and build an interactive visual brief page with data visualization and interactive mechanics."
+  },
+  {
+    "query": "Design and build a polished React web app for tracking team releases, with crisp daylight typography, interactive filters, and a custom favicon.",
+    "should_trigger": true,
+    "reason": "Primary web application visual design and build request, including color direction and favicon craft."
+  },
+  {
+    "query": "Redesign this landing page and pricing calculator so the layout rhythm, typography, and interactive controls actually feel high-craft.",
+    "should_trigger": true,
+    "reason": "Visual redesign and implementation of a web page with interactive explanation controls."
+  },
+  {
+    "query": "Turn this quarterly engineering report into a clean, print-ready visual HTML document with countable unit visuals and expandable raw data drawers.",
+    "should_trigger": true,
+    "reason": "Visual HTML document authoring with interactive data presentation and print support."
+  },
+  {
+    "query": "Create a standalone single-file HTML launch showcase that works under a strict Content-Security-Policy with a state-reactive hero and custom SVG favicon.",
+    "should_trigger": true,
+    "reason": "Standalone strict-CSP visual page with interactive hero and tab-identity craft."
+  },
+  {
+    "query": "Elevate the visual hierarchy and interactive charts on our existing dashboard without replacing its Tailwind design tokens.",
+    "should_trigger": true,
+    "reason": "Visual design elevation inside an existing app while respecting its design system."
+  },
+  {
+    "query": "Draw and render the request lifecycle architecture as an editable D2 diagram and PNG.",
+    "should_trigger": false,
+    "reason": "Static editable SVG/D2 technical diagrams belong to diagram-creation."
+  },
+  {
+    "query": "Dogfood http://localhost:3000 and report any broken checkout flows with screenshots.",
+    "should_trigger": false,
+    "reason": "Live exploratory bug-hunting QA belongs to dogfood, not designing/building."
+  },
+  {
+    "query": "Give this PR a read-only end-user UX review focused on retries and truthful failure recovery.",
+    "should_trigger": false,
+    "reason": "Read-only usability and recovery review belongs to ux-review."
+  },
+  {
+    "query": "Summarize the stability metrics in three bullet points for Slack without creating any files.",
+    "should_trigger": false,
+    "reason": "Plain text summary with no visual artifact requested."
+  },
+  {
+    "query": "Refactor the backend retry worker in src/queue.ts; there are no UI or visual changes.",
+    "should_trigger": false,
+    "reason": "Backend-only engineering change with no visual surface."
+  },
+  {
+    "query": "Build a PowerPoint presentation (.pptx) for Monday's board meeting.",
+    "should_trigger": false,
+    "reason": "Proprietary slide deck file format is outside web/HTML visual design."
+  }
+]

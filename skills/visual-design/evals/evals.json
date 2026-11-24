@@ -1,0 +1,30 @@
+{
+  "skill_name": "visual-design",
+  "evals": [
+    {
+      "id": "interactive-brief-with-simulator-and-favicon",
+      "prompt": "Build a standalone single-file HTML brief for a strict-CSP host explaining how our database migration reduced daily outage errors from 8,733 to 1 using the verified metrics in metrics.json. Make the explanation click immediately for non-engineers while keeping raw PR evidence accessible.",
+      "expected_output": "Grounds every number in metrics.json without inventing figures, pairs a purposeful color system and typography with an inline data:image/svg+xml favicon, includes high-leverage interactive visual explanations (such as a state-reactive hero, playable before/after simulator, tabbed narrative-tooltip chart, and collapsible evidence drawer), pins exact versions with verified sha384 SRI hashes for any allowed CDN asset (or bundles inline), honors prefers-reduced-motion, and verifies desktop, mobile, interactive states, favicon load, and zero console/CSP errors via real headless browser screenshots."
+    },
+    {
+      "id": "daylight-web-app-adaptive-palette",
+      "prompt": "Design and build a daily-driver React/Vite web app for managing workspace budgets and spend alerts. Choose an appropriate visual direction for long daytime operational use.",
+      "expected_output": "Chooses a daylight or adaptive (light-dark) color system suited to daytime operational reading instead of defaulting to a dark showcase theme, establishes clear typography with tabular numerals, replaces starter framework icons with a custom favicon set, implements real navigation and complete loading/empty/error states alongside interactive visual clarity, and verifies desktop and mobile layouts and interactive workflows in a real browser."
+    },
+    {
+      "id": "editorial-html-document-print-ready",
+      "prompt": "Turn report-data.json (containing 180 completed team initiatives and failure-rate comparisons) into a visual HTML report that executives can both explore in a browser and save cleanly to PDF.",
+      "expected_output": "Uses an editorial paper or light-first reading palette with fluid typography, includes a countable unit visualization or proportion field grounded in the 180 real records plus progressive-disclosure details, ships a bespoke favicon, includes @media print rules preventing dark-fill waste, blank scroll-reveal blocks, or awkward chart page splits, and verifies both browser interaction and print media rendering."
+    },
+    {
+      "id": "existing-design-system-respect",
+      "prompt": "Our existing Vite dashboard uses Tailwind tokens in src/styles/tokens.css and feels cramped and flat. Elevate the overview page's visual hierarchy and add a live what-if capacity explorer without replacing the app's design system.",
+      "expected_output": "Inspects and preserves the repository's existing tokens and component conventions rather than importing rogue CDNs or overriding the host theme, improves visual pacing and typographic hierarchy (including tabular numerals and avoiding uniform card monotony), adds a formula-backed what-if explorer with presets, verifies favicon presence, and inspects rendered desktop and mobile screenshots with zero console errors."
+    },
+    {
+      "id": "browser-qa-catches-real-visual-defects",
+      "prompt": "Finish and verify index.html before handing it back. Confirm that anchor navigation, chart hover tooltips on the first and last dates, mobile layout, reduced-motion mode, and tab identity all work cleanly.",
+      "expected_output": "Serves index.html over local HTTP (not bare file://), captures and visually inspects desktop (1440x900), mobile (390x844), anchor-jumped, edge-tooltip, and prefers-reduced-motion screenshots, checks runtime console/network/CSP errors plus font loading and favicon load (no /favicon.ico 404), fixes any sticky-header overlap, tooltip clipping, overflow, or mid-animation freeze, and re-inspects the fixed screenshots before reporting completion."
+    }
+  ]
+}
