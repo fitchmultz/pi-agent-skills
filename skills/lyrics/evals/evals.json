@@ -4,12 +4,12 @@
     {
       "id": "fetch-rewrite-block-only",
       "prompt": "lyrics for Everlong by Foo Fighters",
-      "expected_output": "Fetches real lyrics with the bundled lrclib script, rewrites them phonetically per references/phonetic-rewriting.md, and returns exactly one fenced text block of rewritten lyrics with inferred section markers and no commentary before or after."
+      "expected_output": "Fetches real lyrics with the bundled lrclib script, rewrites them phonetically per references/phonetic-rewriting.md, and returns exactly one block of rewritten lyrics as plain text with no code fence or backticks, with inferred section markers and no commentary before or after."
     },
     {
       "id": "paste-mode-skips-fetch",
       "prompt": "rewrite these lyrics for suno: <pasted lyrics>",
-      "expected_output": "Rewrites the pasted lyrics directly without fetching anything and returns one text block only, preserving every unique line, order, and ad-lib."
+      "expected_output": "Rewrites the pasted lyrics directly without fetching anything and returns one plain-text block only, with no code fence or backticks, preserving every unique line, order, and ad-lib."
     },
     {
       "id": "ambiguous-title-asks",
