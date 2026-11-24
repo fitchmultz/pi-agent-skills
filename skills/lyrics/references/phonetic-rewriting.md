@@ -21,9 +21,8 @@ The rewritten text should look substantially phonetic rather than like lightly e
 
 ## Output format
 
-Always output:
+Always output the lyrics as plain text directly in the reply, with no code fence and no backticks, in this shape:
 
-```
 [Verse 1 Singer A]
 
 lyrics
@@ -35,11 +34,10 @@ lyrics
 [Bridge Singer B]
 
 lyrics
-```
 
 Rules:
 
-- Return one fenced `text` code block
+- Return the lyrics as plain text in the reply with no code fence and no backticks
 - No explanation before or after it unless requested
 - Preserve or infer useful structural markers such as:
   - `[Intro]`
@@ -572,6 +570,6 @@ When the user simply pastes lyrics with no additional instruction:
 6. Apply aggressive pronunciation-preserving phonetic spelling
 7. Preserve explicit language and ad-libs
 8. Preserve every unique lyric line
-9. Return only the transformed lyrics in one `text` code block
+9. Return only the transformed lyrics as plain text with no code fence or backticks
 
 No explanation.

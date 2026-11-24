@@ -9,11 +9,11 @@ compatibility: "Song fetching runs the bundled Node script against lrclib.net; b
 
 ## Goal
 
-Return exactly one copyable fenced `text` block of rewritten lyrics: same meaning, pronunciation, order, structure, and explicit content as the real lyrics, respelled in the casual phonetic style that vocal-synthesis models sing naturally.
+Return exactly one copyable block of rewritten lyrics as plain text, with no code fence or backticks around it: same meaning, pronunciation, order, structure, and explicit content as the real lyrics, respelled in the casual phonetic style that vocal-synthesis models sing naturally.
 
 ## Output contract
 
-- One fenced `text` code block containing only the rewritten lyrics with `[...]` section headers.
+- One plain-text block containing only the rewritten lyrics with `[...]` section headers, written directly in the reply with no code fence or backticks around it.
 - No explanation before or after the block, and no title or artist line inside it, unless the user asks.
 - Allowed exceptions above the block: one line naming the chosen artist when the request omitted the artist and the match was not obvious, or one line naming the version when only a live, acoustic, demo, or cover version exists.
 
@@ -55,7 +55,7 @@ When a platform's check rejects a rewrite because its text matches the original 
 
 ## Variants
 
-- **Original lyrics**: when the user asks for the plain or unrewritten lyrics, return them cleaned — stanzas separated by one blank line, source markers preserved, junk stripped — in one `text` block, without rewriting.
+- **Original lyrics**: when the user asks for the plain or unrewritten lyrics, return them cleaned — stanzas separated by one blank line, source markers preserved, junk stripped — in one plain-text block with no code fence, without rewriting.
 - **Synced lyrics**: when asked for timestamped or LRC lyrics, run the script with `--lrc` and return the output in one block, unrewritten unless asked.
-- **Saving to a file**: write the block's contents, without the fence, to the requested path.
+- **Saving to a file**: write the block's contents to the requested path.
 - **Multiple songs**: one fetch and one block per song.
