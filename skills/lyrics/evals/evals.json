@@ -39,7 +39,7 @@
     {
       "id": "plain-variant",
       "prompt": "give me the original unrewritten lyrics for Everlong by Foo Fighters",
-      "expected_output": "Returns cleaned original lyrics in one text block with stanza structure preserved and no phonetic rewriting."
+      "expected_output": "Returns cleaned original lyrics in one plain-text block with no code fence or backticks, with stanza structure preserved and no phonetic rewriting."
     },
     {
       "id": "content-check-retry",

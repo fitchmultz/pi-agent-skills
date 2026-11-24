@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `lyrics`: return rewritten lyrics as plain text with no code fence or backticks around them, so a copy carries no backticks. The `SKILL.md` output contract, the `phonetic-rewriting.md` output format and rules, and the `fetch-rewrite-block-only`, `paste-mode-skips-fetch`, and `plain-variant` evaluation expectations now say plain text.
+
 - `docs/refreshing-pi-development.md`: require only `official`, `fork`, and `Pi Durable Review` to match the `main` ruleset; treat `Cursor Automation: PR Bug Review - Maintained Repos` as optional while still answering any findings it posts.
 
 - `pi-development`: describe the three parts of an automatic release note: notes written under the unreleased heading or in `changelog.d`, the title of the first commit merged since the last release, and GitHub's generated list of merged pull requests (PAS-212).
