@@ -79,7 +79,7 @@ Every web page, app, interactive brief, and HTML document needs a bespoke favico
 
 ### Implementation patterns
 
-**Standalone HTML or strict-CSP page (single inline request-free `<link>`):**
+**Standalone HTML page — or strict-CSP host whose `img-src` allows `data:` (single inline request-free `<link>`):**
 
 ```html
 <link
@@ -89,9 +89,9 @@ Every web page, app, interactive brief, and HTML document needs a bespoke favico
 />
 ```
 
-Encode `#` as `%23` and `<` / `>` as `%3C` / `%3E` inside the data URI so every browser parses it cleanly.
+Encode `#` as `%23` and `<` / `>` as `%3C` / `%3E` inside the data URI so every browser parses it cleanly. If a strict-CSP host disallows `data:` in `img-src` (for example `img-src 'self'`), serve a same-origin file instead (`<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`) — see [delivery-and-packaging.md](delivery-and-packaging.md) for CSP rules.
 
-**Multi-file web app:**
+**Multi-file web app or same-origin-only CSP host:**
 
 - Ship `public/favicon.svg` as the crisp scalable primary icon (`<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`).
 - Provide a fallback `/favicon.ico` (or `32×32` PNG) and `apple-touch-icon` (`180×180` PNG) plus `<meta name="theme-color" content="...">` when the app may be pinned to mobile home screens or bookmarked across browsers.

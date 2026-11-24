@@ -15,12 +15,13 @@ Read this reference when configuring fonts, favicons, external assets, strict-CS
 
 When external CDN resources (for example, `@fontsource/*` stylesheets or animation utilities on `cdn.jsdelivr.net`) are allowed by the host's CSP:
 
-1. **Pin exact immutable versions** (such as `@fontsource/inter@5.1.1/400.css`, never `@latest` or bare package ranges).
+1. **Resolve the latest release first, then pin that exact immutable version** (for example, check `npm view @fontsource/inter version` and pin `@fontsource/inter@<version>/400.css` — never ship `@latest`, bare ranges, or stale copied version numbers).
 2. **Always pair external `<link>` and `<script>` tags with verified SRI and CORS attributes:**
 
    ```bash
-   # Compute the exact sha384 integrity hash from the real fetched file
-   curl -fsSL "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.1/400.css" \
+   # Resolve the current version and compute the exact sha384 integrity hash from the real fetched file
+   VERSION=$(npm view @fontsource/inter version)
+   curl -fsSL "https://cdn.jsdelivr.net/npm/@fontsource/inter@${VERSION}/400.css" \
      | openssl dgst -sha384 -binary \
      | openssl base64 -A
    ```
@@ -62,7 +63,7 @@ Include a clean, complete `<head>` on every HTML page or app shell:
 ```
 
 - Set `<meta name="color-scheme">` to match the actual theme (`light`, `dark`, or `light dark`) so native scrollbars, form controls, and browser chrome harmonize with the canvas.
-- For multi-file web apps, include `/favicon.svg`, a fallback `/favicon.ico` or `32×32` PNG, `apple-touch-icon`, and `<meta name="theme-color">`, and remove leftover template favicons from `public/`.
+- Use the inline `data:image/svg+xml` `<link rel="icon">` only when `img-src` permits `data:`; on same-origin-only CSP hosts and multi-file web apps, serve `/favicon.svg` (plus a fallback `/favicon.ico` or `32×32` PNG, `apple-touch-icon`, and `<meta name="theme-color">`) and remove leftover template favicons from `public/`.
 
 ## Print-ready HTML document rules (`@media print`)
 
