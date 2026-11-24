@@ -40,8 +40,6 @@ The code-smell helper tests also require [uv](https://docs.astral.sh/uv/getting-
 
 The discovery check packs the real skills, verifies that every bundled helper, reference, and asset survives, and loads the skills through the selected Pi SDK and bundled CLI in an isolated profile. Offline evaluation tests also exercise native Pi sessions with a scripted model stream. These checks do not establish model-backed skill quality, and normal tests need no model credentials. CI installs D2 and librsvg for the diagram rendering tests.
 
-Validate host-sensitive behavior against the minimum official Pi baseline, current official Pi, and the current fork, recording their exact identities. No live runtime activation is part of qualification.
-
 ### Minimum and current official hosts
 
 `package.json` pins the stamp's official release as the Pi SDK (`@earendil-works/pi-coding-agent`) for local development. `.github/workflows/ci.yml` uses shared `resolve-hosts.yml` to freeze the current latest official release and fork `main` revision, then qualifies both through the same shared owner checks. Host-sensitive discovery and scripted-session tests receive the selected SDK through `PI_HOST_INDEX`; receipts record exact package roots/versions and the frozen fork ref. Keep the current-host install separate from the local minimum baseline.
