@@ -49,6 +49,8 @@ test("bundled skills have valid source surfaces", () => {
     const source = readFileSync(path.join(dir, "SKILL.md"), "utf8");
     assert.match(source, new RegExp(`^---\\nname: ${skill}\\n`));
     assert.match(source, /\ndescription: .+\n/);
+    const lineCount = source.trimEnd().split("\n").length;
+    assert.ok(lineCount < 500, `${skill}/SKILL.md exceeds 500 lines (${lineCount})`);
 
     for (const file of filesUnder(dir)) {
       assert.notEqual(path.basename(file), ".DS_Store");
@@ -59,6 +61,16 @@ test("bundled skills have valid source surfaces", () => {
           for (const entry of data.evals) {
             assert.ok(entry.prompt.trim(), `${file}: missing prompt: ${entry.id}`);
             assert.ok(entry.expected_output.trim(), `${file}: missing expectation: ${entry.id}`);
+          }
+        }
+        if (path.basename(file) === "trigger-evals.json") {
+          assert.ok(Array.isArray(data) && data.length > 0, `${file}: expected non-empty array`);
+          for (const [index, entry] of data.entries()) {
+            assert.equal(typeof entry.query, "string", `${file}[${index}]: query must be a string`);
+            assert.ok(entry.query.trim(), `${file}[${index}]: missing query`);
+            assert.equal(typeof entry.should_trigger, "boolean", `${file}[${index}]: should_trigger must be boolean`);
+            assert.equal(typeof entry.reason, "string", `${file}[${index}]: reason must be a string`);
+            assert.ok(entry.reason.trim(), `${file}[${index}]: missing reason`);
           }
         }
       }
