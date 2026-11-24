@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- `pi-development`: update house delivery conventions so merged changes to Mitch's Pi packages, extensions, skills, or fork fast-forward canonical `main` and roll out via `pi update <source> --no-approve` / `pi update --fork` across his devices without intercom messages or manual restarts (`restartWhenStale` restarts idle Fitch Pi sessions automatically); remove the stale live-runtime activation holds from `AGENTS.md` and `docs/maintaining-skills.md` (PAS-218).
+- `pi-development`: update house delivery conventions so merged changes to Mitch's Pi packages, extensions, skills, or fork fast-forward canonical `main` and roll out via `pi update <source> --no-approve` / `pi update --fork` across his devices without intercom messages or killing/restarting other running sessions (scoping `restartWhenStale` auto-restart accurately to extension-supplying packages, while runtime and skills-only updates load in new sessions or on `/restart`/`/reload`); remove the live-runtime activation hold from `AGENTS.md` (retaining hold, publish, privacy, and global-auth limits) and `docs/maintaining-skills.md` (PAS-218).
 
 - Add `visual-design`: design and build high-craft web pages, web apps, interactive briefs, and HTML documents with subject-appropriate color systems (light, dark, or adaptive), deliberate typography, mandatory bespoke favicons, interactive visual explanation patterns (state-reactive heroes, playable simulators, countable unit plots, timeline races, narrative-tooltip charts, what-if explorers, scrollytelling stages, and evidence drawers), delivery/CSP/print packaging, and mandatory headless browser screenshot QA (PAS-217).
 
