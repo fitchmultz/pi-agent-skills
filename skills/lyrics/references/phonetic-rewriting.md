@@ -237,6 +237,16 @@ The output should generally be less conventional than normal English. Use pronun
 
 Do not mechanically convert every possible word. Optimize for natural pronunciation.
 
+## Keep standard spelling when a respell may not sing
+
+A respell only helps when the synthesizer sings it exactly like the original word. Keep the dictionary spelling whenever any of these is true:
+
+- The word is irregular, long, or less common and its standard spelling already sings correctly: trouble, worried, million, corner, nickel, grinned, devil, world.
+- The respell would be a different real word that is not a true homophone. `grinned` is not `grind` (short i, not long i). True homophones such as `hay` for `hey` and `new` for `knew` are fine.
+- The respell uses `oo` for a long O. `oo` is only the sound of `boot`. The long O of `bone`, `stone`, and `home` is spelled `oh` or `oa`: `bohns`, `stoan`, `hoam`.
+
+The shorthand tables and the safe long-vowel respells stay phonetic. Everything else stays standard.
+
 ## Complex words
 
 Do not aggressively misspell long technical, complex, or uncommon words if doing so may confuse the synthesizer.
@@ -556,6 +566,7 @@ Respell strategy, in order of preference:
 - Do not syllabify every word with hyphens
 - Do not over-mutate complex vocabulary until pronunciation becomes unreliable
 - Do not silently omit unique verses
+- Do not swap a word for a different real word unless the two are true homophones
 - Do not replace lyrics with an original song
 
 ## Default behavior
