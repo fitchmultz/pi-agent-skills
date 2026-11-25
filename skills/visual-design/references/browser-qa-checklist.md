@@ -7,6 +7,7 @@ Read this reference before completing visual work. Never claim a page, app, or d
 - **Web app:** Run the project's dev or preview server (`vite`, `next`, `astro`, etc.) and capture against `http://127.0.0.1:<port>`.
 - **Standalone HTML or strict-CSP page:** Start a temporary local HTTP server on loopback (`127.0.0.1`) rather than opening `file://` directly, because `file://` changes CORS, ES module loading, font behavior, and CSP enforcement.
 - **Emulate target CSP when shipping to a strict host:** Serve the standalone HTML with a small local Node HTTP server that attaches the destination host's exact `Content-Security-Policy` header so blocked scripts, styles, fonts, or `data:` favicons fail immediately during QA instead of after publish.
+  - Use the destination host's **actual** CSP header verbatim rather than a guessed subset: a stricter synthetic header causes false font/script failures, while a looser one hides broken production assets.
 
 ## 2. Choose an available browser runner
 
@@ -18,11 +19,11 @@ Read this reference before completing visual work. Never claim a page, app, or d
 
 | Check | What to capture and inspect visually |
 | --- | --- |
-| **Desktop above-the-fold (`1440×900`, 2× DPR)** | Headline scale, contrast over hero visuals, clean nav alignment, primary KPIs/actions visible without awkward crowding, no clipped text. |
-| **Primary interactive states** | Flip every state toggle (`Before` ↔ `After`, `Storm` ↔ `Calm`, light ↔ dark), press simulator triggers (`Simulate Spike`), switch every chart/data tab, open expandable drawers/modals, and test tooltips near both the **leftmost** and **rightmost** points to confirm edge clamping. |
+| **Desktop above-the-fold (`1440×900`, 2× DPR)** | Headline scale, contrast over hero visuals, clean nav alignment, single-row tab bars with no lone wrapped orphan pill, primary KPIs/actions visible without awkward crowding, no clipped text. |
+| **Primary interactive states** | Flip every state toggle (`Before` ↔ `After`, `Storm` ↔ `Calm`, light ↔ dark), switch every chart/data tab, open expandable drawers/modals, and test tooltips near both the **leftmost** and **rightmost** points to confirm edge clamping. For animated simulators, wait **2–3 seconds** into steady-state flow and capture **both** resting and triggered stress states (`Simulate Spike`) — confirming surviving items visibly reach downstream nodes, counters advance at a plausible real-time rate, dots stay seated on drawn curves, and labels stay crisp under sparks. |
 | **App workflow states** (for web apps) | Verify real navigation, form submission/validation, loading state, empty state, and error recovery state — not just seeded happy-path fixtures. |
 | **Scrolled chapters and anchor jumps** | Scroll through each major section and click nav anchor links. Check that sticky headers never overlap or slice section headings (`scroll-margin-top`), and that scroll-triggered reveals or rolling counters finish completely with zero stuck `opacity: 0` or mid-transition blur. |
-| **Mobile layout (`390×844`)** | Readable font sizes, clean vertical rhythm, touch targets `>= 44×44px`, responsive charts/tables without crushed labels, and zero horizontal page overflow. |
+| **Mobile layout (`390×844`)** | Readable font sizes, clean vertical rhythm, touch targets `>= 44×44px`, compact or hidden secondary header pills so top-bar chrome never overflows, responsive charts/tables without crushed labels, and zero horizontal page overflow. |
 | **Reduced motion (`prefers-reduced-motion: reduce`)** | Emulate reduced motion (`page.emulateMedia({ reducedMotion: 'reduce' })`). Confirm ambient WebGL/Canvas loops pause or render static fallbacks, and counters/sections render immediately in their crisp final state. |
 | **Print preview** (documents and briefs) | Emulate print media (`page.emulateMedia({ media: 'print' })`) when readers may print or save PDF. Confirm light background, dark legible text, no cut-off charts, and no invisible reveal blocks. |
 
@@ -35,6 +36,7 @@ Collect these signals in the same browser pass; all must pass before completion:
 - **Favicon verified:** Confirm `document.querySelector('link[rel~="icon"]')` is present. For an external favicon file, confirm HTTP `200`; for `data:image/svg+xml`, confirm the URI decodes cleanly into valid `<svg ...>...</svg>` markup and loads into an `Image` element with non-zero dimensions (`naturalWidth > 0`).
 - **Fonts actually loaded:** Await `document.fonts.ready` and verify the declared display/body/mono families report `status === "loaded"` (so typos or blocked CDNs cannot silently degrade to system serif/sans unnoticed).
 - **Zero horizontal overflow:** Verify `document.documentElement.scrollWidth <= window.innerWidth` at both `1440px` and `390px`.
+- **Single-row desktop tab bars:** When a panel uses horizontal tabs, check that all tabs share one vertical row at `1440px` (`new Set(tabRects.map(r => Math.round(r.top))).size === 1`).
 - **Keyboard focus sanity:** Tab through primary toggles, tabs, drawers, and controls to confirm logical order and visible `:focus-visible` styling.
 
 ## 5. Recurring visual defects to hunt for
@@ -47,6 +49,8 @@ Check every screenshot explicitly against these common real-world misses:
 4. **Low contrast over glowing shaders or light photos** → add a subtle dark/light gradient scrim beneath text columns.
 5. **Axis/label collisions on narrow viewports** → thin tick density on narrow widths, wrap or abbreviate dates cleanly, or switch wide charts to horizontal scroll with clear scroll affordance.
 6. **Leftover starter favicon or `/favicon.ico` 404** → ensure the custom icon `<link rel="icon">` is active and no broken default favicon reference remains.
+7. **Broken simulator physics or obscured canvas labels** (downstream wires empty because per-frame random drops kill ~99.9% of items, dots floating off Bezier curves, sparks drawing over box text, or runaway 120 Hz counters) → normalize to `dt`, roll pass/drop once per stage boundary, match wire Bezier math, and draw particles behind node boxes with sparks emitting outward from borders.
+8. **Orphan wrapped desktop tabs or overflowing mobile header pills** → tighten desktop tab labels/padding so all tabs sit on one row at `1440px`, and wrap or hide non-essential status pills at `<= 640px` so `scrollWidth <= 390`.
 
 ## 6. Fix, re-inspect, and clean up
 

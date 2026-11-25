@@ -30,6 +30,12 @@ When explaining *why* a system broke, slowed down, or scaled cleanly, build a co
   3. **Live animated topology** (Canvas 2D or SVG) showing requests/events moving through real stages — saturating queues and flashing drops in "Before", flowing smoothly or isolating blast radius in "After".
   4. **Reactive telemetry strip** directly below the canvas (`Load`, `Queue Depth`, `Error Rate`, `Latency`) using `tabular-nums`, clearly distinguishing simulated stress readouts from real production benchmarks.
 - **Clarity rule:** Keep labels plain English first (`Shared Database`, `Edge Cache`, `Isolated Store A`) with optional technical tags (`ROUTES KV`, `503`), and include a crisp legend distinguishing live traffic from background noise.
+- **Animation and physics guardrails:**
+  - **Normalize to elapsed time (`dt`), never raw frame counts:** Compute `dt = Math.min(0.05, (now - lastTime) / 1000)` and drive movement, spawn accumulators, spike durations (in seconds), and fade decays (`Math.pow(factor, dt)`) from `dt`. Frame-counted `tick++` loops run 2×–4× fast on 120 Hz/144 Hz/240 Hz displays and inflate simulated counters.
+  - **Roll stochastic outcomes once per stage boundary:** Stamp a one-time flag (`decided = true`) when an item enters a queue or bottleneck instead of rolling `Math.random() < p` every animation frame. Re-rolling per frame compounds across dozens of frames (`(1 - p)^N`), silently killing ~99.9% of items before they ever reach downstream nodes.
+  - **Share exact path geometry between drawn wires and moving particles:** When links use `bezierCurveTo(...)`, evaluate the same cubic Bezier equation for particle positions (with minimal lane spread) rather than approximating with smoothstep/linear paths or wide jitter, so dots stay seated on their tracks.
+  - **Keep node text unobstructed by draw order:** Render in `grid → wires → particles → node boxes & labels → border sparks/overlays` order, and emit drop/bounce sparks outward from the node's entry edge rather than over center labels so text stays legible under load.
+  - **Preserve resting vs. stressed visual contrast:** Avoid pinning failure pills at 100% opacity during resting mode so clicking a stress trigger produces an unmistakable visual and numeric shift.
 
 ## 3. Countable unit visualizations and proportion fields
 
@@ -51,6 +57,7 @@ When timing, durability, or recovery behavior is the core story, animate two sce
 Avoid stacking six repetitive static charts down a page. Combine related time series into one high-craft interactive chart surface:
 
 - **Tabbed analytical lenses:** Let readers switch perspectives on the same timeframe (`Refusals vs. Traffic`, `Overload Logs`, `Alert History`, `Latency & CPU Headroom`) via real `role="tablist"` / `role="tab"` buttons.
+  - Keep tab labels compact enough that all tabs sit on one clean row at desktop width (`1440px`) rather than stranding a single orphan tab on a second row.
 - **Context directly on the plot:**
   - Shade recurring context bands subtly (weekends, maintenance windows, rollout spans) and mention them in the subtitle.
   - Annotate inflection points and peaks directly on the canvas (`Nov 18 peak (3,309) · Sprint starts`) with short hairline leaders instead of burying explanations in footnotes.

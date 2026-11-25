@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `visual-design`: add real-world simulator physics, layout, and QA guardrails from live 120 Hz and strict-CSP browser verification — `dt`-normalized Canvas/simulator timing, one-time stage-boundary stochastic checks (preventing per-frame drop compounding), shared Bezier wire/particle geometry, particle-behind-box draw order with border-emitted sparks, single-row desktop tab bar checks, mobile header pill overflow checks, verbatim target CSP emulation, and steady-state (2–3s) resting + stressed simulator screenshot verification.
+
 - `lyrics`: keep standard spelling when a respell may not sing. Irregular or less common words such as trouble, worried, million, corner, nickel, and grinned stay in dictionary form; a word is never swapped for a different real word that is not a true homophone (`grind` for `grinned`); and `oo` is only the sound of `boot`, so a long O is spelled `oh` or `oa` (`bohns`, `stoan`, `hoam`). Adds the `standard-spelling-for-irregular-words` evaluation scenario.
 
 - `pi-development` (`5.0.29`): advance `metadata.fork-source` to `fitchmultz/pi` `9d2fdb7c7` (`#566` + `#568`), remove the retired `tui.isTerminalFocused()` / `tui.onTerminalFocusChange()` guidance from `references/tui-authoring-guide.md` and the `interactive-tui-ux` eval expectation, and narrow the `FORK.md` inventory caveat to the remaining changelog-only items (`samplingParams`/`samplingParamsByThinkingLevel`, `reasoningSummary: null`, GPT-6.2 `<model_guidance>`). Also add `.npmrc` with `min-release-age=2` (exempting `@earendil-works/*` and `@fitchmultz/*`) and document the cooldown policy in `AGENTS.md`.
