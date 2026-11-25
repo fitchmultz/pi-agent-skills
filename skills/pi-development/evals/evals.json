@@ -234,7 +234,7 @@
     {
       "id": "provider-response-hook",
       "prompt": "Add a pi extension that records provider HTTP status and selected headers for diagnostics before the response stream is consumed.",
-      "expected_output": "Reads current extension docs/types and provider-payload example, uses after_provider_response for response status/headers rather than before_provider_request or stream parsing, avoids logging secrets, and validates the diagnostic path."
+      "expected_output": "Reads current extension docs/types and provider-payload example, uses after_provider_response for response status and available headers rather than parsing the stream, accounts for HTTP errors and retry responses without assuming one event per request, avoids logging secrets, and validates the diagnostic path."
     },
     {
       "id": "extension-collision-and-provider-unregister",
