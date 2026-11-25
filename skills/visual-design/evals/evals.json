@@ -24,7 +24,7 @@
     {
       "id": "browser-qa-catches-real-visual-defects",
       "prompt": "Finish and verify index.html before handing it back. Confirm that anchor navigation, chart hover tooltips on the first and last dates, mobile layout, reduced-motion mode, and tab identity all work cleanly.",
-      "expected_output": "Serves index.html over local HTTP (not bare file://) under the target host's verbatim CSP when applicable, captures and visually inspects desktop (1440x900), mobile (390x844), anchor-jumped, edge-tooltip, steady-state animated simulator (resting and stressed after 2-3 seconds of flow), and prefers-reduced-motion screenshots, checks runtime console/network/CSP errors plus font loading, single-row desktop tab layout, zero mobile chrome overflow, and favicon load (no /favicon.ico 404), fixes any sticky-header overlap, tooltip clipping, simulator flow/layering bugs, overflow, or mid-animation freeze, and re-inspects the fixed screenshots before reporting completion."
+      "expected_output": "Serves index.html over local HTTP (not bare file://) under the target host's verbatim CSP when applicable, captures and visually inspects desktop (1440x900), mobile (390x844), anchor-jumped, edge-tooltip, steady-state animated simulator captures (resting and stressed after 2-3 seconds of flow when present), and prefers-reduced-motion screenshots, checks runtime console/network/CSP errors plus font loading, single-row desktop tab layout when tabbed panels exist, zero mobile chrome overflow, and favicon load (no /favicon.ico 404), fixes any sticky-header overlap, tooltip clipping, simulator flow/layering bugs when present, overflow, or mid-animation freeze, and re-inspects the fixed screenshots before reporting completion."
     }
   ]
 }
