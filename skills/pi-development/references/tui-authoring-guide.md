@@ -44,9 +44,9 @@ Pi defaults to fullscreen. Use the supplied host TUI, not a second terminal or p
 
 ### Terminal focus and animation
 
-Fullscreen rendering and native `Loader` animations continue at their normal rate when terminal focus is lost; the fork neither throttles background frames nor pauses its loader. It cancels active mouse gestures and hover state but keeps completed text selections. For an owned focus-aware surface, structurally detect `tui.isTerminalFocused()`<!-- fork-only --> and `tui.onTerminalFocusChange(listener)`<!-- fork-only --> on the supplied TUI, then unsubscribe during cleanup. This is terminal focus, not editor/overlay focus; a terminal without focus reports is not an equivalent feed.
+Fullscreen rendering and native `Loader` animations continue at their normal rate when terminal focus is lost; neither host throttles background frames nor pauses its loader. Focus loss cancels active mouse gestures and hover state while keeping completed text selections. Neither official Pi nor the fork exposes a `TUI` terminal-focus query or listener API.
 
-A `Loader` starts at construction and when its indicator changes. Call `stop()` from its owner's `dispose()` to release its timer; use `start()` to resume it. Official Pi also animates normally but has no focus members. Keep its native loader or a bounded owned timer with normal render requests and disposal, not a raw focus parser, second render loop or no-op focus shim.
+A `Loader` starts at construction and when its indicator changes. Call `stop()` from its owner's `dispose()` to release its timer; use `start()` to resume it. Keep the native loader or a bounded owned timer with normal render requests and disposal, not a raw focus parser, second render loop, or focus shim.
 
 ## Transcript history and hydration
 
