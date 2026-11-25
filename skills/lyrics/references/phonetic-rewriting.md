@@ -241,7 +241,7 @@ Do not mechanically convert every possible word. Optimize for natural pronunciat
 
 A respell only helps when the synthesizer sings it exactly like the original word. Keep the dictionary spelling whenever any of these is true:
 
-- The word is irregular, long, or less common and its standard spelling already sings correctly: trouble, worried, million, corner, nickel, grinned, devil, world.
+- The word is irregular, long, or less common and its standard spelling already sings correctly: trouble, worried, million, corner, nickel, grinned, devil.
 - The respell would be a different real word that is not a true homophone. `grinned` is not `grind` (short i, not long i). True homophones such as `hay` for `hey` and `new` for `knew` are fine.
 - The respell uses `oo` for a long O. `oo` is only the sound of `boot`. The long O of `bone`, `stone`, and `home` is spelled `oh` or `oa`: `bohns`, `stoan`, `hoam`.
 
