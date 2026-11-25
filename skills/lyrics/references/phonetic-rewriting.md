@@ -245,7 +245,7 @@ A respell only helps when the synthesizer sings it exactly like the original wor
 - The respell would be a different real word that is not a true homophone. `grinned` is not `grind` (short i, not long i). True homophones such as `hay` for `hey` and `new` for `knew` are fine.
 - The respell uses `oo` for a long O. `oo` is only the sound of `boot`. The long O of `bone`, `stone`, and `home` is spelled `oh` or `oa`: `bohns`, `stoan`, `hoam`.
 
-The shorthand tables and the safe long-vowel respells stay phonetic. Everything else stays standard.
+The shorthand tables and the safe long-vowel respells stay phonetic. Any other word may still be respelled when the new spelling sings correctly, as the style target and content-check sections do with `awf`, `raylz`, `fyre`, and `horizonz`. Keep standard spelling only when a respell may not sing.
 
 ## Complex words
 
