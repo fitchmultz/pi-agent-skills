@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `pi-development`: advance `metadata.fork-source` to `fitchmultz/pi` `657d8397e` (`#566`), remove the retired `tui.isTerminalFocused()` / `tui.onTerminalFocusChange()` guidance from `references/tui-authoring-guide.md`, and drop the outdated `FORK.md` `#545`–`#552` inventory caveats now that `FORK.md` records all retained fork changes. Also add `.npmrc` with `min-release-age=2` (exempting `@earendil-works/*` and `@fitchmultz/*`) and document the cooldown policy in `AGENTS.md`.
+
 - `pi-development`: update house delivery conventions so merged changes to Mitch's Pi packages, extensions, skills, or fork fast-forward canonical `main` and roll out via `pi update <source> --no-approve` / `pi update --fork` across his devices without intercom messages or killing/restarting other running sessions (scoping `restartWhenStale` auto-restart accurately to extension-supplying packages, while skills-only updates load in new sessions or on `/reload`/`/restart` and Pi runtime updates require a new session or managed `/restart`/`pi restart`, not `/reload`); remove the live-runtime activation hold from `AGENTS.md` (retaining hold, publish, privacy, and global-auth limits) and `docs/maintaining-skills.md` (PAS-218).
 
 - Add `visual-design`: design and build high-craft web pages, web apps, interactive briefs, and HTML documents with subject-appropriate color systems (light, dark, or adaptive), deliberate typography, mandatory bespoke favicons, interactive visual explanation patterns (state-reactive heroes, playable simulators, countable unit plots, timeline races, narrative-tooltip charts, what-if explorers, scrollytelling stages, and evidence drawers), delivery/CSP/print packaging, and mandatory headless browser screenshot QA (PAS-217).

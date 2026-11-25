@@ -5,7 +5,7 @@ compatibility: "Official Pi and the fitchmultz/pi fork, no older than the releas
 metadata:
   version: "5.0.28"
   last-verified-pi: "1.6.0"
-  fork-source: "21e7b9028c66b8717cda2f1f9a46350e83da2326"
+  fork-source: "657d8397eed7535bd5226dff0e149ece007e2fbf"
 ---
 
 # Pi development
