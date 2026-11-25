@@ -56,7 +56,7 @@ Choose 1–3 high-leverage interactive mechanisms that directly clarify the subj
 ### 4. Engineer cleanly for the real surface
 
 - **Match the surface's real obligations:** In web apps, build complete navigation, keyboard operation, and truthful loading, empty, error, and confirmation states — never deliver a brittle showcase facade. In existing codebases, extend existing design tokens and component primitives rather than fighting them. In documents and briefs, add `@media print` rules so printed or PDF exports stay readable without clipped charts or blank reveal blocks.
-- **Motion and reduced-motion discipline:** Animate `transform`, `opacity`, or Canvas/WebGL cleanly, pause offscreen/hidden loops, and ensure counters/odometers settle crisply. Always implement `@media (prefers-reduced-motion: reduce)` so ambient motion pauses and every counter or revealed section renders immediately in its clean final state.
+- **Motion and reduced-motion discipline:** Animate `transform`, `opacity`, or Canvas/WebGL cleanly, pause offscreen/hidden loops, and ensure counters/odometers settle crisply. Drive Canvas/simulator loops with clamped elapsed time (`dt`), never raw frame counts, so 60 Hz and 120 Hz+ displays pace identically, and roll per-item stochastic outcomes once at stage boundaries rather than every frame. Always implement `@media (prefers-reduced-motion: reduce)` so ambient motion pauses and every counter or revealed section renders immediately in its clean final state.
 - **Structural polish that prevents recurring bugs:** Set `scroll-margin-top` on anchored sections under sticky headers; prevent horizontal overflow across desktop and mobile widths; use real `<button>` elements, ARIA roles/states, and `:focus-visible` outlines for tabs, tooltips, and drawers; draw consistent inline vector icons instead of relying on emoji for UI chrome.
 - **Packaging, fonts, and CSP:** Read [references/delivery-and-packaging.md](references/delivery-and-packaging.md) when packaging standalone HTML, strict-CSP hosted pages (matching `script-src`/`style-src` inline vs. external rules, exact version pins, and verified `sha384` SRI hashes), multi-file web app icon/manifest sets, or print-ready documents.
 
@@ -66,8 +66,8 @@ Never claim visual work is finished or polished from source code alone. Serve th
 
 Check active browser tools (`agent_browser`, using `tool_search` first if deferred) or run headless Chromium/Playwright from the shell. Follow [references/browser-qa-checklist.md](references/browser-qa-checklist.md) to verify:
 
-- desktop (`1440×900`) and mobile (`390×844`) layouts with zero horizontal overflow,
-- every primary interactive state (toggles, tabs, simulator trigger, tooltips at both chart edges, drawers, and app loading/empty/error states),
+- desktop (`1440×900`) and mobile (`390×844`) layouts with zero horizontal overflow and single-row desktop tab bars (no lone wrapped orphan pill),
+- every primary interactive state (toggles, tabs, steady-state animated simulators after 2–3 seconds of flow plus triggered stress bursts, tooltips at both chart edges, drawers, and app loading/empty/error states),
 - scrolled sections and nav anchor jumps (catching sticky-header clipping and mid-animation freezes),
 - `prefers-reduced-motion: reduce` settled rendering,
 - loaded web fonts, valid favicon with zero `/favicon.ico` 404s, and zero console, page, network, or CSP errors.
