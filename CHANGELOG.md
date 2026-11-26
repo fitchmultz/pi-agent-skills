@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `pi-development` (`5.0.34`): advance `metadata.fork-source` to `fitchmultz/pi` `f5971e248` (`#587`–`#592`), update `restartWhenStale` and house delivery guidance to document automatic stale detection and idle restart for unpinned Pi runtime updates, footer statuses, `pi restart --runtime <dir>` pin exemptions, and runtime-only failed-rollback loop suppression.
+
 - `visual-design`: add real-world simulator physics, layout, and QA guardrails from live 120 Hz and strict-CSP browser verification — `dt`-normalized Canvas/simulator timing, one-time stage-boundary stochastic checks (preventing per-frame drop compounding), shared Bezier wire/particle geometry, particle-behind-box draw order with border-emitted sparks, single-row desktop tab bar checks, mobile header pill overflow checks, verbatim target CSP emulation, and steady-state (2–3s) resting + stressed simulator screenshot verification.
 
 - `lyrics`: keep standard spelling when a respell may not sing. Irregular or less common words such as trouble, worried, million, corner, nickel, and grinned stay in dictionary form; a word is never swapped for a different real word that is not a true homophone (`grind` for `grinned`); and `oo` is only the sound of `boot`, so a long O is spelled `oh` or `oa` (`bohns`, `stoan`, `hoam`). Adds the `standard-spelling-for-irregular-words` evaluation scenario.
