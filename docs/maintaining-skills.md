@@ -60,7 +60,7 @@ npm install --prefix "$host_dir" --ignore-scripts --no-audit --no-fund \
   "@earendil-works/pi-coding-agent@$PI_CURRENT_VERSION"
 PI_HOST_INDEX="$host_dir/node_modules/@earendil-works/pi-coding-agent/dist/index.js" \
   PI_COMPAT_HOST=official PI_COMPAT_EXPECTED_VERSION="$PI_CURRENT_VERSION" \
-  PI_OFFLINE=1 PI_TELEMETRY=0 \
+  PI_OFFLINE=1 \
   node --test test/discovery.test.mjs test/evaluation-runtime.test.mjs test/pi-development-facts.test.mjs
 rm -rf "$host_dir"
 ```
