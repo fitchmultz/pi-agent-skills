@@ -3,9 +3,9 @@ name: pi-development
 description: "Build, debug, review, or package extensions for official Pi releases and the fitchmultz/pi fork: tools/events, TUI, providers, SDK/RPC, and resource install/discovery. Excludes Pi core, skill-content or prompt-only authoring, Crabbox/cbx, platform matrices (including Pi extensions), dependency research, and non-Pi publishing."
 compatibility: "Official Pi and the fitchmultz/pi fork, no older than the release in metadata.last-verified-pi and the commit in metadata.fork-source. Always build against the latest official release, the latest fork main, and current dependencies. Python 3.9+ for the bundled resolver."
 metadata:
-  version: "5.0.34"
-  last-verified-pi: "1.6.1"
-  fork-source: "f5971e2489cb1b4efdfb994a4635e30f7bd4c028"
+  version: "5.0.35"
+  last-verified-pi: "1.7.0"
+  fork-source: "91b90ac7dbd18f530d413b5b5f0a1768693cf5c8"
 ---
 
 # Pi development
@@ -94,14 +94,14 @@ For a package of another owner, follow that repository's conventions; these file
 
 ## Load only the relevant contract
 
-Read `references/current-version-hazards.md` before you copy an affected API. It separates shared contracts from fork-only additions and from changes that only fork `main` has. Its shared-contracts section covers tool arguments validated by `@earendil-works/pi-schema`, `typebox` imports, `StringEnum` typing, and injected key hints; apply it to every tool, renderer, and provider stream you touch.
+Read `references/current-version-hazards.md` before you copy an affected API. It separates shared contracts from fork-only additions. Its shared-contracts section covers tool arguments validated by `@earendil-works/pi-schema`, `typebox` imports, `StringEnum` typing, and injected key hints; apply it to every tool, renderer, and provider stream you touch.
 
 Paths in the middle column are relative to the resolved Pi package. Read the matching examples, types, and source with them.
 
 | Changed surface | Pi sources | Bundled detail |
 | --- | --- | --- |
 | Tools, events, trust, load order, packages | `docs/extensions.md`, `docs/usage.md`, `docs/security.md`, `docs/settings.md`, `docs/configuration.md`, `docs/environment-variables.md`, `docs/packages.md`, `docs/codemode.md`, `docs/mcp.md` | `references/runtime-authoring-guide.md`; `references/tool-design-checklist.md` for tools |
-| SDK, CLI integration, RPC, wire formats | `docs/sdk.md`, `docs/cli.md`, `docs/cli-integration.md`, `docs/rpc.md`, `docs/rpc-commands.md`, `docs/rpc-extension-ui.md`, `docs/json.md`, `docs/message-types.md` | `references/runtime-authoring-guide.md` |
+| SDK, CLI integration, RPC, wire formats | `docs/sdk.md`, `docs/cli.md`, `docs/terminal-setup.md#program-resume`, `docs/cli-integration.md`, `docs/rpc.md`, `docs/rpc-commands.md`, `docs/rpc-extension-ui.md`, `docs/json.md`, `docs/message-types.md` | `references/runtime-authoring-guide.md` |
 | Session state, replacement, tree, compaction | `docs/sessions.md`, `docs/session-format.md`, `docs/compaction.md`, runtime and session implementations. On the fork, also `docs/restart.md` (`ctx.managedHost`, `ManagedHost`) and `docs/working-session.md` (`acquireWorkingSession`, `bindWorkingSessionHost`, `openWorkingSession`, `writeWorkingSession`) when you target those features | `references/lifecycle-checklist.md` |
 | TUI, rendering, keys, themes | `docs/tui.md`, `docs/keybindings.md`, `docs/themes.md`, published `schemas/{theme,keybindings,models,settings}.schema.json`, and `@earendil-works/pi-tui` exports and types (`renderFakeCursor`, `CURSOR_MARKER`, `compositeTuiLine`, `stripTerminalSequences`, `tui.queryTerminalColors`, `TerminalColors`) | `references/tui-authoring-guide.md` |
 | Providers, auth, models | `docs/providers.md`, `docs/custom-provider.md`, `docs/models.md`, `docs/models-configuration.md`, `docs/codemode.md`, `@earendil-works/pi-ai` exports, types, and source; `docs/llama-cpp.md` when applicable | `references/provider-model-guide.md` |

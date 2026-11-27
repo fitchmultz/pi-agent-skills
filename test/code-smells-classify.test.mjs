@@ -63,7 +63,7 @@ globalThis.fetch = async (url, options) => {
   const output = join(dir, "judgments.jsonl");
   const run = (...extra) => spawnSync(process.execPath, [script, "--root", project, "--input", jobs, "--output", output, ...extra], {
     cwd: project, encoding: "utf8", timeout: 60000,
-    env: { ...process.env, PI_PACKAGE_DIR: hostDir, PI_CODING_AGENT_DIR: agent, PI_OFFLINE: "1", PI_TELEMETRY: "0",
+    env: { ...process.env, PI_PACKAGE_DIR: hostDir, PI_CODING_AGENT_DIR: agent, PI_OFFLINE: "1",
       CLOUDFLARE_API_KEY: "synthetic-key", CLOUDFLARE_ACCOUNT_ID: "synthetic-account",
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${pathToFileURL(preload).href}` },
   });

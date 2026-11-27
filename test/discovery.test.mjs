@@ -54,7 +54,7 @@ test("native discovery finds all packed skills and retains their scripts and ref
     // The bundled CLI has a different loader/alias boundary from the public SDK.
     writeFileSync(join(agentDir, "settings.json"), JSON.stringify({ packages: [join(temp, "package")] }));
     const env = { HOME: temp, PATH: `${dirname(process.execPath)}:/opt/homebrew/bin:/usr/bin:/bin`,
-      PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: "1", PI_TELEMETRY: "0", PI_PACKAGE_DIR: packageDir };
+      PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: "1", PI_PACKAGE_DIR: packageDir };
     const output = execFileSync(process.execPath, [join(packageDir, "dist/bundle/cli.js"), "--offline", "--mode", "rpc",
       "--no-session", "--no-approve", "-ne", "-np", "-nc", "--no-themes"], {
       cwd, env, encoding: "utf8", timeout: 30000, input: '{"id":"skills","type":"get_commands"}\n',

@@ -27,7 +27,6 @@ jobs:
     timeout-minutes: ${{ matrix.host == 'fork' && 8 || 6 }}
     env:
       PI_OFFLINE: '1'
-      PI_TELEMETRY: '0'
       PI_COMPAT_FORK_REF: ${{ needs.resolve.outputs.fork-ref }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

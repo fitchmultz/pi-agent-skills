@@ -35,6 +35,7 @@ Words: the *fleet* is the list of repositories in `fleet.json`. An *npm channel*
 - Tests use `node --test` on files named `test/<subject>.test.ts`. `npm test` runs all of them offline, with no credentials and no paid calls.
 - Keep at least one test that loads the extension through the real host and exercises the changed tool, command, or event.
 - In that test, take the host from the variables that shared CI sets: `PI_HOST_INDEX` (the SDK entry) and `PI_HOST_CLI` (the CLI). Assert `PI_COMPAT_EXPECTED_VERSION` and `PI_COMPAT_EXPECTED_PACKAGE_DIR` when they are set. Without them, use the development pin.
+- Point real-host CLI tests at an isolated `--agent-dir` and set `PI_OFFLINE=1` to skip automatic startup requests to pi.dev. The flag overrides an inherited `PI_CODING_AGENT_DIR`; offline mode does not block explicit provider or package calls. See `docs/cli.md` and `docs/environment-variables.md`.
 - A test must fail when the behavior breaks.
 - The fork repository uses Biome and vitest through its own commands. Do not add `oxlint` there.
 

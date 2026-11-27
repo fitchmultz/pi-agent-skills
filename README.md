@@ -6,7 +6,7 @@ pi-agent-skills adds 16 task workflows to [Pi](https://pi.dev), the coding agent
 
 ## Install and try it
 
-This package requires Pi 1.6.1 or later and Node 24.22.3 (24.x) or 26.13.1 and later. Install it from Git or a local checkout. It has no npm release. The Node floors include the [November 2026 security fixes](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases).
+This package requires Pi 1.7.0 or later and Node 24.22.3 (24.x) or 26.13.1 and later. Install it from Git or a local checkout. It has no npm release. The Node floors include the [November 2026 security fixes](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases).
 
 Skills can tell Pi to run commands and change files. Read the [skill instructions](#skills) before you install this package.
 
