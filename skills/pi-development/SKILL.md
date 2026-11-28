@@ -113,6 +113,8 @@ Paths in the middle column are relative to the resolved Pi package. Read the mat
 
 `@earendil-works/pi-agent-core` exports `Agent`, `agentLoop` and `agentLoopContinue`, `streamProxy`, the host hook `setDefaultStreamFn`, and agent types such as `AgentTool` and `AgentToolParams`. It has no experimental harness, session, storage, node, or pico3 surface. Ordinary extensions use coding-agent's SDK, `SessionManager`, and runtime. An explicit durable requirement uses the latest `@earendil-works/pi-durable` and its separate storage contract.
 
+For scrollable or selectable terminal UI, apply the [fullscreen wheel and row-tap rules](references/tui-authoring-guide.md#actionable-hints-and-mouse-input) on both hosts and keep the regular-mode keyboard path.
+
 ## Implementation and validation
 
 1. **Define the work.** State the user-visible outcome, runtime surface, authority, modes, and state boundaries. Inspect the existing package and its canonical validation.
