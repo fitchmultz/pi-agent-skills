@@ -130,7 +130,8 @@ Pi puts all status segments on one line, sorted by key and joined by one space, 
 - A key that only your view has: match the literal and show it with `rawKeyHint("ctrl+d", "delete")`.
 - A hint is `<key> <what it does>` in lower case: `enter select`, `esc cancel`. Join the hints of one row with ` · `. The row is `muted` or `dim`.
 - Each global shortcut has a command for the same action, is configurable, and can be turned off. Do not take a key that Pi reserves.
-- Each action that a click starts also has a key. The rules for clickable hints are in [Actionable hints and mouse input](tui-authoring-guide.md#actionable-hints-and-mouse-input).
+- Each action that a click starts also has a key.
+- Every scrollable or selectable list, picker, dialog, or overlay handles wheel and touch scrolling anywhere inside its box without scrolling the transcript. For selectable rows, use `SelectList`-style taps: press to highlight, click to activate once. See [Actionable hints and mouse input](tui-authoring-guide.md#actionable-hints-and-mouse-input).
 
 ## Settings
 
