@@ -87,6 +87,9 @@ test("Pi contract scenarios remain available to behavioral evaluation", () => {
     "native-inline-images-and-protocol-boundaries",
     "sdk-http-idle-reload-transport-ownership",
     "idle-cache-warming-boundary-projection",
+    "image-generation-option-boundary",
+    "google-ai-ultra-plan-provider-boundary",
+    "google-ai-plan-stateless-quota-stream",
   ]) assert.ok(ids.has(id), `missing eval: ${id}`);
 });
 
